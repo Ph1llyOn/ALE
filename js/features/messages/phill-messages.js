@@ -1,9 +1,10 @@
-// #/messaggi — l'area di Phill per scrivere biglietti: subito o programmati, con modifica, eliminazione e storico.
+// #/messaggi — l'area di Phill per scrivere biglietti: subito o programmati. Un biglietto già consegnato non si modifica
+// e non si cancella (storico coerente); si possono modificare, annullare ed eliminare solo quelli ancora programmati.
 // Phill NON vede se Alessia ha letto: nessuna ricevuta, nessuna pressione.
 import { h, field, textField, errorBox, emptyState, withBusy, toast, spinner, chip } from '../../core/ui.js';
 import { getState } from '../../core/store.js';
 import {
-  listSent, listScheduled, sendNow, schedule, updateSent, deleteSent, updateScheduled, cancelScheduled, deleteScheduled,
+  listSent, listScheduled, sendNow, schedule, updateScheduled, cancelScheduled, deleteScheduled,
 } from '../../core/api-messages.js';
 import { messageCard } from '../../components/message-card.js';
 import { segmented, pageHeader } from '../../components/controls.js';
@@ -20,8 +21,7 @@ export default async function phillMessagesView() {
   const header = pageHeader({ title: 'I tuoi biglietti', eyebrow: 'Messaggi' });
   if (!(partnership && partner)) {
     return h('main', { class: 'shell with-tabs' }, header, h('section', { class: 'card stack' },
-      h('p', null, 'Per scrivere dei biglietti devi essere collegato ad Alessia.'),
-      h('a', { class: 'btn', href: '#/profilo/collegamento' }, 'Inserisci il codice')));
+      h('p', null, 'Potrai scrivere dei biglietti appena Alessia avrà configurato il suo profilo: vi collegate da soli.')));
   }
 
   let tab = 'scrivi';
@@ -38,7 +38,7 @@ export default async function phillMessagesView() {
     body.replaceChildren(spinner());
     try {
       if (tab === 'scrivi') body.replaceChildren(composeForm({ partner, profile, onDone: (kind) => go(kind === 'now' ? 'inviati' : 'programmati') }));
-      else if (tab === 'inviati') body.replaceChildren(await sentList({ profile, partner, refresh: show }));
+      else if (tab === 'inviati') body.replaceChildren(await sentList({ profile }));
       else body.replaceChildren(await scheduledList({ profile, partner, refresh: show }));
     } catch (err) {
       body.replaceChildren(errorBox(err.message, { onRetry: show }));
@@ -50,7 +50,7 @@ export default async function phillMessagesView() {
 }
 
 // ----------------------------------------------------------------------------
-/** Form di scrittura. mode: 'new' | 'edit-sent' | 'edit-scheduled'. */
+/** Form di scrittura. mode: 'new' | 'edit-scheduled'. */
 function composeForm({ partner, profile, mode = 'new', initial = {}, onDone, onCancel }) {
   const title = field({ id: `title-${mode}`, label: 'Titolo (facoltativo)', value: initial.title ?? '', maxlength: TITLE_MAX, required: false, autocomplete: 'off' });
   const text = textField({ id: `body-${mode}`, label: 'Il tuo biglietto', rows: 6, maxlength: BODY_MAX, required: true, value: initial.body ?? '',
@@ -102,10 +102,6 @@ function composeForm({ partner, profile, mode = 'new', initial = {}, onDone, onC
           await schedule({ senderId: profile.id, recipientId: partner.id, ...values, sendAtIso: fromLocalInputValue(dateInput.value) });
           toast('Biglietto programmato.', 'success');
           onDone?.('later');
-        } else if (mode === 'edit-sent') {
-          await updateSent(initial.id, values);
-          toast('Biglietto modificato.', 'success');
-          onDone?.();
         } else {
           await updateScheduled(initial.id, { ...values, sendAtIso: fromLocalInputValue(dateInput.value) });
           toast('Biglietto aggiornato.', 'success');
@@ -122,7 +118,7 @@ function composeForm({ partner, profile, mode = 'new', initial = {}, onDone, onC
 }
 
 // ----------------------------------------------------------------------------
-function confirmDelete({ label, onConfirm }) {
+function confirmDelete({ label, onConfirm }) {  // usato solo per i messaggi programmati
   const box = h('div', { class: 'confirm', hidden: true, role: 'alert' });
   const ask = h('button', { class: 'btn btn-text btn-danger-text', type: 'button', onclick: () => { box.hidden = false; ask.hidden = true; yes.focus(); } }, label);
   const yes = h('button', { class: 'btn btn-danger', type: 'button', onclick: () => withBusy(yes, onConfirm) }, 'Sì, elimina');
@@ -131,23 +127,11 @@ function confirmDelete({ label, onConfirm }) {
   return [ask, box];
 }
 
-async function sentList({ profile, partner, refresh }) {
+async function sentList({ profile }) {
   const items = await listSent(profile.id);
-  if (!items.length) return h('div', { class: 'card' }, emptyState('Ancora nessun biglietto inviato', 'I biglietti che invii restano qui, per rileggerli o correggerli.'));
-  const wrap = h('div', { class: 'stack' });
-  for (const m of items) {
-    const slot = h('div');
-    const view = () => slot.replaceChildren(messageCard(m, { senderName: profile.display_name, actions: [
-      h('button', { class: 'btn btn-text', type: 'button', onclick: edit }, 'Modifica'),
-      ...confirmDelete({ label: 'Elimina', onConfirm: async () => {
-        try { await deleteSent(m.id); toast('Biglietto eliminato.'); await refresh(); } catch (err) { toast(err.message, 'error'); }
-      } }),
-    ] }));
-    const edit = () => slot.replaceChildren(composeForm({ partner, profile, mode: 'edit-sent', initial: m, onDone: refresh, onCancel: view }));
-    view();
-    wrap.append(slot);
-  }
-  wrap.append(h('p', { class: 'muted small center' }, 'Se modifichi o elimini un biglietto, cambia anche per Alessia.'));
+  if (!items.length) return h('div', { class: 'card' }, emptyState('Ancora nessun biglietto inviato', 'I biglietti che invii restano qui, per rileggerli.'));
+  const wrap = h('div', { class: 'stack' }, items.map((m) => messageCard(m, { senderName: profile.display_name })));
+  wrap.append(h('p', { class: 'muted small center' }, 'Un biglietto consegnato non si modifica: così lo storico resta fedele a ciò che Alessia ha ricevuto.'));
   return wrap;
 }
 

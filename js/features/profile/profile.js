@@ -75,7 +75,7 @@ export default async function profileView() {
   // --- tema e uscita
   const themeBtn = h('button', { class: 'btn btn-secondary', type: 'button' });
   initThemeToggle(themeBtn);
-  const logoutBtn = h('button', { class: 'btn btn-secondary', type: 'button', onclick: () => withBusy(logoutBtn, signOut) }, 'Esci');
+  const logoutBtn = h('button', { class: 'btn btn-secondary', type: 'button', onclick: () => withBusy(logoutBtn, signOut) }, 'Cambia profilo');
 
   const rows = [];
   if (isAlessia) {
@@ -85,7 +85,7 @@ export default async function profileView() {
       listRow({ href: '#/profilo/attrezzatura', iconName: 'box', title: 'Attrezzatura', text: 'Cosa hai in casa.' }));
   }
   rows.push(
-    listRow({ href: '#/profilo/collegamento', iconName: 'heart', title: 'Collegamento', text: isAlessia ? 'Invita Phill o gestisci il collegamento.' : 'Collegati ad Alessia o gestisci il collegamento.' }),
+    listRow({ href: '#/profilo/collegamento', iconName: 'heart', title: 'Collegamento', text: isAlessia ? 'Lo stato del collegamento con Phill.' : 'Lo stato del collegamento con Alessia.' }),
     listRow({ href: '#/profilo/privacy', iconName: 'shield', title: 'Privacy e dati', text: isAlessia ? 'Cosa condividi, i tuoi dati, il tuo account.' : 'I tuoi dati e il tuo account.' }));
 
   return h('main', { class: 'shell with-tabs' },
@@ -93,7 +93,6 @@ export default async function profileView() {
     h('section', { class: 'card stack center' }, avatarHost, h('div', { class: 'row-center' }, photoLabel, fileInput, removeBtn), avatarError),
     h('section', { class: 'card stack' }, nameForm,
       h('dl', { class: 'facts' },
-        h('dt', null, 'Email'), h('dd', null, session?.user?.email ?? ''),
         h('dt', null, 'Ruolo'), h('dd', null, isAlessia ? 'Alessia' : 'Phill'))),
     h('section', { class: 'list-card', 'aria-label': 'Il tuo spazio' }, ...rows),
     h('section', { class: 'card stack' }, h('p', { class: 'card-title' }, 'Aspetto'),

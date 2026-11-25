@@ -1,6 +1,6 @@
 // Accesso ai dati. Ogni funzione lancia AppError con un messaggio già in italiano.
 import { sb } from './supabase.js';
-import { rpcMessage, authMessage } from './errors.js';
+import { rpcMessage } from './errors.js';
 import { AppError, fail } from './api-base.js';
 
 export { AppError };
@@ -63,7 +63,7 @@ export async function removeAvatar(userId, oldPath) {
   return data;
 }
 
-// --- inviti e collegamento --------------------------------------------------
+// --- funzioni del database ----------------------------------------------------
 export async function rpc(name, args) {
   const { data, error } = await sb.rpc(name, args);
   if (error) fail(error);
@@ -71,45 +71,7 @@ export async function rpc(name, args) {
   return data;
 }
 
-export const createInvitation = () => rpc('create_invitation');
-export const revokeInvitation = () => rpc('revoke_invitation');
-export const redeemInvitation = (code) => rpc('redeem_invitation', { p_code: code });
-export const endPartnership = () => rpc('end_partnership');
-
-/** Invito in attesa e non scaduto (il codice in chiaro non è recuperabile: solo stato e scadenza). */
-export async function pendingInvitation() {
-  const { data, error } = await sb.from('invitations').select('id, status, expires_at').eq('status', 'pending').maybeSingle();
-  if (error) fail(error);
-  if (!data || new Date(data.expires_at) <= new Date()) return null;
-  return data;
-}
-
-// --- autenticazione ---------------------------------------------------------
-export async function signIn(email, password) {
-  const { error } = await sb.auth.signInWithPassword({ email: email.trim(), password });
-  if (error) throw new AppError(authMessage(error), error);
-}
-
-export async function signUp({ email, password, role, displayName, redirectTo }) {
-  const { data, error } = await sb.auth.signUp({
-    email: email.trim(), password,
-    options: { emailRedirectTo: redirectTo, data: { role, display_name: displayName.trim() } },
-  });
-  if (error) throw new AppError(authMessage(error), error);
-  return { needsConfirmation: !data.session };
-}
-
-export async function sendPasswordReset(email, redirectTo) {
-  const { error } = await sb.auth.resetPasswordForEmail(email.trim(), { redirectTo });
-  // L'esito non rivela se l'indirizzo esiste: mostriamo errori solo per problemi di rete/limiti.
-  if (error && (error.status === 429 || error.name === 'AuthRetryableFetchError')) throw new AppError(authMessage(error), error);
-}
-
-export async function updatePassword(password) {
-  const { error } = await sb.auth.updateUser({ password });
-  if (error) throw new AppError(authMessage(error), error);
-}
-
+// --- sessione -----------------------------------------------------------------
 export async function signOut() {
   const { error } = await sb.auth.signOut();
   if (error && error.name !== 'AuthSessionMissingError') {

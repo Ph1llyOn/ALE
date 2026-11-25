@@ -41,9 +41,8 @@ export default async function homeAlessia({ profile, partner, partnership }) {
     }
   } else {
     sections.push(h('section', { class: 'card stack' },
-      h('h2', { class: 'card-title' }, 'Invita Phill'),
-      h('p', { class: 'muted' }, 'Quando vi collegate, i suoi biglietti arriveranno qui. Decidi tu cosa condividere: di default nulla.'),
-      h('a', { class: 'btn', href: '#/profilo/collegamento' }, 'Crea un invito')));
+      h('h2', { class: 'card-title' }, 'In attesa di Phill'),
+      h('p', { class: 'muted' }, 'Appena Phill configura il suo profilo, vi collegate da soli e i suoi biglietti arriveranno qui. Decidi tu cosa condividere: di default nulla.')));
   }
 
   // --- Il tuo giorno

@@ -1,55 +1,88 @@
-/* Design tokens — rosa pastello, bianco, neutri. Tema chiaro/scuro. */
+/* Design tokens di ALE. — rosa pastello, bianco, neutri. Tema chiaro/scuro (e automatico).
+   Linguaggio visivo: schede ampie e arrotondate, superfici "vetro", titoli grandi, pulsanti a pillola,
+   numeri grandi e leggeri, barra di navigazione fluttuante. La palette resta SEMPRE quella di ALE. */
 :root {
-  --pink-50: #fdf2f5;
+  --pink-50: #fdf5f8;
   --pink-100: #fbe4ea;
+  --pink-200: #f8d0dc;
   --pink-300: #f4b6c6;
   --pink-500: #e58aa5;
   --pink-700: #b8587a;
 
-  --bg: var(--pink-50);
+  --bg: #fdf6f8;
   --surface: #ffffff;
-  --text: #2b2024;
-  --text-muted: #6e5d63;
-  --border: #f0d9e0;
+  --surface-glass: rgba(255, 255, 255, 0.78);
+  --text: #2b1d23;
+  --text-muted: #7a6670;
+  --border: #f3dde5;
   --accent: var(--pink-700);
+  --accent-2: var(--pink-500);
   --accent-soft: var(--pink-100);
   --on-accent: #ffffff;
   --danger: #b3261e;
+  --glow: #f8cfdc;
 
-  --radius: 20px;
-  --radius-sm: 12px;
-  --shadow: 0 6px 24px rgba(184, 88, 122, 0.10);
+  --grad-accent: linear-gradient(135deg, #cf6d92, #b8587a);
+  --grad-hero: linear-gradient(150deg, #fde3ea 0%, #f8c3d3 52%, #f1a3bc 100%);
+  --hero-text: #3a1f2b;
+  --hero-accent: #a63f68;
+  --grad-tile: linear-gradient(160deg, #fff 0%, #fbe4ea 100%);
+
+  --radius: 28px;
+  --radius-md: 20px;
+  --radius-sm: 14px;
+  --shadow: 0 10px 30px rgba(184, 88, 122, 0.12);
+  --shadow-lg: 0 18px 48px rgba(184, 88, 122, 0.22);
   --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
   --font-display: "Avenir Next", "SF Pro Display", ui-rounded, var(--font);
+  --font-serif: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
   color-scheme: light;
 }
 
 :root[data-theme="dark"] {
-  --bg: #1c1518;
-  --surface: #271d21;
-  --text: #f7eaee;
-  --text-muted: #c4aab3;
+  --bg: #171114;
+  --surface: #241a1f;
+  --surface-glass: rgba(36, 26, 31, 0.78);
+  --text: #f8ebf0;
+  --text-muted: #c9afb9;
   --border: #3a2b31;
   --accent: var(--pink-300);
+  --accent-2: var(--pink-500);
   --accent-soft: #3a2630;
-  --on-accent: #2b2024;
+  --on-accent: #2b1d23;
   --danger: #ff8a80;
-  --shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+  --glow: #4a2434;
+  --grad-accent: linear-gradient(135deg, #f7c3d2, #e58aa5);
+  --grad-hero: linear-gradient(150deg, #4a2434 0%, #6a2f4a 52%, #8a3f5f 100%);
+  --hero-text: #fdeef3;
+  --hero-accent: #f9c3d3;
+  --grad-tile: linear-gradient(160deg, #2c2026 0%, #3a2630 100%);
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 18px 48px rgba(0, 0, 0, 0.55);
   color-scheme: dark;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #1c1518;
-    --surface: #271d21;
-    --text: #f7eaee;
-    --text-muted: #c4aab3;
+    --bg: #171114;
+    --surface: #241a1f;
+    --surface-glass: rgba(36, 26, 31, 0.78);
+    --text: #f8ebf0;
+    --text-muted: #c9afb9;
     --border: #3a2b31;
     --accent: var(--pink-300);
+    --accent-2: var(--pink-500);
     --accent-soft: #3a2630;
-    --on-accent: #2b2024;
+    --on-accent: #2b1d23;
     --danger: #ff8a80;
-    --shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+    --glow: #4a2434;
+    --grad-accent: linear-gradient(135deg, #f7c3d2, #e58aa5);
+    --grad-hero: linear-gradient(150deg, #4a2434 0%, #6a2f4a 52%, #8a3f5f 100%);
+    --hero-text: #fdeef3;
+    --hero-accent: #f9c3d3;
+    --grad-tile: linear-gradient(160deg, #2c2026 0%, #3a2630 100%);
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 18px 48px rgba(0, 0, 0, 0.55);
     color-scheme: dark;
   }
 }

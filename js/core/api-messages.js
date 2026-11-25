@@ -79,17 +79,6 @@ export async function schedule({ senderId, recipientId, title, body, sendAtIso }
   return data;
 }
 
-export async function updateSent(id, { title, body }) {
-  const { data, error } = await sb.from('messages').update({ title: clean(title), body: String(body).trim() }).eq('id', id).select().single();
-  if (error) fail(error);
-  return data;
-}
-
-export async function deleteSent(id) {
-  const { error } = await sb.from('messages').delete().eq('id', id);
-  if (error) fail(error);
-}
-
 export async function updateScheduled(id, { title, body, sendAtIso }) {
   const { data, error } = await sb.from('scheduled_messages')
     .update({ title: clean(title), body: String(body).trim(), send_at: sendAtIso }).eq('id', id).select().single();

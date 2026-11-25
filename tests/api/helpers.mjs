@@ -87,3 +87,40 @@ export async function lastMailTo(email, { tries = 20 } = {}) {
   }
   throw new Error(`nessuna email per ${email}`);
 }
+
+// ---- Accesso privato (Edge Function `access`) -------------------------------------------------
+export const FUNCTIONS_URL = `${API_URL}/functions/v1`;
+export const INTERNAL_EMAIL = (role) => `${role}@ale-app.local`;
+
+/** Chiama una Edge Function pubblica come farebbe il browser. */
+export async function callFunction(name, body, { jwt, origin } = {}) {
+  const headers = { apikey: PUBLISHABLE_KEY, 'content-type': 'application/json' };
+  if (jwt) headers.authorization = `Bearer ${jwt}`;
+  if (origin) headers.origin = origin;
+  const res = await fetch(`${FUNCTIONS_URL}/${name}`, { method: 'POST', headers, body: JSON.stringify(body) });
+  const text = await res.text();
+  let json = null;
+  try { json = JSON.parse(text); } catch { /* corpo non JSON */ }
+  return { status: res.status, body: json, headers: res.headers };
+}
+
+/** Elimina le due identità fisse (e a cascata PIN, profili, dati, collegamento): stato iniziale pulito. */
+export async function resetAccess() {
+  const admin = adminClient();
+  const { data } = await admin.auth.admin.listUsers({ perPage: 200 });
+  for (const u of data?.users ?? []) {
+    if (/@ale-app\.local$/.test(u.email ?? '')) {
+      const { data: files } = await admin.storage.from('avatars').list(u.id);
+      if (files?.length) await admin.storage.from('avatars').remove(files.map((f) => `${u.id}/${f.name}`));
+      await admin.auth.admin.deleteUser(u.id);
+    }
+  }
+}
+
+/** Scambia il token monouso della funzione con una sessione vera, come fa il browser. */
+export async function sessionFrom(tokenResponse) {
+  const client = anonClient();
+  const { data, error } = await client.auth.verifyOtp({ token_hash: tokenResponse.token_hash, type: tokenResponse.type });
+  if (error) throw new Error(`verifyOtp: ${error.message}`);
+  return { client, session: data.session, user: data.user };
+}

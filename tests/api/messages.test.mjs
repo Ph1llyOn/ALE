@@ -13,28 +13,27 @@ after(cleanup);
 
 const inOneDay = () => new Date(Date.now() + 864e5).toISOString();
 
-test('biglietti: Phill crea, modifica ed elimina; Alessia li riceve', async () => {
+test('biglietti: Phill scrive, Alessia riceve; un biglietto consegnato è immutabile e non si cancella', async () => {
   const c = await phill.client.from('messages').insert({ sender_id: phill.id, recipient_id: ale.id, title: 'Buongiorno', body: 'Ti penso\ne ti auguro una bella giornata' }).select().single();
   assert.equal(c.error, null, c.error?.message);
-  assert.equal(c.data.edited_at, null);
   assert.ok(!('read_at' in c.data), 'nessuno stato di lettura sul messaggio');
+  assert.ok(!('edited_at' in c.data), 'nessun campo di modifica: lo storico non cambia');
 
-  const seen = await ale.client.from('messages').select('title, body, sent_at, edited_at, sender_id').eq('id', c.data.id).single();
+  const seen = await ale.client.from('messages').select('title, body, sent_at, sender_id').eq('id', c.data.id).single();
   assert.equal(seen.data.body, 'Ti penso\ne ti auguro una bella giornata');
   assert.equal(seen.data.sender_id, phill.id);
 
-  const ed = await phill.client.from('messages').update({ title: 'Buongiorno amore', body: 'Testo corretto' }).eq('id', c.data.id).select().single();
-  assert.equal(ed.error, null);
-  assert.ok(ed.data.edited_at, 'la modifica è marcata dal server');
-  assert.equal((await ale.client.from('messages').select('body').eq('id', c.data.id).single()).data.body, 'Testo corretto', 'Alessia vede la versione corretta');
-
+  // STORICO COERENTE: nessuna modifica né cancellazione retroattiva, da nessuno
+  for (const [who, name] of [[phill, 'Phill'], [ale, 'Alessia'], [stranger, 'un estraneo']]) {
+    const up = await who.client.from('messages').update({ body: 'Riscritto' }).eq('id', c.data.id).select();
+    assert.ok(up.error || (up.data ?? []).length === 0, `${name} ha modificato un biglietto consegnato`);
+    const del = await who.client.from('messages').delete().eq('id', c.data.id).select();
+    assert.ok(del.error || (del.data ?? []).length === 0, `${name} ha eliminato un biglietto consegnato`);
+  }
+  const after = await adminClient().from('messages').select('title, body').eq('id', c.data.id).single();
+  assert.equal(after.data.body, 'Ti penso\ne ti auguro una bella giornata');
+  assert.equal(after.data.title, 'Buongiorno');
   assert.equal((await stranger.client.from('messages').select('id').eq('id', c.data.id)).data.length, 0);
-  assert.equal((await stranger.client.from('messages').update({ body: 'Hack' }).eq('id', c.data.id).select()).data.length, 0);
-  assert.equal((await stranger.client.from('messages').delete().eq('id', c.data.id).select()).data.length, 0);
-  assert.equal((await ale.client.from('messages').delete().eq('id', c.data.id).select()).data.length, 0, 'la destinataria non elimina i biglietti di Phill');
-
-  assert.equal((await phill.client.from('messages').delete().eq('id', c.data.id).select()).data.length, 1);
-  assert.equal((await ale.client.from('messages').select('id').eq('id', c.data.id)).data.length, 0, 'eliminato: sparisce anche per lei');
 });
 
 test('PRIVACY di chi riceve: lettura e archivio sono solo di Alessia e Phill non li vede mai', async () => {

@@ -43,10 +43,6 @@ export function startSession() {
         await hydrate(session);
         setState({ ready: true });
         resolveReady();
-      } else if (event === 'PASSWORD_RECOVERY') {
-        setState({ recovery: true });
-        await hydrate(session);
-        navigate('/reimposta-password', { replace: true });
       } else if (event === 'SIGNED_IN') {
         const same = prev.session?.user?.id === session?.user?.id && prev.profile;
         if (same) setState({ session }); // ritorno di focus/rinnovo: niente ricaricamenti inutili
@@ -57,7 +53,7 @@ export function startSession() {
         setState({ session });
       } else if (event === 'SIGNED_OUT') {
         resetUserData();
-        navigate('/accedi', { replace: true });
+        navigate('/scegli', { replace: true });
         render();
       }
     }, 0);

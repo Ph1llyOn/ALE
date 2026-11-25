@@ -13,6 +13,11 @@ export const SUPABASE_URL = isLocalDev
 export const SUPABASE_PUBLISHABLE_KEY = isLocalDev
   ? 'sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH' // chiave di default dello stack locale (nota, pubblica)
   : 'sb_publishable_wldlRhNQwYO9XdlUGdQM3A_WdB0gkRY';
+export const FUNCTIONS_URL = `${SUPABASE_URL}/functions/v1`;
+
+// Chiave pubblica VAPID per le notifiche Web Push (la parte privata sta solo nei segreti del server).
+// Vuota finché le chiavi non sono state generate e caricate (vedi docs/NOTIFICHE.md).
+export const VAPID_PUBLIC_KEY = '';
 
 // Tutti i percorsi dell'app sono RELATIVI. Il sito vive sotto /<repo>/ su GitHub Pages.
 export const BASE_URL = new URL('../', import.meta.url);

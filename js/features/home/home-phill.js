@@ -17,9 +17,8 @@ export default async function homePhill({ profile, partner, partnership }) {
 
   if (!(partnership && partner)) {
     sections.push(h('section', { class: 'card stack' },
-      h('h2', { class: 'card-title' }, 'Collegati ad Alessia'),
-      h('p', { class: 'muted' }, 'Inserisci il codice che Alessia ti ha dato. Poi potrai scriverle dei biglietti e vedere solo ciò che sceglie di condividere.'),
-      h('a', { class: 'btn', href: '#/profilo/collegamento' }, 'Inserisci il codice')));
+      h('h2', { class: 'card-title' }, 'In attesa di Alessia'),
+      h('p', { class: 'muted' }, 'Appena Alessia configura il suo profilo, vi collegate da soli. Poi potrai scriverle dei biglietti e vedere solo ciò che sceglie di condividere.')));
     return h('main', { class: 'shell with-tabs' }, ...sections);
   }
 

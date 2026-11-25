@@ -75,7 +75,7 @@ test('rotte per ruolo: Alessia e Phill hanno aree distinte', () => {
   for (const path of ['/attivita', '/calendario', '/diario', '/biglietti', '/profilo/benessere', '/profilo/progressi', '/profilo/attrezzatura']) {
     assert.deepEqual(decide(path, alessia), { render: path }, path);
     assert.deepEqual(decide(path, phill), { redirect: '/home' }, `Phill non entra in ${path}`);
-    assert.deepEqual(decide(path, { session: false, recovery: false }), { redirect: '/accedi' });
+    assert.deepEqual(decide(path, { session: false, recovery: false }), { redirect: '/scegli' });
   }
   assert.deepEqual(decide('/messaggi', phill), { render: '/messaggi' });
   assert.deepEqual(decide('/messaggi', alessia), { redirect: '/home' });
@@ -85,8 +85,6 @@ test('rotte per ruolo: Alessia e Phill hanno aree distinte', () => {
   }
   // ruolo non ancora noto (profilo in caricamento): la rotta si apre, la vista gestisce lo stato
   assert.deepEqual(decide('/messaggi', { session: true, recovery: false }), { render: '/messaggi' });
-  // recupero password ha la precedenza su tutto
-  assert.deepEqual(decide('/attivita', { ...alessia, recovery: true }), { redirect: '/reimposta-password' });
 });
 
 test('rotte: coerenza della tabella', () => {

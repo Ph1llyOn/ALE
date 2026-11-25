@@ -231,7 +231,7 @@ test('MESSAGGI: solo tra partner collegati; lettura solo della destinataria', as
   const rcpt = await ale.client.from('message_receipts').insert({ message_id: m.data.id, recipient_id: ale.id, read_at: new Date().toISOString() });
   assert.equal(rcpt.error, null, rcpt.error?.message);
   assert.equal((await phill.client.from('message_receipts').select('*')).data.length, 0, 'il mittente non vede le ricevute');
-  assert.equal((await ale.client.from('messages').update({ body: 'Riscritto' }).eq('id', m.data.id).select()).data.length, 0, 'la destinataria non modifica il testo');
+  assert.equal(((await ale.client.from('messages').update({ body: 'Riscritto' }).eq('id', m.data.id).select()).data ?? []).length, 0, 'la destinataria non modifica il testo');
   // programmati: la destinataria non li vede
   const s = await phill.client.from('scheduled_messages').insert({ sender_id: phill.id, recipient_id: ale.id, body: 'Sorpresa', send_at: new Date(Date.now() + 864e5).toISOString() }).select().single();
   assert.equal(s.error, null, s.error?.message);

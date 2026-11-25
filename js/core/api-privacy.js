@@ -2,7 +2,7 @@
 import { sb } from './supabase.js';
 import { fail, AppError } from './api-base.js';
 import { rpc } from './api.js';
-import { authMessage } from './errors.js';
+import { enterProfile } from './api-access.js';
 
 /** Categorie condivisibili, nell'ordine in cui compaiono. */
 export const CATEGORIES = [
@@ -36,13 +36,12 @@ export async function exportMyData() {
 
 /**
  * Eliminazione dell'account:
- * 1) riautenticazione con la password (il server richiede un accesso recente),
+ * 1) riautenticazione con il PIN (il server richiede un accesso recente),
  * 2) rimozione dei propri file in Storage,
  * 3) eliminazione dell'account (tutto il resto segue a cascata nel database).
  */
-export async function deleteMyAccount({ email, password, userId }) {
-  const { error: authError } = await sb.auth.signInWithPassword({ email, password });
-  if (authError) throw new AppError(authError.code === 'invalid_credentials' ? 'La password non è corretta.' : authMessage(authError), authError);
+export async function deleteMyAccount({ role, pin, userId }) {
+  await enterProfile(role, pin); // errore chiaro se il PIN è sbagliato (con tentativi limitati)
 
   const { data: files, error: listError } = await sb.storage.from('avatars').list(userId);
   if (listError) fail(listError);
@@ -55,7 +54,7 @@ export async function deleteMyAccount({ email, password, userId }) {
   if (error) fail(error);
   if (!data?.ok) {
     const msg = data?.error === 'reauth_required'
-      ? 'Per sicurezza serve una password inserita da pochi minuti. Riprova.'
+      ? 'Per sicurezza serve un PIN inserito da pochi minuti. Riprova.'
       : 'Non è stato possibile eliminare l’account. Riprova.';
     throw new AppError(msg, data);
   }

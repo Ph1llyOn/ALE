@@ -5,10 +5,11 @@ import { CATEGORIES, mySharing, setSharing, revokeAllSharing, exportMyData, dele
 import { toggle, pageHeader } from '../../components/controls.js';
 import { profileErrorView } from '../../components/profile-error.js';
 import { navigate } from '../../core/router.js';
+import { validatePin } from '../../core/validate.js';
 import { localDay } from '../../core/format.js';
 
 export default async function privacyView() {
-  const { profile, partner, partnership, session } = getState();
+  const { profile, partner, partnership } = getState();
   if (!profile) return profileErrorView(getState().loadError);
   const isAlessia = profile.role === 'alessia';
   const partnerName = partner?.display_name ?? (isAlessia ? 'Phill' : 'Alessia');
@@ -83,22 +84,23 @@ export default async function privacyView() {
     exportBtn, exportError));
 
   // --- Eliminazione dell'account
-  const password = field({ id: 'del-password', label: 'La tua password', type: 'password', autocomplete: 'current-password' });
+  const password = field({ id: 'del-password', label: 'Il tuo PIN', type: 'password', autocomplete: 'off', inputmode: 'numeric', maxlength: 6 });
   const confirmText = field({ id: 'del-confirm', label: 'Scrivi ELIMINA per confermare', autocomplete: 'off' });
   const delError = h('p', { class: 'form-error', role: 'alert' });
   const delBtn = h('button', { class: 'btn btn-danger', type: 'submit' }, 'Elimina definitivamente il mio account');
   const delForm = h('form', { class: 'stack', novalidate: true, onsubmit: (ev) => {
     ev.preventDefault();
     delError.textContent = '';
-    password.setError(password.input.value ? null : 'Inserisci la password.');
+    const pinErr = validatePin(password.input.value);
+    password.setError(pinErr);
     const okText = confirmText.input.value.trim().toUpperCase() === 'ELIMINA';
     confirmText.setError(okText ? null : 'Scrivi ELIMINA per procedere.');
-    if (!password.input.value || !okText) return;
+    if (pinErr || !okText) return;
     withBusy(delBtn, async () => {
       try {
-        await deleteMyAccount({ email: session.user.email, password: password.input.value, userId: profile.id });
+        await deleteMyAccount({ role: profile.role, pin: password.input.value, userId: profile.id });
         toast('Il tuo account è stato eliminato.');
-        navigate('/accedi');
+        navigate('/scegli');
       } catch (err) {
         delError.textContent = err.message;
         password.input.value = '';

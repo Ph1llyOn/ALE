@@ -130,7 +130,7 @@ select is(pg_temp.q_as('00000000-0000-0000-0000-00000000b003', $$select (public.
 select is(pg_temp.q_as('00000000-0000-0000-0000-00000000b003', $$select (public.delete_my_account('ELIMINA ACCOUNT') ->> 'error')$$,
   jsonb_build_object('amr', jsonb_build_array(jsonb_build_object('method', 'password', 'timestamp', extract(epoch from now())::bigint - 3600)))), 'reauth_required', 'una riautenticazione di un''ora fa non basta');
 select is(pg_temp.q_as('00000000-0000-0000-0000-00000000b003', $$select (public.delete_my_account('ELIMINA ACCOUNT') ->> 'error')$$,
-  jsonb_build_object('amr', jsonb_build_array(jsonb_build_object('method', 'otp', 'timestamp', extract(epoch from now())::bigint)))), 'reauth_required', 'serve la password, non basta un altro metodo');
+  jsonb_build_object('amr', jsonb_build_array(jsonb_build_object('method', 'sso', 'timestamp', extract(epoch from now())::bigint)))), 'reauth_required', 'serve un accesso con PIN (o password): altri metodi non bastano');
 select is(pg_temp.q_as('00000000-0000-0000-0000-00000000b003', $$select (public.delete_my_account('ELIMINA ACCOUNT') ->> 'error')$$, pg_temp.fresh_amr()), 'storage_not_empty', 'con file ancora in Storage l''eliminazione è rifiutata (niente file orfani)');
 select is((select count(*)::int from auth.users where id = '00000000-0000-0000-0000-00000000b003'), 1, 'finora l''account esiste ancora');
 

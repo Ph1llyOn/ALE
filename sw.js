@@ -1,6 +1,6 @@
 // Service worker di ALE. — app shell offline.
 // Tutti i percorsi sono relativi alla posizione di questo file (lo scope = sottopercorso del sito).
-const VERSION = 'v7';
+const VERSION = 'v8';
 const CACHE = `ale-shell-${VERSION}`;
 
 const SHELL = [
@@ -18,16 +18,18 @@ const SHELL = [
   'js/components/controls.js',
   'js/components/icons.js',
   'js/components/message-card.js',
+  'js/components/pin-pad.js',
   'js/components/profile-error.js',
   'js/components/tabbar.js',
   'js/config.js',
+  'js/core/access-messages.js',
+  'js/core/api-access.js',
   'js/core/api-base.js',
   'js/core/api-messages.js',
   'js/core/api-partner.js',
   'js/core/api-personal.js',
   'js/core/api-privacy.js',
   'js/core/api.js',
-  'js/core/boot.js',
   'js/core/chart.js',
   'js/core/errors.js',
   'js/core/format.js',
@@ -42,18 +44,13 @@ const SHELL = [
   'js/core/theme.js',
   'js/core/ui.js',
   'js/core/validate.js',
-  'js/features/auth/forgot.js',
-  'js/features/auth/login.js',
-  'js/features/auth/register.js',
-  'js/features/auth/reset.js',
+  'js/features/access/access.js',
   'js/features/equipment/equipment.js',
   'js/features/home/home-alessia.js',
   'js/features/home/home-phill.js',
   'js/features/home/home.js',
   'js/features/messages/inbox.js',
   'js/features/messages/phill-messages.js',
-  'js/features/pairing/invite-storage.js',
-  'js/features/pairing/invite.js',
   'js/features/pairing/pairing.js',
   'js/features/privacy/privacy.js',
   'js/features/profile/image.js',

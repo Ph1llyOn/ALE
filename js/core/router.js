@@ -25,7 +25,7 @@ export function startRouter(el) {
 export async function render() {
   const { path, query } = parseHash(location.hash);
   const s = getState();
-  const decision = decide(path, { session: Boolean(s.session), recovery: s.recovery, role: s.profile?.role });
+  const decision = decide(path, { session: Boolean(s.session), role: s.profile?.role });
   if (decision.redirect) { navigate(decision.redirect, { replace: true }); return; }
 
   const token = ++renderToken;

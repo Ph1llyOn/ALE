@@ -1,11 +1,7 @@
 // Logica delle rotte pura (senza DOM): testabile e riusata dal router.
 // Object.create(null): nessuna chiave ereditata (es. "constructor", "__proto__" non sono rotte).
 export const ROUTES = Object.assign(Object.create(null), {
-  '/accedi': 'guest',
-  '/registrati': 'guest',
-  '/password-dimenticata': 'guest',
-  '/reimposta-password': 'recovery',
-  '/invito': 'public',
+  '/scegli': 'guest',
   // area autenticata
   '/home': 'auth',
   '/profilo': 'auth',
@@ -46,21 +42,18 @@ export function parseHash(hash) {
 }
 
 /**
- * Decide cosa mostrare. state = { session: bool, recovery: bool, role?: 'alessia'|'phill' }.
+ * Decide cosa mostrare. state = { session: bool, role?: 'alessia'|'phill' }.
  * Ritorna { redirect: '/percorso' } oppure { render: '/percorso' }.
  */
-export function decide(path, { session, recovery, role }) {
-  const home = session ? '/home' : '/accedi';
+export function decide(path, { session, role }) {
+  const home = session ? '/home' : '/scegli';
   if (path === '/' || path === '') return { redirect: home };
   const kind = ROUTES[path];
   if (!kind) return { redirect: home };
 
-  if (recovery && session && path !== '/reimposta-password') return { redirect: '/reimposta-password' };
-  if (kind === 'recovery') return recovery && session ? { render: path } : { redirect: home };
-  if (kind === 'public') return { render: path };
   if (kind === 'guest') return session ? { redirect: '/home' } : { render: path };
   if (kind === 'auth') {
-    if (!session) return { redirect: '/accedi' };
+    if (!session) return { redirect: '/scegli' };
     const needed = ROUTE_ROLES[path];
     if (needed && role && role !== needed) return { redirect: '/home' };
     return { render: path };
