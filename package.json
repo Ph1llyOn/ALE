@@ -1,0 +1,11 @@
+{
+  "name": "ale",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "ALE. — PWA per il benessere personale",
+  "scripts": {
+    "test": "node --test tests/",
+    "serve": "node tools/serve-subpath.mjs"
+  }
+}

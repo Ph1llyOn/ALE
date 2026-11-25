@@ -1,0 +1,52 @@
+/* Design tokens — rosa pastello, bianco, neutri. Tema chiaro/scuro. */
+:root {
+  --pink-50: #fdf2f5;
+  --pink-100: #fbe4ea;
+  --pink-300: #f4b6c6;
+  --pink-500: #e58aa5;
+  --pink-700: #b8587a;
+
+  --bg: var(--pink-50);
+  --surface: #ffffff;
+  --text: #2b2024;
+  --text-muted: #6e5d63;
+  --border: #f0d9e0;
+  --accent: var(--pink-700);
+  --accent-soft: var(--pink-100);
+  --on-accent: #ffffff;
+
+  --radius: 20px;
+  --radius-sm: 12px;
+  --shadow: 0 6px 24px rgba(184, 88, 122, 0.10);
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Avenir Next", "SF Pro Display", ui-rounded, var(--font);
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --bg: #1c1518;
+  --surface: #271d21;
+  --text: #f7eaee;
+  --text-muted: #c4aab3;
+  --border: #3a2b31;
+  --accent: var(--pink-300);
+  --accent-soft: #3a2630;
+  --on-accent: #2b2024;
+  --shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1c1518;
+    --surface: #271d21;
+    --text: #f7eaee;
+    --text-muted: #c4aab3;
+    --border: #3a2b31;
+    --accent: var(--pink-300);
+    --accent-soft: #3a2630;
+    --on-accent: #2b2024;
+    --shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+    color-scheme: dark;
+  }
+}
