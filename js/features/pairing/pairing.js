@@ -1,3 +1,4 @@
+import { profileErrorView } from '../../components/profile-error.js';
 import { h, field, withBusy, avatarEl, errorBox, toast, spinner } from '../../core/ui.js';
 import { getState } from '../../core/store.js';
 import {
@@ -16,11 +17,7 @@ const fmtDate = (iso) => new Intl.DateTimeFormat('it-IT', { dateStyle: 'long', t
 
 export default async function pairingView() {
   const { profile, partner, partnership, loadError } = getState();
-  if (!profile) {
-    return h('main', { class: 'shell' }, errorBox(loadError || 'Non riesco a caricare il tuo profilo.', {
-      onRetry: async () => { await refreshUserData(); render(); },
-    }));
-  }
+  if (!profile) return profileErrorView(loadError);
   const header = h('header', { class: 'page-header' },
     h('a', { class: 'back', href: '#/profilo' }, '‹ Profilo'),
     h('h1', { class: 'page-title', 'data-focus': true }, 'Collegamento'));

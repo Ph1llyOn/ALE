@@ -1,17 +1,12 @@
-import { h, avatarEl, errorBox, emptyState } from '../../core/ui.js';
+import { profileErrorView } from '../../components/profile-error.js';
+import { h, avatarEl, emptyState } from '../../core/ui.js';
 import { getState } from '../../core/store.js';
 import { greeting } from '../../core/greeting.js';
 import { avatarUrl } from '../../core/api.js';
-import { refreshUserData } from '../../core/session.js';
-import { render } from '../../core/router.js';
 
 export default async function homeView() {
   const { profile, partner, partnership, loadError } = getState();
-  if (!profile) {
-    return h('main', { class: 'shell' }, errorBox(loadError || 'Non riesco a caricare il tuo profilo.', {
-      onRetry: async () => { await refreshUserData(); render(); },
-    }));
-  }
+  if (!profile) return profileErrorView(loadError);
   const isAlessia = profile.role === 'alessia';
   const partnerAvatar = partner ? await avatarUrl(partner.avatar_path) : null;
 

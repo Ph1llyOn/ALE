@@ -10,6 +10,15 @@ export async function hydrate(session) {
   try {
     const profile = await loadProfile(session.user.id);
     const { partnership, partner } = profile ? await loadPartnership(session.user.id) : { partnership: null, partner: null };
+    if (!profile) {
+      // Sessione valida in locale ma nessun profilo: l'utente potrebbe non esistere più (account eliminato).
+      // Si verifica lato server; se l'utente non c'è, la sessione locale viene chiusa.
+      const { error } = await sb.auth.getUser();
+      if (error && [401, 403, 404].includes(error.status)) {
+        await sb.auth.signOut({ scope: 'local' });
+        return;
+      }
+    }
     setState({ session, profile, partnership, partner, loadError: profile ? null : 'Profilo non trovato.' });
   } catch (err) {
     setState({ session, profile: null, partnership: null, partner: null, loadError: err.message });

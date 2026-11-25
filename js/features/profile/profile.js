@@ -1,19 +1,14 @@
-import { h, field, withBusy, avatarEl, errorBox, toast } from '../../core/ui.js';
+import { profileErrorView } from '../../components/profile-error.js';
+import { h, field, withBusy, avatarEl, toast } from '../../core/ui.js';
 import { getState, setState } from '../../core/store.js';
 import { updateDisplayName, uploadAvatar, removeAvatar, avatarUrl, signOut, AppError } from '../../core/api.js';
 import { validateName } from '../../core/validate.js';
-import { refreshUserData } from '../../core/session.js';
-import { render } from '../../core/router.js';
 import { initThemeToggle } from '../../core/theme.js';
 import { toAvatarBlob } from './image.js';
 
 export default async function profileView() {
   const { profile, session, loadError } = getState();
-  if (!profile) {
-    return h('main', { class: 'shell' }, errorBox(loadError || 'Non riesco a caricare il tuo profilo.', {
-      onRetry: async () => { await refreshUserData(); render(); },
-    }));
-  }
+  if (!profile) return profileErrorView(loadError);
   const isAlessia = profile.role === 'alessia';
   let url = await avatarUrl(profile.avatar_path);
 
