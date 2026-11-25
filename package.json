@@ -12,7 +12,8 @@
     "db:test": "supabase test db",
     "db:stop": "supabase stop",
     "test:api": "node tools/run-tests.mjs --serial tests/api",
-    "precache": "node tools/update-sw-precache.mjs"
+    "precache": "node tools/update-sw-precache.mjs",
+    "sync-shared": "node tools/sync-shared.mjs"
   },
   "devDependencies": {
     "@supabase/supabase-js": "^2.119.2",

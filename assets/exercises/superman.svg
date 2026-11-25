@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" role="img" aria-label="superman">
+  <rect x="8" y="138" width="184" height="7" rx="3.5" fill="#f3d7e0"/>
+  
+  <polyline points="52,116 112,120" fill="none" stroke="#d9719a" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
+  <polyline points="112,120 144,114 176,106" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
+  <polyline points="52,116 30,108 10,102" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
+  <circle cx="36" cy="112" r="11" fill="#fde3ea" stroke="#d9719a" stroke-width="5"/>
+</svg>

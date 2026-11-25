@@ -204,3 +204,60 @@
 .pin-msg { min-height: 1.4em; color: var(--text-muted); font-size: 0.9375rem; }
 .pin-msg.is-error { color: var(--danger); }
 @keyframes shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-9px); } 40% { transform: translateX(9px); } 60% { transform: translateX(-6px); } 80% { transform: translateX(6px); } }
+
+
+/* ===================================================================================================
+   Tappa 2: attività, calendario, diario, notifiche, onboarding
+   =================================================================================================== */
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.bell { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 46px; height: 46px; border-radius: 50%;
+  background: var(--surface-glass); border: 1px solid var(--border); color: var(--accent); box-shadow: var(--shadow); text-decoration: none; }
+.bell:focus-visible { outline: 3px solid var(--accent-soft); outline-offset: 2px; }
+.bell-count { position: absolute; top: -3px; right: -3px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 999px; background: var(--grad-accent);
+  color: var(--on-accent); font-size: 0.6875rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+
+.list-link { color: inherit; text-decoration: none; }
+.chip-btn { border: 0; cursor: pointer; font: inherit; font-size: 0.8125rem; font-weight: 600; min-height: 36px; }
+.chip-on { background: var(--grad-accent); color: var(--on-accent); }
+.chip-btn:focus-visible { outline: 3px solid var(--accent-soft); outline-offset: 2px; }
+.tile-art .exercise-thumb, .tile-thumb { width: 100%; height: 100%; border-radius: 0; background: transparent; }
+button.tile { font: inherit; text-align: left; cursor: pointer; border: 1px solid var(--border); padding: 0; }
+.tile:focus-visible { outline: 3px solid var(--accent-soft); outline-offset: 2px; }
+
+.mini-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.mini-field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.input.mini { min-height: 44px; padding: 8px 12px; text-align: center; }
+.exercise-card .btn-text { min-height: 40px; padding: 0 10px; }
+.bar-fill { transition: width 500ms ease; }
+
+/* calendario */
+.cal-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.cal-title { font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; text-transform: capitalize; text-align: center; flex: 1; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.cal-head span { text-align: center; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); padding: 4px 0; }
+.cal-cell { position: relative; min-height: 52px; border: 0; border-radius: 14px; background: transparent; color: var(--text); font: inherit; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 4px 0; }
+.cal-cell.out { color: var(--text-muted); opacity: 0.45; }
+.cal-cell.today .cal-num { color: var(--accent); font-weight: 800; }
+.cal-cell.selected { background: var(--grad-accent); color: var(--on-accent); box-shadow: 0 6px 14px color-mix(in srgb, var(--accent) 30%, transparent); }
+.cal-cell.selected .cal-num { color: var(--on-accent); }
+.cal-cell:focus-visible { outline: 3px solid var(--accent-soft); outline-offset: 1px; }
+.cal-num { font-weight: 600; }
+.cal-dots { display: flex; gap: 3px; }
+.cal-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent-2); }
+.cal-cell.selected .cal-dot { background: var(--on-accent); }
+.event-row { align-items: flex-start; }
+select.input { appearance: none; -webkit-appearance: none; background-image: none; }
+
+/* diario, notifiche, onboarding */
+.prompt { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+.prompt-text { font-family: var(--font-serif); font-size: 1.125rem; line-height: 1.5; }
+.shared-badge { display: inline-flex; align-items: center; gap: 4px; color: var(--accent); font-weight: 600; }
+.diary-row { align-items: flex-start; }
+.notif-row { width: 100%; background: transparent; border: 0; font: inherit; text-align: left; cursor: pointer; color: inherit; }
+.notif-row.unread { background: color-mix(in srgb, var(--accent-soft) 60%, transparent); }
+.onboarding { padding-top: 24px; }
+.steps { display: flex; gap: 8px; justify-content: center; }
+.step-dot { width: 28px; height: 6px; border-radius: 999px; background: var(--accent-soft); }
+.step-dot.on { background: var(--grad-accent); }
+.btn-block { width: 100%; }

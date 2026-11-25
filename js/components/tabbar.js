@@ -4,16 +4,16 @@ import { icon } from './icons.js';
 // Alessia: cinque sezioni (come da specifica). Phill: la sua dashboard dedicata, separata.
 export const TABS = {
   alessia: [
-    { href: '#/home', label: 'Home', icon: 'home', match: ['/home', '/biglietti'] },
-    { href: '#/attivita', label: 'Attività', icon: 'activity', match: ['/attivita'] },
+    { href: '#/home', label: 'Home', icon: 'home', match: ['/home', '/biglietti', '/notifiche'] },
+    { href: '#/attivita', label: 'Attività', icon: 'activity', match: ['/attivita', '/attivita/scheda', '/attivita/sessione'] },
     { href: '#/calendario', label: 'Calendario', icon: 'calendar', match: ['/calendario'] },
-    { href: '#/diario', label: 'Diario', icon: 'book', match: ['/diario'] },
-    { href: '#/profilo', label: 'Profilo', icon: 'user', match: ['/profilo', '/profilo/collegamento', '/profilo/privacy', '/profilo/benessere', '/profilo/progressi', '/profilo/attrezzatura'] },
+    { href: '#/diario', label: 'Diario', icon: 'book', match: ['/diario', '/diario/voce'] },
+    { href: '#/profilo', label: 'Profilo', icon: 'user', match: ['/profilo', '/profilo/collegamento', '/profilo/privacy', '/profilo/benessere', '/profilo/progressi', '/profilo/attrezzatura', '/profilo/impostazioni'] },
   ],
   phill: [
-    { href: '#/home', label: 'Home', icon: 'home', match: ['/home'] },
+    { href: '#/home', label: 'Home', icon: 'home', match: ['/home', '/notifiche'] },
     { href: '#/messaggi', label: 'Messaggi', icon: 'mail', match: ['/messaggi'] },
-    { href: '#/profilo', label: 'Profilo', icon: 'user', match: ['/profilo', '/profilo/collegamento', '/profilo/privacy'] },
+    { href: '#/profilo', label: 'Profilo', icon: 'user', match: ['/profilo', '/profilo/collegamento', '/profilo/privacy', '/profilo/impostazioni'] },
   ],
 };
 

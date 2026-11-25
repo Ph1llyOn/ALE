@@ -3,6 +3,7 @@ import { h, field, textField, errorBox, emptyState, withBusy, toast, spinner, ch
 import { getState } from '../../core/store.js';
 import { listEquipment, addEquipment, updateEquipment, removeEquipment } from '../../core/api-personal.js';
 import { pageHeader } from '../../components/controls.js';
+import { getSettings, saveSettings } from '../../core/api-settings.js';
 import { profileErrorView } from '../../components/profile-error.js';
 
 export default async function equipmentView() {
@@ -78,9 +79,36 @@ export default async function equipmentView() {
   }
 
   formHost.append(h('h2', { class: 'card-title' }, 'Aggiungi un attrezzo'), equipmentForm({ onSaved: reload }));
+
+  // Spazi, preferenze e indicazioni: private, usate per proporre attività compatibili.
+  async function spacesCard() {
+    let st;
+    try { st = await getSettings(profile.id); } catch (err) { return errorBox(err.message); }
+    const spaces = textField({ id: 'st-spaces', label: 'Spazio a disposizione', rows: 2, maxlength: 500, value: st.spaces, hint: 'Ad esempio: un angolo del salotto, il balcone, una stanza libera.' });
+    const noEq = h('input', { type: 'checkbox', id: 'st-noeq', checked: st.prefers_no_equipment });
+    const limits = textField({ id: 'st-limits', label: 'Limitazioni pratiche', rows: 2, maxlength: 500, value: st.limitations, hint: 'Ad esempio: soffitto basso, vicini sotto casa, poco tempo.' });
+    const pro = textField({ id: 'st-pro', label: 'Indicazioni di chi ti segue', rows: 3, maxlength: 1000, value: st.professional_notes,
+      hint: 'Scrivi qui ciò che ti ha detto il professionista. Le proposte ne tengono conto e hanno sempre la precedenza. ALE. non le interpreta e non le sostituisce.' });
+    const err = h('p', { class: 'form-error', role: 'alert' });
+    const save = h('button', { class: 'btn', type: 'submit' }, 'Salva');
+    return h('form', { class: 'card stack', novalidate: true, onsubmit: (ev) => {
+      ev.preventDefault();
+      err.textContent = '';
+      withBusy(save, async () => {
+        try {
+          await saveSettings(profile.id, { spaces: spaces.input.value, prefers_no_equipment: noEq.checked, limitations: limits.input.value, professional_notes: pro.input.value });
+          toast('Salvato.', 'success');
+        } catch (e) { err.textContent = e.message; }
+      });
+    } }, h('h2', { class: 'card-title' }, 'Spazi e preferenze'), spaces.wrap,
+    h('label', { class: 'check-row', for: 'st-noeq' }, noEq, h('span', null, 'Preferisco attività senza attrezzi')),
+    limits.wrap, pro.wrap, err, save);
+  }
+
   await reload();
+  const spaces = await spacesCard();
   return h('main', { class: 'shell with-tabs' },
-    pageHeader({ title: 'Attrezzatura', back: { href: '#/profilo', label: 'Profilo' } }),
-    h('p', { class: 'muted' }, 'Scrivi cosa hai in casa. Potrai cambiarlo quando vuoi, ad esempio se compri qualcosa di nuovo.'),
-    listHost, formHost);
+    pageHeader({ title: 'Attrezzatura e spazi', back: { href: '#/profilo', label: 'Profilo' } }),
+    h('p', { class: 'muted' }, 'Scrivi cosa hai in casa e dove ti muovi. Potrai cambiarlo quando vuoi, ad esempio se compri qualcosa di nuovo.'),
+    listHost, formHost, spaces);
 }

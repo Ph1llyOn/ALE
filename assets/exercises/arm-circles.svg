@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" role="img" aria-label="arm-circles">
+  <line x1="14" y1="142" x2="186" y2="142" stroke="#e6c3cf" stroke-width="3" stroke-linecap="round"/>
+  <path d="M34 40 a14 14 0 1 1 -2 18" fill="none" stroke="#f0a9c1" stroke-width="4" stroke-linecap="round"/><path d="M166 40 a14 14 0 1 0 2 18" fill="none" stroke="#f0a9c1" stroke-width="4" stroke-linecap="round"/>
+  <polyline points="100,96 106,118 108,138" fill="none" stroke="#f0a9c1" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+  <polyline points="100,50 130,52 160,52" fill="none" stroke="#f0a9c1" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+  <polyline points="100,50 100,96" fill="none" stroke="#d9719a" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
+  <polyline points="100,96 100,118 100,138" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
+  <polyline points="100,50 70,52 40,52" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
+  <circle cx="100" cy="32" r="11" fill="#fde3ea" stroke="#d9719a" stroke-width="5"/>
+</svg>

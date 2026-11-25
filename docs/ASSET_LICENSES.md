@@ -7,7 +7,25 @@ Le licenze vanno verificate sulla pagina ufficiale al momento della scelta.
 
 | File | Esercizio | Autore | Fonte / URL | Licenza (versione) | Data verifica | Attribuzione richiesta | Modifiche |
 |---|---|---|---|---|---|---|---|
-| _nessuna ancora_ | | | | | | | |
+<!-- exercises:start -->
+| `squat.svg` | squat | Progetto ALE. (disegno originale, `tools/make-exercise-art.mjs`) | Questo repository | Proprietà del progetto | 2026-11-25 | nessuna | generata da coordinate |
+| `lunge.svg` | lunge | Progetto ALE. (disegno originale, `tools/make-exercise-art.mjs`) | Questo repository | Proprietà del progetto | 2026-11-25 | nessuna | generata da coordinate |
+| `glute-bridge.svg` | glute-bridge | Progetto ALE. (disegno originale, `tools/make-exercise-art.mjs`) | Questo repository | Proprietà del progetto | 2026-11-25 | nessuna | generata da coordinate |
+| `plank.svg` | plank | Progetto ALE. (disegno originale, `tools/make-exercise-art.mjs`) | Questo repository | Proprietà del progetto | 2026-11-25 | nessuna | generata da coordinate |
+| `wall-sit.svg` | wall-sit | Progetto ALE. (disegno originale, `tools/make-exercise-art.mjs`) | Questo repository | Proprietà del progetto | 2026-11-25 | nessuna | generata da coordinate |
+| `calf-raise.svg` | calf-raise | Progetto ALE. (disegno originale, `tools/make-exercise-art.mjs`) | Questo repository | Proprietà del progetto | 2026-11-25 | nessuna | generata da coordinate |
+| `bird-dog.svg` | bird-dog | Progetto ALE. (disegno originale, `tools/make-exercise-art.mjs`) | Questo repository | Proprietà del progetto | 2026-11-25 | nessuna | generata da coordinate |
+| `superman.svg` | superman | Progetto ALE. (disegno originale, `tools/make-exercise-art.mjs`) | Questo repository | Proprietà del progetto | 2026-11-25 | nessuna | generata da coordinate |
+| `push-up-knees.svg` | push-up-knees | Progetto ALE. (disegno originale, `tools/make-exercise-art.mjs`) | Questo repository | Proprietà del progetto | 2026-11-25 | nessuna | generata da coordinate |
+| `side-leg-raise.svg` | side-leg-raise | Progetto ALE. (disegno originale, `tools/make-exercise-art.mjs`) | Questo repository | Proprietà del progetto | 2026-11-25 | nessuna | generata da coordinate |
+| `march.svg` | march | Progetto ALE. (disegno originale, `tools/make-exercise-art.mjs`) | Questo repository | Proprietà del progetto | 2026-11-25 | nessuna | generata da coordinate |
+| `arm-circles.svg` | arm-circles | Progetto ALE. (disegno originale, `tools/make-exercise-art.mjs`) | Questo repository | Proprietà del progetto | 2026-11-25 | nessuna | generata da coordinate |
+| `dumbbell-curl.svg` | dumbbell-curl | Progetto ALE. (disegno originale, `tools/make-exercise-art.mjs`) | Questo repository | Proprietà del progetto | 2026-11-25 | nessuna | generata da coordinate |
+| `dumbbell-press.svg` | dumbbell-press | Progetto ALE. (disegno originale, `tools/make-exercise-art.mjs`) | Questo repository | Proprietà del progetto | 2026-11-25 | nessuna | generata da coordinate |
+| `goblet-squat.svg` | goblet-squat | Progetto ALE. (disegno originale, `tools/make-exercise-art.mjs`) | Questo repository | Proprietà del progetto | 2026-11-25 | nessuna | generata da coordinate |
+| `step-up.svg` | step-up | Progetto ALE. (disegno originale, `tools/make-exercise-art.mjs`) | Questo repository | Proprietà del progetto | 2026-11-25 | nessuna | generata da coordinate |
+| `band-pull-apart.svg` | band-pull-apart | Progetto ALE. (disegno originale, `tools/make-exercise-art.mjs`) | Questo repository | Proprietà del progetto | 2026-11-25 | nessuna | generata da coordinate |
+<!-- exercises:end -->
 
 ## Altri asset
 

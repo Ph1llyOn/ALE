@@ -7,10 +7,16 @@ export const ROUTES = Object.assign(Object.create(null), {
   '/profilo': 'auth',
   '/profilo/collegamento': 'auth',
   '/profilo/privacy': 'auth',
+  '/profilo/impostazioni': 'auth',
+  '/notifiche': 'auth',
   // sezioni di Alessia
   '/attivita': 'auth',
+  '/attivita/scheda': 'auth',
+  '/attivita/sessione': 'auth',
+  '/benvenuta': 'auth',
   '/calendario': 'auth',
   '/diario': 'auth',
+  '/diario/voce': 'auth',
   '/biglietti': 'auth',
   '/profilo/benessere': 'auth',
   '/profilo/progressi': 'auth',
@@ -22,8 +28,12 @@ export const ROUTES = Object.assign(Object.create(null), {
 /** Rotte riservate a un ruolo (le altre sono per entrambi). Il database resta la vera barriera. */
 export const ROUTE_ROLES = Object.assign(Object.create(null), {
   '/attivita': 'alessia',
+  '/attivita/scheda': 'alessia',
+  '/attivita/sessione': 'alessia',
+  '/benvenuta': 'alessia',
   '/calendario': 'alessia',
   '/diario': 'alessia',
+  '/diario/voce': 'alessia',
   '/biglietti': 'alessia',
   '/profilo/benessere': 'alessia',
   '/profilo/progressi': 'alessia',
@@ -62,4 +72,5 @@ export function decide(path, { session, role }) {
 }
 
 /** Rotte dell'area autenticata (mostrano la barra di navigazione). */
-export const isAppRoute = (path) => ROUTES[path] === 'auth';
+const BARE = new Set(['/benvenuta']); // schermate a tutto schermo, senza barra di navigazione
+export const isAppRoute = (path) => ROUTES[path] === 'auth' && !BARE.has(path);

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" role="img" aria-label="band-pull-apart">
+  <line x1="14" y1="142" x2="186" y2="142" stroke="#e6c3cf" stroke-width="3" stroke-linecap="round"/>
+  <line x1="50" y1="56" x2="150" y2="56" stroke="#a98a96" stroke-width="4" stroke-dasharray="1 7" stroke-linecap="round"/>
+  <polyline points="100,48 126,56 150,56" fill="none" stroke="#f0a9c1" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+  <polyline points="100,48 100,94" fill="none" stroke="#d9719a" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
+  <polyline points="100,94 100,118 102,138" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
+  <polyline points="100,48 74,56 50,56" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
+  <circle cx="100" cy="30" r="11" fill="#fde3ea" stroke="#d9719a" stroke-width="5"/>
+</svg>

@@ -6,7 +6,7 @@ after(cleanup);
 
 const TABLES = ['profiles', 'partnerships', 'invitations', 'sharing_permissions', 'equipment', 'workouts', 'workout_exercises',
   'workout_sessions', 'session_exercise_progress', 'workout_proposals', 'habits', 'habit_logs', 'calendar_events', 'journal_entries',
-  'wellbeing_logs', 'wellbeing_notes', 'progress_records', 'messages', 'message_receipts', 'scheduled_messages', 'notifications', 'push_subscriptions',
+  'wellbeing_logs', 'wellbeing_notes', 'progress_records', 'messages', 'message_receipts', 'scheduled_messages', 'notifications', 'notification_preferences', 'user_settings', 'goals', 'push_subscriptions',
   'ai_preferences', 'ai_generations'];
 
 async function fill(u, partner) {

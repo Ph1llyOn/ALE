@@ -81,12 +81,14 @@ export default async function profileView() {
   if (isAlessia) {
     rows.push(
       listRow({ href: '#/profilo/benessere', iconName: 'leaf', title: 'Benessere', text: 'Umore, energia e una nota, solo per te.' }),
-      listRow({ href: '#/profilo/progressi', iconName: 'spark', title: 'Progressi', text: 'La tua crescita, con i tuoi tempi.' }),
-      listRow({ href: '#/profilo/attrezzatura', iconName: 'box', title: 'Attrezzatura', text: 'Cosa hai in casa.' }));
+      listRow({ href: '#/profilo/progressi', iconName: 'spark', title: 'Progressi', text: 'Obiettivi, abitudini e piccole conquiste.' }),
+      listRow({ href: '#/profilo/attrezzatura', iconName: 'box', title: 'Attrezzatura e spazi', text: 'Cosa hai in casa e dove ti muovi.' }));
   }
   rows.push(
     listRow({ href: '#/profilo/collegamento', iconName: 'heart', title: 'Collegamento', text: isAlessia ? 'Lo stato del collegamento con Phill.' : 'Lo stato del collegamento con Alessia.' }),
-    listRow({ href: '#/profilo/privacy', iconName: 'shield', title: 'Privacy e dati', text: isAlessia ? 'Cosa condividi, i tuoi dati, il tuo account.' : 'I tuoi dati e il tuo account.' }));
+    listRow({ href: '#/profilo/privacy', iconName: 'shield', title: 'Privacy e dati', text: isAlessia ? 'Cosa condividi, i tuoi dati, il tuo account.' : 'I tuoi dati e il tuo account.' }),
+    listRow({ href: '#/profilo/impostazioni', iconName: 'clock', title: 'Impostazioni', text: isAlessia ? 'Notifiche, intelligenza artificiale, PIN, aspetto.' : 'Notifiche, PIN, aspetto.' }));
+  if (isAlessia) rows.push(listRow({ href: '#/benvenuta', iconName: 'check', title: 'Configurazione guidata', text: 'Rivedi o completa i passi iniziali.' }));
 
   return h('main', { class: 'shell with-tabs' },
     pageHeader({ title: 'Il tuo profilo' }),

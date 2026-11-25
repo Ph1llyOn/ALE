@@ -15,7 +15,15 @@ import wellbeingView from './features/wellbeing/wellbeing.js';
 import progressView from './features/progress/progress.js';
 import equipmentView from './features/equipment/equipment.js';
 import privacyView from './features/privacy/privacy.js';
-import { attivitaView, calendarioView, diarioView } from './features/sections/sections.js';
+import activitiesView from './features/activities/activities.js';
+import workoutEditView from './features/activities/workout-edit.js';
+import sessionView from './features/activities/session.js';
+import calendarView from './features/calendar/calendar.js';
+import journalView from './features/journal/journal.js';
+import journalEditView from './features/journal/journal-edit.js';
+import notificationsView from './features/notifications/notifications.js';
+import settingsView from './features/settings/settings.js';
+import onboardingView from './features/onboarding/onboarding.js';
 
 const app = document.getElementById('app');
 app.replaceChildren(loadingScreen());
@@ -33,9 +41,15 @@ registerView('/profilo/progressi', progressView);
 registerView('/profilo/attrezzatura', equipmentView);
 registerView('/biglietti', inboxView);
 registerView('/messaggi', phillMessagesView);
-registerView('/attivita', attivitaView);
-registerView('/calendario', calendarioView);
-registerView('/diario', diarioView);
+registerView('/attivita', activitiesView);
+registerView('/attivita/scheda', workoutEditView);
+registerView('/attivita/sessione', sessionView);
+registerView('/calendario', calendarView);
+registerView('/diario', journalView);
+registerView('/diario/voce', journalEditView);
+registerView('/notifiche', notificationsView);
+registerView('/profilo/impostazioni', settingsView);
+registerView('/benvenuta', onboardingView);
 
 // Stato della connessione
 const banner = h('div', { class: 'offline-banner', role: 'status', hidden: true }, 'Sei offline: alcune funzioni non sono disponibili.');
