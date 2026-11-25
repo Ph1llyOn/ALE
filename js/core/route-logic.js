@@ -6,9 +6,33 @@ export const ROUTES = Object.assign(Object.create(null), {
   '/password-dimenticata': 'guest',
   '/reimposta-password': 'recovery',
   '/invito': 'public',
+  // area autenticata
   '/home': 'auth',
   '/profilo': 'auth',
   '/profilo/collegamento': 'auth',
+  '/profilo/privacy': 'auth',
+  // sezioni di Alessia
+  '/attivita': 'auth',
+  '/calendario': 'auth',
+  '/diario': 'auth',
+  '/biglietti': 'auth',
+  '/profilo/benessere': 'auth',
+  '/profilo/progressi': 'auth',
+  '/profilo/attrezzatura': 'auth',
+  // area di Phill
+  '/messaggi': 'auth',
+});
+
+/** Rotte riservate a un ruolo (le altre sono per entrambi). Il database resta la vera barriera. */
+export const ROUTE_ROLES = Object.assign(Object.create(null), {
+  '/attivita': 'alessia',
+  '/calendario': 'alessia',
+  '/diario': 'alessia',
+  '/biglietti': 'alessia',
+  '/profilo/benessere': 'alessia',
+  '/profilo/progressi': 'alessia',
+  '/profilo/attrezzatura': 'alessia',
+  '/messaggi': 'phill',
 });
 
 /** "#/invito?codice=ABC" → { path: '/invito', query: { codice: 'ABC' } } */
@@ -22,10 +46,10 @@ export function parseHash(hash) {
 }
 
 /**
- * Decide cosa mostrare. state = { session: bool, recovery: bool }.
+ * Decide cosa mostrare. state = { session: bool, recovery: bool, role?: 'alessia'|'phill' }.
  * Ritorna { redirect: '/percorso' } oppure { render: '/percorso' }.
  */
-export function decide(path, { session, recovery }) {
+export function decide(path, { session, recovery, role }) {
   const home = session ? '/home' : '/accedi';
   if (path === '/' || path === '') return { redirect: home };
   const kind = ROUTES[path];
@@ -35,6 +59,14 @@ export function decide(path, { session, recovery }) {
   if (kind === 'recovery') return recovery && session ? { render: path } : { redirect: home };
   if (kind === 'public') return { render: path };
   if (kind === 'guest') return session ? { redirect: '/home' } : { render: path };
-  if (kind === 'auth') return session ? { render: path } : { redirect: '/accedi' };
+  if (kind === 'auth') {
+    if (!session) return { redirect: '/accedi' };
+    const needed = ROUTE_ROLES[path];
+    if (needed && role && role !== needed) return { redirect: '/home' };
+    return { render: path };
+  }
   return { redirect: home };
 }
+
+/** Rotte dell'area autenticata (mostrano la barra di navigazione). */
+export const isAppRoute = (path) => ROUTES[path] === 'auth';

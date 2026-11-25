@@ -4,7 +4,7 @@ import { resolve } from './config.js';
 import { h, loadingScreen, errorBox } from './core/ui.js';
 import { setState, getState } from './core/store.js';
 import { registerView, startRouter, render } from './core/router.js';
-import { startSession } from './core/session.js';
+import { startSession, startAutoRefresh } from './core/session.js';
 
 import loginView from './features/auth/login.js';
 import signupView from './features/auth/register.js';
@@ -14,6 +14,13 @@ import inviteView from './features/pairing/invite.js';
 import pairingView from './features/pairing/pairing.js';
 import homeView from './features/home/home.js';
 import profileView from './features/profile/profile.js';
+import inboxView from './features/messages/inbox.js';
+import phillMessagesView from './features/messages/phill-messages.js';
+import wellbeingView from './features/wellbeing/wellbeing.js';
+import progressView from './features/progress/progress.js';
+import equipmentView from './features/equipment/equipment.js';
+import privacyView from './features/privacy/privacy.js';
+import { attivitaView, calendarioView, diarioView } from './features/sections/sections.js';
 
 const app = document.getElementById('app');
 app.replaceChildren(loadingScreen());
@@ -29,6 +36,15 @@ registerView('/invito', inviteView);
 registerView('/home', homeView);
 registerView('/profilo', profileView);
 registerView('/profilo/collegamento', pairingView);
+registerView('/profilo/privacy', privacyView);
+registerView('/profilo/benessere', wellbeingView);
+registerView('/profilo/progressi', progressView);
+registerView('/profilo/attrezzatura', equipmentView);
+registerView('/biglietti', inboxView);
+registerView('/messaggi', phillMessagesView);
+registerView('/attivita', attivitaView);
+registerView('/calendario', calendarioView);
+registerView('/diario', diarioView);
 
 // Stato della connessione
 const banner = h('div', { class: 'offline-banner', role: 'status', hidden: true }, 'Sei offline: alcune funzioni non sono disponibili.');
@@ -47,6 +63,7 @@ async function registerServiceWorker() {
 async function boot() {
   try {
     await startSession();
+    startAutoRefresh();
     await startRouter(app);
   } catch (err) {
     console.error(err);

@@ -116,7 +116,7 @@ select is(pg_temp.q_as('00000000-0000-0000-0000-00000000b003', $$select (public.
 select is(pg_temp.q_as('00000000-0000-0000-0000-00000000b003', $$select (public.export_my_data()::text like '%code_hash%')::text$$), 'false', 'ESPORTAZIONE: niente hash dei codici invito');
 select is(pg_temp.q_as('00000000-0000-0000-0000-00000000a003', $$select (public.export_my_data()->'data'->'invitations'->0 ? 'code_hash')::text$$), 'false', 'ESPORTAZIONE: gli inviti non espongono code_hash');
 select is(pg_temp.q_as('00000000-0000-0000-0000-00000000b003', $$select (public.export_my_data()->'data'->'push_subscriptions'->0 ? 'auth')::text$$), 'false', 'ESPORTAZIONE: le chiavi push non vengono esportate');
-select is(pg_temp.q_as('00000000-0000-0000-0000-00000000b003', $$select count(*)::text from jsonb_object_keys(public.export_my_data()->'data')$$), '23', 'ESPORTAZIONE: tutte le 23 tabelle personali sono incluse');
+select is(pg_temp.q_as('00000000-0000-0000-0000-00000000b003', $$select count(*)::text from jsonb_object_keys(public.export_my_data()->'data')$$), '24', 'ESPORTAZIONE: tutte le 24 tabelle personali sono incluse');
 select is(pg_temp.q_as('00000000-0000-0000-0000-00000000b003', $$select (public.export_my_data()->'data'->'profiles'->0->>'id')$$), '00000000-0000-0000-0000-00000000b003', 'ESPORTAZIONE: il profilo esportato è il proprio');
 set local role anon;
 select throws_ok($$select public.export_my_data()$$, '42501', null, 'anon non può esportare');

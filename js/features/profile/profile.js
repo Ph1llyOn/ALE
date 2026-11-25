@@ -5,6 +5,7 @@ import { updateDisplayName, uploadAvatar, removeAvatar, avatarUrl, signOut, AppE
 import { validateName } from '../../core/validate.js';
 import { initThemeToggle } from '../../core/theme.js';
 import { toAvatarBlob } from './image.js';
+import { listRow, pageHeader } from '../../components/controls.js';
 
 export default async function profileView() {
   const { profile, session, loadError } = getState();
@@ -76,21 +77,26 @@ export default async function profileView() {
   initThemeToggle(themeBtn);
   const logoutBtn = h('button', { class: 'btn btn-secondary', type: 'button', onclick: () => withBusy(logoutBtn, signOut) }, 'Esci');
 
+  const rows = [];
+  if (isAlessia) {
+    rows.push(
+      listRow({ href: '#/profilo/benessere', iconName: 'leaf', title: 'Benessere', text: 'Umore, energia e una nota, solo per te.' }),
+      listRow({ href: '#/profilo/progressi', iconName: 'spark', title: 'Progressi', text: 'La tua crescita, con i tuoi tempi.' }),
+      listRow({ href: '#/profilo/attrezzatura', iconName: 'box', title: 'Attrezzatura', text: 'Cosa hai in casa.' }));
+  }
+  rows.push(
+    listRow({ href: '#/profilo/collegamento', iconName: 'heart', title: 'Collegamento', text: isAlessia ? 'Invita Phill o gestisci il collegamento.' : 'Collegati ad Alessia o gestisci il collegamento.' }),
+    listRow({ href: '#/profilo/privacy', iconName: 'shield', title: 'Privacy e dati', text: isAlessia ? 'Cosa condividi, i tuoi dati, il tuo account.' : 'I tuoi dati e il tuo account.' }));
+
   return h('main', { class: 'shell with-tabs' },
-    h('header', { class: 'page-header' }, h('h1', { class: 'page-title', 'data-focus': true }, 'Il tuo profilo')),
-    h('section', { class: 'card stack center' },
-      avatarHost,
-      h('div', { class: 'row-center' },
-        photoLabel, fileInput, removeBtn),
-      avatarError),
+    pageHeader({ title: 'Il tuo profilo' }),
+    h('section', { class: 'card stack center' }, avatarHost, h('div', { class: 'row-center' }, photoLabel, fileInput, removeBtn), avatarError),
     h('section', { class: 'card stack' }, nameForm,
       h('dl', { class: 'facts' },
         h('dt', null, 'Email'), h('dd', null, session?.user?.email ?? ''),
         h('dt', null, 'Ruolo'), h('dd', null, isAlessia ? 'Alessia' : 'Phill'))),
-    h('section', { class: 'card row' },
-      h('div', { class: 'grow' }, h('p', { class: 'card-title' }, 'Collegamento'),
-        h('p', { class: 'muted' }, isAlessia ? 'Invita Phill o gestisci il collegamento.' : 'Collegati ad Alessia o gestisci il collegamento.')),
-      h('a', { class: 'btn btn-secondary', href: '#/profilo/collegamento' }, 'Apri')),
-    h('section', { class: 'card stack' }, h('p', { class: 'card-title' }, 'Aspetto'), themeBtn),
+    h('section', { class: 'list-card', 'aria-label': 'Il tuo spazio' }, ...rows),
+    h('section', { class: 'card stack' }, h('p', { class: 'card-title' }, 'Aspetto'),
+      h('p', { class: 'muted' }, 'Chiaro, scuro o quello del tuo telefono.'), themeBtn),
     h('section', { class: 'stack' }, logoutBtn));
 }

@@ -101,3 +101,25 @@ export function avatarEl(url, name, size = 'md') {
 export function logo(size = 'lg') {
   return h('h1', { class: `logo logo-${size}`, 'aria-label': 'ALE.' }, 'ALE', h('span', { class: 'logo-dot' }, '.'));
 }
+
+/** Campo di testo multilinea con contatore opzionale e messaggio di errore accessibile. */
+export function textField({ id, label, rows = 4, maxlength, required = false, value = '', hint, placeholder }) {
+  const area = h('textarea', {
+    id, name: id, rows, maxlength, required, class: 'input textarea', placeholder, 'aria-describedby': `${id}-msg`,
+  });
+  area.value = value;
+  const msg = h('p', { id: `${id}-msg`, class: 'field-msg', 'aria-live': 'polite' }, hint || '');
+  const counter = maxlength ? h('span', { class: 'counter', 'aria-hidden': 'true' }) : null;
+  const sync = () => { if (counter) counter.textContent = `${[...area.value].length}/${maxlength}`; };
+  area.addEventListener('input', sync);
+  sync();
+  const wrap = h('div', { class: 'field' }, h('div', { class: 'label-row' }, h('label', { for: id, class: 'label' }, label), counter), area, msg);
+  const setError = (text) => {
+    msg.textContent = text || hint || '';
+    msg.classList.toggle('is-error', Boolean(text));
+    if (text) area.setAttribute('aria-invalid', 'true'); else area.removeAttribute('aria-invalid');
+  };
+  return { wrap, input: area, setError, sync };
+}
+
+export const chip = (text, kind = '') => h('span', { class: `chip${kind ? ` chip-${kind}` : ''}` }, text);

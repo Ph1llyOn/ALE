@@ -1,12 +1,9 @@
 // Accesso ai dati. Ogni funzione lancia AppError con un messaggio già in italiano.
 import { sb } from './supabase.js';
-import { dataMessage, rpcMessage, authMessage } from './errors.js';
+import { rpcMessage, authMessage } from './errors.js';
+import { AppError, fail } from './api-base.js';
 
-export class AppError extends Error {
-  constructor(message, cause) { super(message); this.name = 'AppError'; this.cause = cause; }
-}
-
-const fail = (error) => { throw new AppError(dataMessage(error), error); };
+export { AppError };
 
 export async function loadProfile(userId) {
   const { data, error } = await sb.from('profiles').select('id, role, display_name, avatar_path').eq('id', userId).maybeSingle();
@@ -67,7 +64,7 @@ export async function removeAvatar(userId, oldPath) {
 }
 
 // --- inviti e collegamento --------------------------------------------------
-async function rpc(name, args) {
+export async function rpc(name, args) {
   const { data, error } = await sb.rpc(name, args);
   if (error) fail(error);
   if (!data?.ok) throw new AppError(rpcMessage(data?.error), data);

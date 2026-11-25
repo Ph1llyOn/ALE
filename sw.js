@@ -1,6 +1,6 @@
 // Service worker di ALE. — app shell offline.
 // Tutti i percorsi sono relativi alla posizione di questo file (lo scope = sottopercorso del sito).
-const VERSION = 'v4';
+const VERSION = 'v7';
 const CACHE = `ale-shell-${VERSION}`;
 
 const SHELL = [
@@ -12,15 +12,27 @@ const SHELL = [
   'assets/icons/icon-maskable-512.png',
   'css/base.css',
   'css/components.css',
+  'css/screens.css',
   'css/tokens.css',
   'index.html',
+  'js/components/controls.js',
+  'js/components/icons.js',
+  'js/components/message-card.js',
   'js/components/profile-error.js',
   'js/components/tabbar.js',
   'js/config.js',
+  'js/core/api-base.js',
+  'js/core/api-messages.js',
+  'js/core/api-partner.js',
+  'js/core/api-personal.js',
+  'js/core/api-privacy.js',
   'js/core/api.js',
   'js/core/boot.js',
+  'js/core/chart.js',
   'js/core/errors.js',
+  'js/core/format.js',
   'js/core/greeting.js',
+  'js/core/moods.js',
   'js/core/route-logic.js',
   'js/core/router.js',
   'js/core/session.js',
@@ -34,12 +46,21 @@ const SHELL = [
   'js/features/auth/login.js',
   'js/features/auth/register.js',
   'js/features/auth/reset.js',
+  'js/features/equipment/equipment.js',
+  'js/features/home/home-alessia.js',
+  'js/features/home/home-phill.js',
   'js/features/home/home.js',
+  'js/features/messages/inbox.js',
+  'js/features/messages/phill-messages.js',
   'js/features/pairing/invite-storage.js',
   'js/features/pairing/invite.js',
   'js/features/pairing/pairing.js',
+  'js/features/privacy/privacy.js',
   'js/features/profile/image.js',
   'js/features/profile/profile.js',
+  'js/features/progress/progress.js',
+  'js/features/sections/sections.js',
+  'js/features/wellbeing/wellbeing.js',
   'js/main.js',
   'js/vendor/supabase.umd.js',
   'manifest.webmanifest',
@@ -68,7 +89,9 @@ const NETWORK_TIMEOUT_MS = 4000; // con rete lenta/instabile si ripiega sulla ca
 function fetchWithTimeout(req) {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error('timeout')), NETWORK_TIMEOUT_MS);
-    fetch(req).then((res) => { clearTimeout(timer); resolve(res); }, (err) => { clearTimeout(timer); reject(err); });
+    // cache: 'no-cache' = rivalida sempre con il server (richiesta condizionale, 304 se invariato): così una nuova
+    // versione pubblicata su GitHub Pages (che dichiara 10 minuti di cache) arriva subito e i file restano coerenti.
+    fetch(req, { cache: 'no-cache' }).then((res) => { clearTimeout(timer); resolve(res); }, (err) => { clearTimeout(timer); reject(err); });
   });
 }
 

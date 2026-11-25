@@ -211,5 +211,9 @@ Obiettivo: ambiente pronto, pipeline funzionante, pagina vuota "ALE." pubblicata
   24 tabelle con RLS forzata, diario a due chiavi, nota di benessere mai condivisibile, proposte e messaggi come unici canali
   di scrittura di Phill, consenso AI disattivato di default, esportazione dati ed eliminazione account senza dati orfani.
   Dettagli in `docs/PRIVACY.md`.
-- **Non ancora fatto (volutamente):** interfaccia di diario, attività, calendario, benessere, abitudini, messaggi; Edge Function;
-  AI; push; SMTP (Resend, prima dell'onboarding reale di Alessia).
+- **Fase 3 (prime schermate e messaggi)** — completata il 27/11/2026: Home di Alessia con biglietti di Phill, navigazione a
+  cinque sezioni, Profilo (benessere, progressi, attrezzatura, privacy e dati), dashboard di Phill, biglietti con
+  modifica/eliminazione/storico, messaggi immediati e programmati con invio server-side (pg_cron). Scelte da confermare in
+  `docs/DECISIONI.md`.
+- **Non ancora fatto (volutamente):** attività, calendario, diario, abitudini (schermate); proposte di Phill; Edge Function;
+  AI; push e tempo reale; SMTP (Resend, prima dell'onboarding reale di Alessia); informativa privacy.

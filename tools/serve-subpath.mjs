@@ -30,7 +30,7 @@ export function startServer({ port = 8080, base = '/ALE/' } = {}) {
     if (['node_modules', 'supabase', 'tests', 'tools', 'docs'].includes(relNorm[0])) return notFound();
     try {
       if (!(await stat(file)).isFile()) return notFound();
-      res.writeHead(200, { 'content-type': TYPES[extname(file)] || 'application/octet-stream' });
+      res.writeHead(200, { 'content-type': TYPES[extname(file)] || 'application/octet-stream', 'cache-control': 'no-cache' });
       res.end(await readFile(file));
     } catch { return notFound(); }
   });

@@ -1,4 +1,4 @@
-import { parseHash, decide } from './route-logic.js';
+import { parseHash, decide, isAppRoute } from './route-logic.js';
 import { getState } from './store.js';
 import { h, clear, loadingScreen, errorBox } from './ui.js';
 import { tabbar } from '../components/tabbar.js';
@@ -25,7 +25,7 @@ export function startRouter(el) {
 export async function render() {
   const { path, query } = parseHash(location.hash);
   const s = getState();
-  const decision = decide(path, { session: Boolean(s.session), recovery: s.recovery });
+  const decision = decide(path, { session: Boolean(s.session), recovery: s.recovery, role: s.profile?.role });
   if (decision.redirect) { navigate(decision.redirect, { replace: true }); return; }
 
   const token = ++renderToken;
@@ -38,8 +38,8 @@ export async function render() {
     content = h('main', { class: 'shell' }, errorBox('Qualcosa non ha funzionato nel caricare la pagina.', { onRetry: render }));
   }
   if (token !== renderToken) return; // una navigazione più recente ha la precedenza
-  const withTabs = ['/home', '/profilo', '/profilo/collegamento'].includes(decision.render);
-  const nodes = withTabs ? [content, tabbar(decision.render)] : [content];
+  const withTabs = isAppRoute(decision.render);
+  const nodes = withTabs ? [content, tabbar(decision.render, getState().profile?.role)] : [content];
   clear(mountPoint).append(...nodes);
   window.scrollTo(0, 0);
   const heading = content.querySelector?.('[data-focus]') || content.querySelector?.('h1, h2');

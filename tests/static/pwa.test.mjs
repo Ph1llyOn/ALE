@@ -154,3 +154,20 @@ test('frontend: nessun innerHTML/outerHTML/eval con dati dinamici', () => {
   }
   assert.deepEqual(bad, []);
 });
+
+test('router: ogni rotta dichiarata ha una schermata registrata in main.js, e viceversa', async () => {
+  const { ROUTES } = await import('../../js/core/route-logic.js');
+  const main = read('js/main.js');
+  const registered = [...main.matchAll(/registerView\('([^']+)'/g)].map((m) => m[1]).sort();
+  const declared = Object.keys(ROUTES).sort();
+  assert.deepEqual(registered, declared);
+});
+
+test('frontend: nessun uso di localStorage come archivio dati (solo preferenza del tema)', () => {
+  const offenders = [];
+  for (const f of frontend.filter((x) => x.endsWith('.js') && !x.includes(`${sep}vendor${sep}`))) {
+    const txt = readFileSync(f, 'utf8');
+    if (/localStorage.(get|set|remove)Item/.test(txt) && !/theme/.test(relative(ROOT, f))) offenders.push(relative(ROOT, f));
+  }
+  assert.deepEqual(offenders, [], 'localStorage solo per il tema: i dati vivono su Supabase');
+});

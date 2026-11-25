@@ -99,17 +99,40 @@ select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000b001', $$insert into 
 select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000b001', $$insert into public.messages (sender_id, recipient_id, body) values ('00000000-0000-0000-0000-00000000a001','00000000-0000-0000-0000-00000000b001','Falso mittente')$$), 'denied', 'il mittente non si falsifica');
 select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000b001', $$insert into public.messages (sender_id, recipient_id, body) values ('00000000-0000-0000-0000-00000000b001','00000000-0000-0000-0000-00000000a001','   ')$$), 'error:23514', 'messaggio vuoto rifiutato');
 select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000b001', format($f$insert into public.messages (sender_id, recipient_id, body) values ('00000000-0000-0000-0000-00000000b001','00000000-0000-0000-0000-00000000a001', %L)$f$, repeat('x', 2001))), 'error:23514', 'messaggio troppo lungo rifiutato');
-select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000b001', $$insert into public.messages (sender_id, recipient_id, body, read_at) values ('00000000-0000-0000-0000-00000000b001','00000000-0000-0000-0000-00000000a001','Letto?', now())$$), 'denied', 'il mittente non può marcare un messaggio come già letto');
+select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000b001', $$insert into public.messages (sender_id, recipient_id, body, read_at) values ('00000000-0000-0000-0000-00000000b001','00000000-0000-0000-0000-00000000a001','Letto?', now())$$), 'error:42703', 'i messaggi non hanno più uno stato di lettura visibile al mittente');
+select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000b001', $$select read_at from public.messages$$), 'error:42703', 'Phill non può nemmeno chiedere lo stato di lettura via API');
+select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000b001', $$insert into public.messages (sender_id, recipient_id, body, edited_at) values ('00000000-0000-0000-0000-00000000b001','00000000-0000-0000-0000-00000000a001','Modificato?', now())$$), 'denied', 'edited_at lo scrive solo il server');
 select is(pg_temp.count_as('00000000-0000-0000-0000-00000000a001', 'select 1 from public.messages'), 1, 'Alessia riceve il messaggio');
 select is(pg_temp.count_as('00000000-0000-0000-0000-00000000b001', 'select 1 from public.messages'), 1, 'Phill vede il messaggio inviato');
 select is(pg_temp.count_as('00000000-0000-0000-0000-00000000b002', 'select 1 from public.messages'), 0, 'un estraneo non vede messaggi');
 select is(pg_temp.count_as('00000000-0000-0000-0000-00000000a002', 'select 1 from public.messages'), 0, 'un''altra Alessia non vede messaggi');
-select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000b001', $$update public.messages set read_at = now()$$), 'ok:0', 'il mittente non marca come letto');
-select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000a001', $$update public.messages set read_at = now()$$), 'ok:1', 'la destinataria marca come letto');
-select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000a001', $$update public.messages set body = 'Riscritto'$$), 'denied', 'il testo di un messaggio non si modifica');
+-- ricevute: privacy di chi riceve
+select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000b001', $$insert into public.message_receipts (message_id, recipient_id, read_at) select id, '00000000-0000-0000-0000-00000000b001', now() from public.messages where sender_id = '00000000-0000-0000-0000-00000000b001'$$), 'error:23503', 'non si crea una ricevuta per un messaggio non indirizzato a sé');
+select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000b001', $$insert into public.message_receipts (message_id, recipient_id, read_at) select id, '00000000-0000-0000-0000-00000000a001', now() from public.messages where sender_id = '00000000-0000-0000-0000-00000000b001'$$), 'denied', 'né a nome della destinataria');
+select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000a001', $$insert into public.message_receipts (message_id, recipient_id, read_at) select id, '00000000-0000-0000-0000-00000000a001', now() from public.messages where recipient_id = '00000000-0000-0000-0000-00000000a001'$$), 'ok:1', 'la destinataria segna come letto (ricevuta propria)');
+select is(pg_temp.count_as('00000000-0000-0000-0000-00000000a001', 'select 1 from public.message_receipts'), 1, 'la destinataria vede la propria ricevuta');
+select is(pg_temp.count_as('00000000-0000-0000-0000-00000000b001', 'select 1 from public.message_receipts'), 0, 'il mittente NON vede se e quando il messaggio è stato letto');
+select is(pg_temp.count_as('00000000-0000-0000-0000-00000000b002', 'select 1 from public.message_receipts'), 0, 'un estraneo non vede ricevute');
+select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000b001', $$update public.message_receipts set archived_at = now()$$), 'ok:0', 'il mittente non archivia al posto della destinataria');
+select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000a001', $$update public.message_receipts set archived_at = now()$$), 'ok:1', 'la destinataria nasconde il biglietto dalla propria vista');
+select is(pg_temp.count_as('00000000-0000-0000-0000-00000000b001', 'select 1 from public.messages'), 1, 'la cronologia del mittente resta intatta dopo che la destinataria ha archiviato');
+select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000a001', $$update public.message_receipts set message_id = gen_random_uuid()$$), 'denied', 'una ricevuta non si sposta su un altro messaggio');
+select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000a001', $$delete from public.message_receipts$$), 'denied', 'le ricevute non si cancellano dal client');
+-- modifica/eliminazione da parte di chi scrive
+select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000a001', $$update public.messages set body = 'Riscritto' where recipient_id = '00000000-0000-0000-0000-00000000a001'$$), 'ok:0', 'la destinataria non modifica il testo di un biglietto');
 select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000a001', $$update public.messages set sender_id = '00000000-0000-0000-0000-00000000a001'$$), 'denied', 'il mittente non si modifica');
-select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000a001', $$delete from public.messages$$), 'denied', 'i messaggi non si cancellano dal client');
+select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000a001', $$delete from public.messages where recipient_id = '00000000-0000-0000-0000-00000000a001'$$), 'ok:0', 'la destinataria non elimina i biglietti di Phill');
+select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000b001', $$update public.messages set body = 'Testo corretto' where body = 'Buongiorno'$$), 'ok:1', 'Phill modifica un proprio biglietto');
+select isnt((select edited_at from public.messages where body = 'Testo corretto'), null, 'la modifica è marcata dal server (edited_at)');
+select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000b001', $$update public.messages set body = '   ' where body = 'Testo corretto'$$), 'error:23514', 'un testo vuoto non è ammesso nemmeno in modifica');
+select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000b002', $$update public.messages set body = 'Hack'$$), 'ok:0', 'un estraneo non modifica biglietti altrui');
+select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000b002', $$delete from public.messages$$), 'ok:0', 'né li elimina');
 select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000a001', $$insert into public.messages (sender_id, recipient_id, body) values ('00000000-0000-0000-0000-00000000a001','00000000-0000-0000-0000-00000000b001','Grazie')$$), 'ok:1', 'Alessia risponde');
+select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000b001', $$delete from public.messages where body = 'Testo corretto'$$), 'ok:1', 'Phill elimina un proprio biglietto');
+select is(pg_temp.count_as('00000000-0000-0000-0000-00000000a001', 'select 1 from public.message_receipts'), 0, 'eliminando il biglietto sparisce anche la ricevuta');
+select is(pg_temp.count_as('00000000-0000-0000-0000-00000000a001', 'select 1 from public.messages where recipient_id = ''00000000-0000-0000-0000-00000000a001'''), 0, 'e il biglietto scompare dalla vista di Alessia');
+select is((select count(*)::int from public.notifications where kind = 'message' and user_id = '00000000-0000-0000-0000-00000000a001'), 1, 'il messaggio ha generato una notifica in-app per la destinataria');
+select is((select body from public.notifications where kind = 'message' and user_id = '00000000-0000-0000-0000-00000000a001'), null, 'la notifica non contiene il testo del biglietto');
 
 -- messaggi programmati
 select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000b001', $$insert into public.scheduled_messages (sender_id, recipient_id, title, body, send_at) values ('00000000-0000-0000-0000-00000000b001','00000000-0000-0000-0000-00000000a001','Domani','Ti penso', now() + interval '1 day')$$), 'ok:1', 'Phill programma un messaggio');
@@ -119,12 +142,17 @@ select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000b001', $$insert into 
 select is(pg_temp.count_as('00000000-0000-0000-0000-00000000a001', 'select 1 from public.scheduled_messages'), 0, 'la destinataria NON vede i messaggi programmati (resta una sorpresa)');
 select is(pg_temp.count_as('00000000-0000-0000-0000-00000000b001', 'select 1 from public.scheduled_messages'), 1, 'il mittente li vede');
 select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000b001', $$update public.scheduled_messages set status = 'sent'$$), 'denied', 'non si può marcare come inviato dal client');
-select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000b001', $$update public.scheduled_messages set body = 'Cambiato'$$), 'denied', 'si annulla soltanto');
+select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000b001', $$update public.scheduled_messages set body = 'Cambiato', send_at = now() + interval '2 days'$$), 'ok:1', 'il mittente modifica testo e orario finché è in attesa');
+select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000b001', $$update public.scheduled_messages set send_at = now() - interval '1 hour'$$), 'denied', 'non si sposta nel passato');
+select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000b001', $$update public.scheduled_messages set attempts = 0, last_error = null$$), 'denied', 'i campi tecnici sono del server');
 select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000a001', $$update public.scheduled_messages set status = 'cancelled'$$), 'ok:0', 'la destinataria non può annullarli');
 select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000b001', $$update public.scheduled_messages set status = 'cancelled'$$), 'ok:1', 'il mittente annulla un messaggio in attesa');
 select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000b001', $$update public.scheduled_messages set status = 'cancelled'$$), 'ok:0', 'un messaggio già annullato non cambia più');
+select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000a001', $$delete from public.scheduled_messages$$), 'ok:0', 'la destinataria non elimina i messaggi programmati');
+select is(pg_temp.try_sql('00000000-0000-0000-0000-00000000b001', $$delete from public.scheduled_messages$$), 'ok:1', 'il mittente elimina un messaggio programmato');
 
 -- ================================================================== NOTIFICHE
+delete from public.notifications;   -- ripulisce quelle generate dai messaggi di prova
 insert into public.notifications (user_id, kind, title) values ('00000000-0000-0000-0000-00000000a001', 'message', 'Nuovo biglietto'), ('00000000-0000-0000-0000-00000000b001', 'proposal', 'Proposta decisa');
 select is(pg_temp.count_as('00000000-0000-0000-0000-00000000a001', 'select 1 from public.notifications'), 1, 'ognuno vede solo le proprie notifiche');
 select is(pg_temp.count_as('00000000-0000-0000-0000-00000000b002', 'select 1 from public.notifications'), 0, 'un estraneo non vede notifiche');

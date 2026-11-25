@@ -7,7 +7,7 @@
 | Organizzazione | Ph1llyOn's Org (piano **Free**, spend cap attivo, nessun metodo di pagamento) |
 | Regione | `eu-central-1` (Francoforte) |
 | Ambiente | production |
-| Migrazioni applicate | `baseline`, `accounts_and_pairing`, `sharing_permissions`, `app_tables`, `account_lifecycle` (27/11/2026) |
+| Migrazioni applicate | `baseline`, `accounts_and_pairing`, `sharing_permissions`, `app_tables`, `account_lifecycle`, `messages_phase3` (27-28/11/2026) |
 | Altro progetto nell'organizzazione | "Ph1llyOn's Project" (`madmesdxesaiyhgpfroj`, eu-west-1): non toccato |
 
 Limiti del piano Free da ricordare: massimo 2 progetti attivi, 500 MB di database, 5 GB di egress,
@@ -73,3 +73,12 @@ Se in futuro un job dovrà parlare con il progetto remoto (es. deploy delle migr
   Quando Alessia e Phill si sono registrati, disattivare "Allow new users to sign up"
   (Authentication → Sign In / Providers → User Signups).
 - **Piano Free:** pausa dopo 1 settimana di inattività.
+
+## Invio programmato dei messaggi (pg_cron)
+Il job `ale-dispatch-scheduled-messages` esegue ogni minuto `select public.dispatch_due_scheduled_messages()` (gratuito,
+dentro il database). Per fermarlo o vederlo, dal terminale del proprietario:
+```
+npx supabase db query --remote --read-only "select jobid, schedule, active from cron.job"
+npx supabase db query --remote "select cron.unschedule('ale-dispatch-scheduled-messages')"   # ferma l'invio
+```
+Se il progetto va in pausa (piano Free, 1 settimana senza attività) l'invio si ferma finché non viene riattivato.

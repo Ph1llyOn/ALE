@@ -25,7 +25,20 @@ e verificata da test (pgTAP e API reali). Nascondere qualcosa nell'interfaccia n
 | `journal` | journal_entries | **due chiavi**: categoria condivisa **e** singola voce marcata `shared_with_partner` |
 
 Mai condivisibili: `wellbeing_notes`, `ai_preferences`, `ai_generations`, `push_subscriptions`, `notifications`,
-`scheduled_messages` (la destinataria non vede ciò che è in programma: resta una sorpresa).
+`scheduled_messages` (la destinataria non vede ciò che è in programma: resta una sorpresa) e `message_receipts`.
+
+## Biglietti (messaggi) — Fase 3
+- **Chi scrive** (Phill) crea, modifica ed elimina i propri biglietti, in qualsiasi momento; ogni modifica è marcata
+  (`edited_at`, scritto dal server). Se modifica o elimina, cambia anche per Alessia.
+- **Chi riceve** (Alessia) può segnare come letto e nascondere un biglietto dalla propria vista. Questo stato vive in
+  `message_receipts`, leggibile **solo** da lei: Phill non sa se né quando ha letto, e nemmeno via API (la colonna
+  `read_at` non esiste più su `messages`). Nessuna conferma di lettura: nessuna pressione.
+- Nascondere un biglietto non tocca la cronologia di Phill.
+- **Programmati:** il mittente li modifica, annulla ed elimina finché sono in attesa (orario tra 2 minuti e 1 anno). La
+  destinataria non li vede finché non partono. L'invio lo fa il server: `dispatch_due_scheduled_messages()`, eseguita
+  ogni minuto da `pg_cron` (gratuito, interno al database) e non richiamabile da nessun utente. Fino a 5 tentativi, poi
+  stato `failed`. Se il collegamento è finito il messaggio viene annullato, non inviato.
+- **Notifiche in-app:** ogni messaggio crea una notifica per chi lo riceve, **senza il testo** (solo "Un biglietto da …").
 
 ## Chi vede cosa (dati di Alessia)
 | | Alessia | Phill collegato | Phill con categoria condivisa | Estraneo | Anonimo |
@@ -40,7 +53,7 @@ Mai condivisibili: `wellbeing_notes`, `ai_preferences`, `ai_generations`, `push_
 - **Fine del collegamento** (qualsiasi dei due): in un'unica transazione si revocano i permessi, si azzerano i consensi
   per singola voce di diario, si ritirano le proposte in attesa e si annullano i messaggi programmati. Un nuovo partner —
   anche lo stesso Phill — non eredita nulla: serve una nuova condivisione.
-- **Esportazione** (`export_my_data()`): restituisce tutti i propri dati (23 tabelle), senza `code_hash` né chiavi push,
+- **Esportazione** (`export_my_data()`): restituisce tutti i propri dati (24 tabelle), senza `code_hash` né chiavi push,
   e senza contenuti altrui.
 - **Eliminazione account** (`delete_my_account('ELIMINA ACCOUNT')`):
   - richiede conferma testuale e **password inserita negli ultimi 5 minuti** (letta dal token; resiste al rinnovo);
@@ -61,5 +74,8 @@ spegne ogni consenso specifico e azzera la data. Le funzioni AI (fase successiva
 - **Backup.** Sul piano Free non sono previsti backup automatici scaricabili; se in futuro si attivano, i dati eliminati
   restano nei backup fino alla loro scadenza.
 - **Metadati visibili al partner.** Nome visualizzato, foto e ruolo; la data di inizio del collegamento.
-- **Informativa privacy e consensi** per gli utenti finali: da scrivere prima dell'onboarding reale di Alessia.
+- **Informativa privacy e consensi** per gli utenti finali: da scrivere prima dell'onboarding reale di Alessia (confermato).
+- **Eliminare l'account elimina l'intera conversazione, per entrambi** (confermato).
+- **Aggiornamento delle schermate:** non c'è ancora il tempo reale (Fase 6). Un biglietto compare quando si riapre
+  l'app o si torna alla schermata; l'app si riallinea da sola quando torna in primo piano.
 - **Registrazione aperta:** da chiudere dopo la registrazione dei due account (vedi `docs/SUPABASE_COLLEGAMENTO.md`).
