@@ -7,7 +7,7 @@
 | Organizzazione | Ph1llyOn's Org (piano **Free**, spend cap attivo, nessun metodo di pagamento) |
 | Regione | `eu-central-1` (Francoforte) |
 | Ambiente | production |
-| Migrazioni applicate | `20261125000000_baseline` |
+| Migrazioni applicate | `20261125000000_baseline`, `20261126000000_accounts_and_pairing` |
 | Altro progetto nell'organizzazione | "Ph1llyOn's Project" (`madmesdxesaiyhgpfroj`, eu-west-1): non toccato |
 
 Limiti del piano Free da ricordare: massimo 2 progetti attivi, 500 MB di database, 5 GB di egress,
@@ -22,9 +22,9 @@ Il progetto è stato creato senza `--size`: il piano Free non permette di scegli
 | `.env.local` | `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` | pubblici per natura (finiscono nel frontend), ma non ancora committati |
 | keyring di sistema | access token Supabase (da `supabase login`) | SEGRETO, gestito dalla CLI |
 
-`js/config.js` resta **vuoto** finché non viene approvato esplicitamente l'inserimento di URL e chiave
-pubblica (la chiave publishable è progettata per stare nel frontend, ma la sua sicurezza dipende
-interamente dalla RLS: vedi test in `supabase/tests/` e `tests/api/`).
+`js/config.js` (committato) contiene **solo** URL del progetto e chiave *publishable*: è pensata per stare
+nel frontend e la sicurezza dei dati dipende interamente dalla RLS (test in `supabase/tests/` e `tests/api/`),
+non dalla sua segretezza. In sviluppo locale (`localhost`) la stessa pagina usa lo stack Supabase locale.
 
 ## Mai nel repository
 Chiave `secret`/`service_role`, password del database, access token, chiave Anthropic, chiave VAPID privata.
@@ -57,7 +57,19 @@ Se in futuro un job dovrà parlare con il progetto remoto (es. deploy delle migr
 ## Secret delle Edge Function (Fase 4)
 `npx supabase secrets set ANTHROPIC_API_KEY=...` dal terminale del proprietario. Mai in file committati.
 
-## Impostazioni Auth da fare in dashboard (prima del primo login)
+## Impostazioni Auth del progetto remoto (applicate dalla dashboard il 26/11/2026)
 - Site URL: `https://ph1llyon.github.io/ALE/`
-- Redirect URLs: `https://ph1llyon.github.io/ALE/**`, `http://localhost:8080/ALE/**`
-(Non applicate: nessun dato né login finché non inizia la Fase 2.)
+- Redirect URLs: `https://ph1llyon.github.io/ALE/**` (lo sviluppo locale usa lo stack locale, non il remoto)
+- Lunghezza minima password: **10** (verificato: il server risponde 422 `weak_password` con 8 caratteri)
+- Conferma email: attiva (default). Registrazione aperta: attiva.
+
+### Da sapere / da decidere
+- **Email di Auth in inglese e mittente di default.** Il servizio email integrato di Supabase è pensato per prove:
+  limitato a pochi invii l'ora e, sui progetti nuovi, può recapitare solo ai membri dell'organizzazione.
+  Prima che Alessia si registri serve un **SMTP personalizzato** (Authentication → Emails → SMTP Settings)
+  e template in italiano (Authentication → Emails → Templates). Fino ad allora conferma email e recupero
+  password non arriveranno a chi non è membro dell'organizzazione.
+- **Registrazione aperta.** Chiunque conosca l'URL può creare un account (vede solo i propri dati: RLS).
+  Quando Alessia e Phill si sono registrati, disattivare "Allow new users to sign up"
+  (Authentication → Sign In / Providers → User Signups).
+- **Piano Free:** pausa dopo 1 settimana di inattività.

@@ -3,6 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: blob: https://llklcwuduimrkhhmnbxf.supabase.co http://127.0.0.1:54321; connect-src 'self' https://llklcwuduimrkhhmnbxf.supabase.co http://127.0.0.1:54321; manifest-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
+  <meta name="referrer" content="no-referrer">
   <title>ALE.</title>
   <meta name="description" content="ALE. — Un piccolo passo alla volta.">
   <meta name="theme-color" content="#fdf2f5" media="(prefers-color-scheme: light)">
@@ -16,19 +18,13 @@
   <meta name="apple-mobile-web-app-title" content="ALE.">
   <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
   <script src="js/core/theme-init.js"></script>
 </head>
 <body>
-  <main class="shell">
-    <h1 class="logo" aria-label="ALE.">ALE<span class="logo-dot">.</span></h1>
-    <p class="tagline">Un piccolo passo alla volta.</p>
-    <div class="card">
-      <p>Fondamenta pronte. L'app arriverà qui, un passo alla volta.</p>
-      <p class="status" id="sw-status" role="status" aria-live="polite"></p>
-    </div>
-    <button class="btn" id="theme-toggle" type="button">Tema: sistema</button>
-  </main>
+  <div id="app"></div>
+  <noscript><p class="center">ALE. richiede JavaScript.</p></noscript>
+  <script src="js/vendor/supabase.umd.js"></script>
   <script type="module" src="js/main.js"></script>
-  <noscript>ALE. richiede JavaScript.</noscript>
 </body>
 </html>

@@ -20,7 +20,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
+      - run: npm ci
       - run: npm test
 
   test-database:
@@ -29,13 +30,15 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-      - name: Installa Supabase CLI (versione bloccata da package-lock.json)
+          node-version: 22
+      - name: Installa dipendenze (Supabase CLI e supabase-js bloccati da package-lock.json)
         run: npm ci
       - name: Avvia Supabase locale (Docker, nessuna risorsa remota)
         run: npm run db:start
-      - name: Test pgTAP (RLS)
+      - name: Test pgTAP (RLS, vincoli, privilegi)
         run: npm run db:test
+      - name: Test API reali (Auth, RLS, collegamento 1:1, concorrenza, Storage)
+        run: npm run test:api
 
   build:
     needs: [test-frontend, test-database]

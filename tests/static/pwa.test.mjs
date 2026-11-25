@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { join, relative, extname, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { startServer } from '../tools/serve-subpath.mjs';
+import { startServer } from '../../tools/serve-subpath.mjs';
 
-const ROOT = join(fileURLToPath(import.meta.url), '..', '..');
+const ROOT = join(fileURLToPath(import.meta.url), '..', '..', '..');
 const read = (p) => readFileSync(join(ROOT, p), 'utf8');
 
 function walk(dir, out = []) {
@@ -76,17 +76,20 @@ test('nessun segreto nel frontend', () => {
     [/VAPID_PRIVATE/i, 'VAPID privata'],
   ];
   const hits = [];
-  for (const f of frontend) {
+  // js/vendor (libreria di terze parti) contiene la parola "service_role" nella propria documentazione:
+  // è coperto dai pattern specifici di secrets.test.mjs.
+  for (const f of frontend.filter((x) => !x.includes(`${sep}vendor${sep}`))) {
     const txt = readFileSync(f, 'utf8');
     for (const [re, label] of patterns) if (re.test(txt)) hits.push(`${relative(ROOT, f)}: ${label}`);
   }
   assert.deepEqual(hits, []);
 });
 
-test('config.js: nessuna credenziale precompilata', () => {
+test('config.js: solo URL e chiave publishable', () => {
   const c = read('js/config.js');
-  assert.match(c, /SUPABASE_URL = ''/);
-  assert.match(c, /SUPABASE_ANON_KEY = ''/);
+  assert.match(c, /llklcwuduimrkhhmnbxf.supabase.co/);
+  assert.match(c, /sb_publishable_/);
+  assert.doesNotMatch(c, /sb_secret_|service_role|eyJ/);
 });
 
 test('licenze: ogni immagine in assets/exercises ha una voce nel registro', () => {
@@ -117,4 +120,37 @@ test('sotto /ALE/: shell servita, fuori dal sottopercorso 404', async () => {
   } finally {
     server.close();
   }
+});
+
+test('vendor: il bundle supabase-js è identico a quello della versione bloccata in package-lock', () => {
+  const src = join(ROOT, 'node_modules/@supabase/supabase-js/dist/umd/supabase.js');
+  if (!existsSync(src)) return; // node_modules assente: il controllo gira in CI dopo `npm ci`
+  assert.equal(readFileSync(join(ROOT, 'js/vendor/supabase.umd.js')).compare(readFileSync(src)), 0,
+    'js/vendor/supabase.umd.js non coincide: esegui `npm run vendor`');
+});
+
+test('sw.js: la lista di precache coincide con i file del frontend (npm run precache)', () => {
+  const sw = read('sw.js');
+  const listed = new Set([...sw.match(/const SHELL = \[([\s\S]*?)\];/)[1].matchAll(/'([^']+)'/g)].map((m) => m[1]).filter((p) => p !== './'));
+  const actual = walk(ROOT).filter((f) => /\.(html|css|js|png|webmanifest)$/.test(f))
+    .map((f) => relative(ROOT, f).split(sep).join('/')).filter((f) => f !== 'sw.js');
+  assert.deepEqual([...listed].sort(), actual.sort());
+});
+
+test('index.html: CSP presente, nessuno script o stile inline', () => {
+  const html = read('index.html');
+  assert.match(html, /Content-Security-Policy/);
+  assert.match(html, /script-src 'self'/);
+  assert.doesNotMatch(html, /unsafe-inline|unsafe-eval/);
+  assert.doesNotMatch(html.replace(/<noscript>[\s\S]*?<\/noscript>/g, ''), /<script(?![^>]*\bsrc=)[^>]*>/i, 'script inline vietato dalla CSP');
+  assert.doesNotMatch(html, /\sstyle=/i);
+});
+
+test('frontend: nessun innerHTML/outerHTML/eval con dati dinamici', () => {
+  const bad = [];
+  for (const f of frontend.filter((x) => x.endsWith('.js') && !x.includes(`${sep}vendor${sep}`))) {
+    const txt = readFileSync(f, 'utf8');
+    if (/\.(inner|outer)HTML\s*=|insertAdjacentHTML|document\.write|\beval\(|new Function\(/.test(txt)) bad.push(relative(ROOT, f));
+  }
+  assert.deepEqual(bad, []);
 });

@@ -198,3 +198,13 @@ Obiettivo: ambiente pronto, pipeline funzionante, pagina vuota "ALE." pubblicata
 - Repository pubblico o privato (Pages gratuito solo con pubblico).
 - Regione Supabase (consigliata UE).
 - Fonte e licenza delle prime immagini (puoi decidere dopo la Fase 0).
+
+
+## 15. Stato avanzamento
+
+- **Fase 0** — completata (repository, Pages, CI, Supabase locale e remoto).
+- **Fase 1 (account e collegamento)** — completata il 26/11/2026: registrazione/login/logout/recupero password,
+  profili Alessia e Phill, nome e foto, inviti con scadenza, collegamento 1:1 transazionale, rotte protette,
+  prime dashboard, test pgTAP + API + unitari. Dettagli in `docs/SUPABASE_COLLEGAMENTO.md`.
+  Nota: nel piano originale questa era la "Fase 2 — Account"; la numerazione è stata ricalibrata dopo la Fase 0.
+- **Non ancora fatto (volutamente):** `sharing_permissions`, diario, attività, calendario, AI, push, Edge Function.
