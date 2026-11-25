@@ -10,7 +10,13 @@ npm run serve         # serve il sito su http://localhost:8080/ALE/ (simula GitH
 node tools/make-icons.mjs   # rigenera le icone segnaposto
 ```
 
-Supabase locale (richiede Docker Desktop e Supabase CLI): `supabase start`, `supabase test db`.
+Supabase locale (richiede Docker Desktop; la CLI è una dev dependency, `npm install`):
+
+```
+npm run db:start      # avvia lo stack locale (solo i servizi necessari ai test)
+npm run db:test       # test pgTAP (RLS)
+npm run db:stop
+```
 
 ## Regole
 

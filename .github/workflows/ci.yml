@@ -27,13 +27,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: supabase/setup-cli@v1
+      - uses: actions/setup-node@v4
         with:
-          version: latest
+          node-version: 20
+      - name: Installa Supabase CLI (versione bloccata da package-lock.json)
+        run: npm ci
       - name: Avvia Supabase locale (Docker, nessuna risorsa remota)
-        run: supabase start
+        run: npm run db:start
       - name: Test pgTAP (RLS)
-        run: supabase test db
+        run: npm run db:test
 
   build:
     needs: [test-frontend, test-database]
