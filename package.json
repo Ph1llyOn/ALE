@@ -5,13 +5,13 @@
   "type": "module",
   "description": "ALE. — PWA per il benessere personale",
   "scripts": {
-    "test": "node --test tests/static/ tests/unit/",
+    "test": "node tools/run-tests.mjs tests/static tests/unit",
     "serve": "node tools/serve-subpath.mjs",
     "vendor": "node tools/vendor.mjs",
     "db:start": "supabase start -x studio,imgproxy,vector,logflare,edge-runtime,realtime,postgres-meta,supavisor",
     "db:test": "supabase test db",
     "db:stop": "supabase stop",
-    "test:api": "node --test --test-concurrency=1 tests/api/",
+    "test:api": "node tools/run-tests.mjs --serial tests/api",
     "precache": "node tools/update-sw-precache.mjs"
   },
   "devDependencies": {
