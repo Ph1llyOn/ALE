@@ -17,10 +17,12 @@ Supabase locale (richiede Docker Desktop; la CLI è una dev dependency, `npm ins
 
 ```
 npm run db:start      # avvia lo stack locale (database, Auth, Storage, posta di test)
-npm run db:test       # test pgTAP (RLS, vincoli 1:1, privilegi)
-npm run test:api      # test API reali (Auth, RLS, collegamento, concorrenza, Storage) sullo stack locale
+npm run db:test       # test pgTAP (RLS, vincoli 1:1, condivisione, privilegi, eliminazione account)
+npm run test:api      # test API reali (Auth, RLS, condivisione, collegamento, concorrenza, Storage, eliminazione)
 npm run db:stop
 ```
+
+Modello di privacy: vedi `docs/PRIVACY.md`. Decisioni approvate: `docs/DECISIONI.md`.
 
 ## Regole
 

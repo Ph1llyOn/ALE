@@ -7,7 +7,7 @@
 | Organizzazione | Ph1llyOn's Org (piano **Free**, spend cap attivo, nessun metodo di pagamento) |
 | Regione | `eu-central-1` (Francoforte) |
 | Ambiente | production |
-| Migrazioni applicate | `20261125000000_baseline`, `20261126000000_accounts_and_pairing` |
+| Migrazioni applicate | `baseline`, `accounts_and_pairing`, `sharing_permissions`, `app_tables`, `account_lifecycle` (27/11/2026) |
 | Altro progetto nell'organizzazione | "Ph1llyOn's Project" (`madmesdxesaiyhgpfroj`, eu-west-1): non toccato |
 
 Limiti del piano Free da ricordare: massimo 2 progetti attivi, 500 MB di database, 5 GB di egress,

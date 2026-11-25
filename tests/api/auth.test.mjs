@@ -68,11 +68,16 @@ test('sessione: refresh funziona; dopo il logout il refresh token non vale più'
 
 test('API diretta senza login: nessun dato, nessuna funzione', async () => {
   const headers = { apikey: PUBLISHABLE_KEY };
-  for (const table of ['profiles', 'invitations', 'partnerships', 'invitation_attempts']) {
+  const tables = ['profiles', 'invitations', 'partnerships', 'invitation_attempts', 'sharing_permissions', 'equipment', 'workouts',
+    'workout_exercises', 'workout_sessions', 'session_exercise_progress', 'workout_proposals', 'habits', 'habit_logs', 'calendar_events',
+    'journal_entries', 'wellbeing_logs', 'wellbeing_notes', 'progress_records', 'messages', 'scheduled_messages', 'notifications',
+    'push_subscriptions', 'ai_preferences', 'ai_generations'];
+  for (const table of tables) {
     const r = await fetch(`${API_URL}/rest/v1/${table}?select=*`, { headers });
     assert.ok([401, 403].includes(r.status), `${table}: atteso 401/403, ottenuto ${r.status}`);
   }
-  for (const fn of ['create_invitation', 'redeem_invitation', 'end_partnership', 'revoke_invitation']) {
+  for (const fn of ['create_invitation', 'redeem_invitation', 'end_partnership', 'revoke_invitation', 'set_sharing',
+    'revoke_all_sharing', 'export_my_data', 'delete_my_account', 'can_view', 'is_partner_of']) {
     const r = await fetch(`${API_URL}/rest/v1/rpc/${fn}`, {
       method: 'POST', headers: { ...headers, 'content-type': 'application/json' }, body: JSON.stringify({ p_code: 'AAAAAAAAAA' }),
     });

@@ -207,4 +207,9 @@ Obiettivo: ambiente pronto, pipeline funzionante, pagina vuota "ALE." pubblicata
   profili Alessia e Phill, nome e foto, inviti con scadenza, collegamento 1:1 transazionale, rotte protette,
   prime dashboard, test pgTAP + API + unitari. Dettagli in `docs/SUPABASE_COLLEGAMENTO.md`.
   Nota: nel piano originale questa era la "Fase 2 — Account"; la numerazione è stata ricalibrata dopo la Fase 0.
-- **Non ancora fatto (volutamente):** `sharing_permissions`, diario, attività, calendario, AI, push, Edge Function.
+- **Fase 2 (database applicativo, condivisione e privacy)** — completata il 27/11/2026: `sharing_permissions` con 7 categorie,
+  24 tabelle con RLS forzata, diario a due chiavi, nota di benessere mai condivisibile, proposte e messaggi come unici canali
+  di scrittura di Phill, consenso AI disattivato di default, esportazione dati ed eliminazione account senza dati orfani.
+  Dettagli in `docs/PRIVACY.md`.
+- **Non ancora fatto (volutamente):** interfaccia di diario, attività, calendario, benessere, abitudini, messaggi; Edge Function;
+  AI; push; SMTP (Resend, prima dell'onboarding reale di Alessia).
