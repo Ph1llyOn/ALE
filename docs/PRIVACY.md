@@ -28,8 +28,8 @@ Mai condivisibili: `wellbeing_notes`, `ai_preferences`, `ai_generations`, `push_
 `scheduled_messages` (la destinataria non vede ciò che è in programma: resta una sorpresa) e `message_receipts`.
 
 ## Biglietti (messaggi) — Fase 3
-- **Chi scrive** (Phill) crea, modifica ed elimina i propri biglietti, in qualsiasi momento; ogni modifica è marcata
-  (`edited_at`, scritto dal server). Se modifica o elimina, cambia anche per Alessia.
+- **Chi scrive** (Phill) crea i biglietti. Una volta **consegnati sono immutabili e non eliminabili**, da lui e da chiunque (il contenuto già
+  recapitato non cambia retroattivamente: lo storico resta coerente).
 - **Chi riceve** (Alessia) può segnare come letto e nascondere un biglietto dalla propria vista. Questo stato vive in
   `message_receipts`, leggibile **solo** da lei: Phill non sa se né quando ha letto, e nemmeno via API (la colonna
   `read_at` non esiste più su `messages`). Nessuna conferma di lettura: nessuna pressione.

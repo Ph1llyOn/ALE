@@ -16,11 +16,15 @@ node tools/make-icons.mjs   # rigenera le icone segnaposto
 Supabase locale (richiede Docker Desktop; la CLI è una dev dependency, `npm install`):
 
 ```
-npm run db:start      # avvia lo stack locale (database, Auth, Storage, posta di test)
+npm run db:start      # avvia lo stack locale (database, Auth, Storage, Edge Functions, posta di test)
+                      # prima crea supabase/functions/.env (gitignorato): vedi il passo "Configura le Edge Functions" in .github/workflows/ci.yml
 npm run db:test       # test pgTAP (RLS, vincoli 1:1, condivisione, privilegi, eliminazione account)
 npm run test:api      # test API reali (Auth, RLS, condivisione, collegamento, concorrenza, Storage, eliminazione)
 npm run db:stop
 ```
+
+Accesso (ALE/PHILL con PIN, senza email): `docs/ACCESSO.md`. Notifiche e invii pianificati: `docs/NOTIFICHE.md`. Claude/AI: `docs/AI.md`.
+Log di avanzamento: `docs/AVANZAMENTO.md`.
 
 Modello di privacy: vedi `docs/PRIVACY.md`. Decisioni approvate: `docs/DECISIONI.md`.
 

@@ -48,5 +48,18 @@ Interpretazioni da confermare (la specifica non le dice esplicitamente):
 | AI nelle impostazioni | non mostrata (non esiste ancora la funzione da consentire) | il consenso va chiesto quando serve |
 | Proposte di Phill (schede/eventi) | non in questa fase | non nelle priorità |
 
-## Fuori ambito (non iniziato)
-Interfaccia di calendario, allenamenti, diario, abitudini; proposte di Phill; Edge Function; AI; push; tempo reale; SMTP.
+## Tappe 1–4 (29/11/2026) — versione completa
+| Tema | Decisione |
+|---|---|
+| Accesso | ALE/PHILL con PIN, niente email/password/registrazione/inviti (`docs/ACCESSO.md`); le tabelle di inviti restano nel database ma l'interfaccia non le usa |
+| Biglietti consegnati | **immutabili e non eliminabili**; solo i programmati ancora in attesa si modificano, annullano, eliminano (sostituisce la regola della Fase 3) |
+| Sezioni | Attività, Calendario, Diario, Benessere, Progressi/abitudini/obiettivi, Attrezzatura: complete, nessun segnaposto |
+| Proposte di Phill | allenamenti (dal catalogo) ed eventi; Alessia accetta/modifica/rifiuta; Phill segue lo stato e può ritirare |
+| Area di Phill | Home, Messaggi, Proposte, Condiviso con te (solo ciò che Alessia condivide, deciso dalla RLS), Profilo |
+| AI | solo lato server, con consenso, controllo semantico fail-closed, ripiego onesto senza chiave (`docs/AI.md`) |
+| Push | Web Push con VAPID; senza chiave privata sul server non parte e lo dichiara (`docs/NOTIFICHE.md`) |
+| Eliminazione account | elimina l'intera conversazione per entrambi (confermato); richiede il PIN |
+| Costi | nessun servizio a pagamento attivato |
+
+## Non attivo per scelta (costi)
+Anthropic API reale (serve una chiave finanziata), SMTP/email (non necessarie: accesso senza email), dominio personalizzato.

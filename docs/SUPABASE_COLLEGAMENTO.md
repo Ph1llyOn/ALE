@@ -61,7 +61,7 @@ Se in futuro un job dovrà parlare con il progetto remoto (es. deploy delle migr
 - Site URL: `https://ph1llyon.github.io/ALE/`
 - Redirect URLs: `https://ph1llyon.github.io/ALE/**` (lo sviluppo locale usa lo stack locale, non il remoto)
 - Lunghezza minima password: **10** (verificato: il server risponde 422 `weak_password` con 8 caratteri)
-- Conferma email: attiva (default). Registrazione aperta: attiva.
+- Accesso senza email (`docs/ACCESSO.md`): **le registrazioni pubbliche vanno DISATTIVATE** (Authentication → Sign In / Providers → "Allow new users to sign up": off). Gli utenti li crea solo la funzione `access` con la chiave di servizio.
 
 ### Da sapere / da decidere
 - **Email di Auth in inglese e mittente di default.** Il servizio email integrato di Supabase è pensato per prove:

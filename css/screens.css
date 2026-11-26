@@ -261,3 +261,7 @@ select.input { appearance: none; -webkit-appearance: none; background-image: non
 .step-dot { width: 28px; height: 6px; border-radius: 999px; background: var(--accent-soft); }
 .step-dot.on { background: var(--grad-accent); }
 .btn-block { width: 100%; }
+
+.prewrap { white-space: pre-wrap; overflow-wrap: anywhere; }
+.row.wrap { flex-wrap: wrap; gap: var(--space-3, 12px); }
+.pick { cursor: pointer; align-items: center; gap: 12px; }

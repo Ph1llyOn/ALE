@@ -24,6 +24,8 @@ import journalEditView from './features/journal/journal-edit.js';
 import notificationsView from './features/notifications/notifications.js';
 import settingsView from './features/settings/settings.js';
 import onboardingView from './features/onboarding/onboarding.js';
+import proposalsView from './features/partner/proposals.js';
+import sharedView from './features/partner/shared.js';
 
 const app = document.getElementById('app');
 app.replaceChildren(loadingScreen());
@@ -50,6 +52,8 @@ registerView('/diario/voce', journalEditView);
 registerView('/notifiche', notificationsView);
 registerView('/profilo/impostazioni', settingsView);
 registerView('/benvenuta', onboardingView);
+registerView('/proposte', proposalsView);
+registerView('/condiviso', sharedView);
 
 // Stato della connessione
 const banner = h('div', { class: 'offline-banner', role: 'status', hidden: true }, 'Sei offline: alcune funzioni non sono disponibili.');

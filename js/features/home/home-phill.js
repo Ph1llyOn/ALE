@@ -27,7 +27,7 @@ export default async function homePhill({ profile, partner, partnership }) {
     h('div', { class: 'row' }, avatarEl(partnerAvatar, partner.display_name),
       h('div', { class: 'grow' }, h('p', { class: 'card-title' }, `Sei collegato con ${partner.display_name}`),
         h('p', { class: 'muted' }, 'Un biglietto, anche piccolo, fa sempre bene.'))),
-    h('a', { class: 'btn', href: '#/messaggi' }, 'Scrivi un biglietto')));
+    h('div', { class: 'row wrap' }, h('a', { class: 'btn', href: '#/messaggi' }, 'Scrivi un biglietto'), h('a', { class: 'btn btn-secondary', href: '#/proposte' }, 'Proponi qualcosa'))));
 
   // --- Riepilogo: SOLO ciò che Alessia condivide (lo decide il database, non l'interfaccia)
   const summary = h('section', { class: 'stack', 'aria-labelledby': 'riepilogo-title' }, h('h2', { class: 'section-title', id: 'riepilogo-title' }, 'Riepilogo'));
@@ -45,7 +45,7 @@ export default async function homePhill({ profile, partner, partnership }) {
         summary.append(h('div', { class: 'card stack' },
           h('p', { class: 'card-title' }, 'Condiviso con te'),
           h('div', { class: 'chips' }, others.map((c) => chip(c.title))),
-          h('p', { class: 'muted small' }, 'Il dettaglio comparirà qui quando queste sezioni saranno pronte.')));
+          h('a', { class: 'link-small', href: '#/condiviso' }, 'Vedi il dettaglio')));
       }
     }
   } catch (err) {

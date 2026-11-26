@@ -33,11 +33,21 @@ jobs:
           node-version: 22
       - name: Installa dipendenze (Supabase CLI e supabase-js bloccati da package-lock.json)
         run: npm ci
-      - name: Avvia Supabase locale (Docker, nessuna risorsa remota)
+      - name: Configura le Edge Functions per i test (valori finti, solo CI)
+        run: |
+          {
+            echo 'CRON_SECRET=test-cron-secret-locale'
+            echo 'ANTHROPIC_API_KEY=sk-ant-test-local-key'
+            echo 'ANTHROPIC_BASE_URL=http://172.17.0.1:9911'
+            echo 'ANTHROPIC_MODEL=claude-test'
+          } > supabase/functions/.env
+      - name: Avvia Supabase locale (Docker, Edge Runtime incluso, nessuna risorsa remota)
         run: npm run db:start
       - name: Test pgTAP (RLS, vincoli, privilegi)
         run: npm run db:test
       - name: Test API reali (Auth, RLS, collegamento 1:1, concorrenza, Storage)
+        env:
+          ALE_DOCKER_HOST: 172.17.0.1
         run: npm run test:api
 
   build:

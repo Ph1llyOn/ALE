@@ -13,6 +13,8 @@ export const TABS = {
   phill: [
     { href: '#/home', label: 'Home', icon: 'home', match: ['/home', '/notifiche'] },
     { href: '#/messaggi', label: 'Messaggi', icon: 'mail', match: ['/messaggi'] },
+    { href: '#/proposte', label: 'Proposte', icon: 'calendar', match: ['/proposte'] },
+    { href: '#/condiviso', label: 'Condiviso', icon: 'activity', match: ['/condiviso'] },
     { href: '#/profilo', label: 'Profilo', icon: 'user', match: ['/profilo', '/profilo/collegamento', '/profilo/privacy', '/profilo/impostazioni'] },
   ],
 };

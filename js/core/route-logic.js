@@ -23,6 +23,8 @@ export const ROUTES = Object.assign(Object.create(null), {
   '/profilo/attrezzatura': 'auth',
   // area di Phill
   '/messaggi': 'auth',
+  '/proposte': 'auth',
+  '/condiviso': 'auth',
 });
 
 /** Rotte riservate a un ruolo (le altre sono per entrambi). Il database resta la vera barriera. */
@@ -39,6 +41,8 @@ export const ROUTE_ROLES = Object.assign(Object.create(null), {
   '/profilo/progressi': 'alessia',
   '/profilo/attrezzatura': 'alessia',
   '/messaggi': 'phill',
+  '/proposte': 'phill',
+  '/condiviso': 'phill',
 });
 
 /** "#/invito?codice=ABC" → { path: '/invito', query: { codice: 'ABC' } } */

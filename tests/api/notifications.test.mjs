@@ -109,7 +109,7 @@ test('push: il job pianificato nel database chiama davvero la funzione con il se
     await new Promise((r) => setTimeout(r, 2500));
     assert.equal(hits.length, 0, 'senza configurazione il job non fa nulla');
     // configurato
-    await admin.from('internal_config').insert([{ key: 'functions_url', value: 'http://host.docker.internal:9912/functions/v1' }, { key: 'cron_secret', value: 'segreto-di-prova' }]);
+    await admin.from('internal_config').insert([{ key: 'functions_url', value: `http://${process.env.ALE_DOCKER_HOST || 'host.docker.internal'}:9912/functions/v1` }, { key: 'cron_secret', value: 'segreto-di-prova' }]);
     assert.equal((await admin.rpc('call_push_dispatch')).error, null);
     for (let i = 0; i < 40 && !hits.length; i++) await new Promise((r) => setTimeout(r, 500));
     assert.equal(hits.length >= 1, true, 'il database ha chiamato la funzione');
