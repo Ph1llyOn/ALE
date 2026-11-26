@@ -26,7 +26,7 @@ export async function loadAiContext(sb, userId, now = new Date()) {
     use_journal: Boolean(prefs?.ai_enabled && prefs.use_journal), reminders_enabled: Boolean(prefs?.ai_enabled && prefs.reminders_enabled),
   };
   const from7 = daysAgo(7, now); const from30 = daysAgo(30, now);
-  const [eq, wb, jr, sessions, habitLogs, goals, wbCount, hist, fbk] = await Promise.all([
+  const [eq, wb, jr, sessions, habitLogs, goals, wbCount, hist, fbk, recent] = await Promise.all([
     consents.use_equipment ? sb.from('equipment').select('name, avoid').eq('owner_id', userId) : { data: [] },
     consents.use_wellbeing ? sb.from('wellbeing_logs').select('day, mood, energy').eq('owner_id', userId).gte('day', from7).order('day') : { data: [] },
     consents.use_journal ? sb.from('journal_entries').select('title, body').eq('owner_id', userId).order('created_at', { ascending: false }).limit(3) : { data: [] },
@@ -37,7 +37,10 @@ export async function loadAiContext(sb, userId, now = new Date()) {
     // storico e feedback servono SOLO alle regole deterministiche del server (adattamento, recupero, dolore): non finiscono mai nel testo per il modello
     sb.from('workout_sessions').select('started_at, plan, session_exercise_progress(exercise_key, sets_done)').eq('owner_id', userId).in('status', ['completed', 'stopped']).gte('started_at', `${daysAgo(90, now)}T00:00:00Z`).limit(200),
     sb.from('exercise_feedback').select('exercise_key, rating, created_at').eq('owner_id', userId).gte('created_at', `${daysAgo(90, now)}T00:00:00Z`),
+    // gli ultimi pensieri già scritti per lei (testi nostri): servono a non ripeterli
+    sb.from('ai_generations').select('output').eq('user_id', userId).eq('kind', 'daily').eq('status', 'ok').order('created_at', { ascending: false }).limit(6),
   ]);
+  const recentDaily = (recent.data ?? []).map((r) => r.output?.value).filter((v) => v?.text).map((v) => ({ title: v.title, text: v.text }));
   const history = [];
   for (const row of hist.data ?? []) {
     const items = new Map((row.plan?.items ?? []).map((i) => [i.exercise_key, i]));
@@ -49,7 +52,7 @@ export async function loadAiContext(sb, userId, now = new Date()) {
   }
   const feedback = (fbk.data ?? []).map((f) => ({ key: f.exercise_key, rating: f.rating, day: romeDay(new Date(f.created_at)) }));
   const ctx = buildContext({
-    firstName: profile.display_name, hour: romeHour(now), consents,
+    firstName: profile.display_name, hour: romeHour(now), today: romeDay(now), consents, recentDaily,
     equipment: eq.data ?? [], wellbeing: wb.data ?? [], journal: jr.data ?? [],
     professionalNotes: settings?.professional_notes, spaces: settings?.spaces, limitations: settings?.limitations, prefersNoEquipment: settings?.prefers_no_equipment,
     training: { level: settings?.fitness_level, minutes: settings?.session_minutes, avoidFlags: settings?.avoid_flags ?? [], prefs: settings?.preferences ?? {}, history, feedback, today: romeDay(now), seed: now.getDate() + now.getMonth() * 31 },
@@ -58,7 +61,7 @@ export async function loadAiContext(sb, userId, now = new Date()) {
   return { profile, prefs, ctx };
 }
 
-const shape = (kind, source, value) => ({ ok: true, kind, source, ...value });
+const shape = (kind, source, value, state) => ({ ok: true, kind, source, ...(state ? { state } : {}), ...value });
 
 /**
  * Genera (o restituisce quella già fatta oggi, per la motivazione) un contenuto per l'utente.
@@ -72,9 +75,18 @@ export async function generateFor(sb, { userId, kind, env, now = new Date(), cal
   if (!prefs?.ai_enabled) return { ok: false, error: 'ai_disabled' };
 
   const day = romeDay(now);
+  const moodNow = ctx.mood?.state ?? 'neutro';
+  let revising = null;
   if (kind === 'daily') {
-    const { data: cached } = await sb.from('ai_generations').select('output').eq('user_id', userId).eq('kind', 'daily').eq('for_day', day).eq('status', 'ok').maybeSingle();
-    if (cached?.output?.value) return shape('daily', cached.output.source, cached.output.value);
+    const { data: cached } = await sb.from('ai_generations').select('id, output, created_at').eq('user_id', userId).eq('kind', 'daily').eq('for_day', day).eq('status', 'ok').maybeSingle();
+    if (cached?.output?.value) {
+      // Un solo pensiero al giorno. Si riscrive UNA volta sola se nel frattempo Alessia ha indicato come sta (lo stato è cambiato)
+      // oppure se il primo era di ripiego perché il modello non rispondeva (e sono passati 30 minuti): mai di più, niente richieste inutili.
+      const stateChanged = (cached.output.state ?? 'neutro') !== moodNow;
+      const staleFallback = cached.output.source === 'fallback' && aiConfigured(env) && now.getTime() - new Date(cached.created_at).getTime() > 30 * 60_000;
+      if (cached.output.revised || !(stateChanged || staleFallback)) return shape('daily', cached.output.source, cached.output.value, cached.output.state ?? 'neutro');
+      revising = cached;
+    }
   }
   const since = new Date(now.getTime() - 864e5).toISOString();
   const { count } = await sb.from('ai_generations').select('id', { count: 'exact', head: true }).eq('user_id', userId).gte('created_at', since);
@@ -89,12 +101,17 @@ export async function generateFor(sb, { userId, kind, env, now = new Date(), cal
   for (const r of result.rejections.slice(0, 3)) {
     await sb.from('ai_generations').insert({ user_id: userId, kind, status: 'rejected', output: { stage: r.stage, reason: r.reason } });
   }
-  const { error } = await sb.from('ai_generations').insert({ user_id: userId, kind, status: 'ok', output: { source: result.source, value: result.value }, for_day: kind === 'daily' ? day : null });
+  const output = { source: result.source, value: result.value, ...(kind === 'daily' ? { state: moodNow, revised: Boolean(revising) } : {}) };
+  if (revising) {
+    await sb.from('ai_generations').update({ output }).eq('id', revising.id);
+    return shape('daily', result.source, result.value, moodNow);
+  }
+  const { error } = await sb.from('ai_generations').insert({ user_id: userId, kind, status: 'ok', output, for_day: kind === 'daily' ? day : null });
   if (error && error.code === '23505') {   // corsa con un'altra richiesta: vince la prima
     const { data: again } = await sb.from('ai_generations').select('output').eq('user_id', userId).eq('kind', 'daily').eq('for_day', day).eq('status', 'ok').maybeSingle();
-    if (again?.output?.value) return shape('daily', again.output.source, again.output.value);
+    if (again?.output?.value) return shape('daily', again.output.source, again.output.value, again.output.state ?? 'neutro');
   }
-  return shape(kind, result.source, result.value);
+  return shape(kind, result.source, result.value, kind === 'daily' ? moodNow : null);
 }
 
 export const ERROR_STATUS = { ai_disabled: 403, rate_limited: 429, wrong_role: 403, no_profile: 404, bad_kind: 400 };

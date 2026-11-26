@@ -71,8 +71,8 @@ spegne ogni consenso specifico e azzera la data. Le funzioni AI (fase successiva
 ## Limiti noti e cose da sapere
 - **Amministratori della piattaforma.** Il proprietario del progetto Supabase e chi ha la service role possono leggere
   il database: la privacy qui descritta è verso gli altri utenti dell'app, non verso chi la amministra.
-- **Backup.** Sul piano Free non sono previsti backup automatici scaricabili; se in futuro si attivano, i dati eliminati
-  restano nei backup fino alla loro scadenza.
+- **Backup.** Vedi `docs/DATI_E_BACKUP.md` (stato incerto sul piano Free: la copia manuale è la strategia affidabile).
+- **AI (Gemini di Google).** I testi sono inviati a Google solo con il consenso generale e, per umore/diario/attrezzi, con quelli specifici; le impostazioni lo dicono con il nome del servizio. Le note del professionista non vengono mai inviate. I testi generati sul nostro database si cancellano dopo 90 giorni. Le condizioni di Google (piano gratuito vs. a pagamento, area SEE) vanno verificate dal titolare della chiave: vedi `docs/AI.md`.
 - **Metadati visibili al partner.** Nome visualizzato, foto e ruolo; la data di inizio del collegamento.
 - **Informativa privacy e consensi** per gli utenti finali: da scrivere prima dell'onboarding reale di Alessia (confermato).
 - **Eliminare l'account elimina l'intera conversazione, per entrambi** (confermato).

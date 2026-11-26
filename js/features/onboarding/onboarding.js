@@ -93,10 +93,10 @@ export default async function onboardingView() {
     const t = (key, label, text) => toggle({ label, description: text, checked: want[key], onChange: async (v) => { want[key] = v; } }).el;
     const master = toggle({ label: 'Acconsento all’uso dell’AI', description: 'Puoi revocare il consenso quando vuoi, in Impostazioni.', checked: want.ai_enabled, onChange: async (v) => { want.ai_enabled = v; } });
     frame(step, h('div', { class: 'stack' },
-      h('p', { class: 'notice' }, 'L’AI non dà diagnosi, diete o trattamenti, non giudica il corpo e non crea obblighi. I testi li scrive un servizio esterno, Gemini di Google: gli arrivano il tuo nome e solo i dati che consenti qui sotto. Se non acconsenti, ricevi messaggi gentili preparati a mano.'),
+      h('p', { class: 'notice' }, 'L’AI non dà diagnosi, diete o trattamenti, non giudica il corpo e non crea obblighi. I testi li scrive un servizio esterno, Gemini di Google: gli arrivano il tuo nome, il numero di allenamenti e abitudini degli ultimi 7 giorni e solo gli altri dati che consenti qui sotto. Se non acconsenti, ricevi messaggi gentili preparati a mano.'),
       h('div', { class: 'switch-list' }, master.el, t('use_equipment', 'Usa la mia attrezzatura', ''), t('use_wellbeing', 'Usa umore ed energia', 'Solo i numeri, mai le note private.'),
-        t('use_journal', 'Usa le mie voci di diario', 'Brevi estratti, anche privati, inviati a Google. Solo se lo vuoi.'), t('reminders_enabled', 'Suggerisci promemoria', ''))), { onNext: async () => {
-      await saveAiPrefs(profile.id, { ai_enabled: want.ai_enabled, use_equipment: want.ai_enabled && want.use_equipment, use_wellbeing: want.ai_enabled && want.use_wellbeing, use_journal: want.ai_enabled && want.use_journal, reminders_enabled: want.ai_enabled && want.reminders_enabled });
+        t('use_journal', 'Usa le mie voci di diario', 'Brevi estratti, anche privati, inviati a Google. Solo se lo vuoi.'))), { onNext: async () => {
+      await saveAiPrefs(profile.id, { ai_enabled: want.ai_enabled, use_equipment: want.ai_enabled && want.use_equipment, use_wellbeing: want.ai_enabled && want.use_wellbeing, use_journal: want.ai_enabled && want.use_journal });
     } });
   }
 

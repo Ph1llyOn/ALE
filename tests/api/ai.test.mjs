@@ -371,3 +371,79 @@ test('AUDIT robustezza: modello lento (oltre il timeout) → ripiego, nessun blo
     assert.ok(r.body.text.length > 20);
   }
 });
+
+// ============================================================ personalizzazione all'umore
+const romeToday = () => new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Rome' }).format(new Date());
+async function setMood(mood, energy) {
+  const admin = adminClient();
+  await admin.from('wellbeing_logs').delete().eq('owner_id', ale.id);
+  if (mood) await ale.client.from('wellbeing_logs').insert({ owner_id: ale.id, day: romeToday(), mood, energy });
+}
+
+test('UMORE: con il consenso il pensiero del mattino riceve lo stato reale e le regole di comportamento; senza consenso niente', async () => {
+  await setMood(1, 2);
+  await setPrefs(ale, { ai_enabled: true, use_wellbeing: true });
+  await resetGenerations(); mock.reset(); mock.respond((r) => (r.isClassifier ? OK : DAILY({ text: 'Oggi non devi dimostrare niente a nessuno: ci sono io, con calma e senza fretta.' })));
+  const r = await gen(ale, 'daily');
+  assert.equal(r.status, 200); assert.equal(r.body.state, 'giu');
+  const g = mock.generators()[0].user; const c = mock.classifiers()[0].user;
+  assert.match(g, /umore «pesante», energia «poca»/);
+  assert.match(g, /NON usare frasi come "non mollare"/);
+  assert.match(c, /Stato di oggi: giu/);
+  // senza il consenso a umore ed energia: stato neutro, e il dato non viene nemmeno nominato
+  await setPrefs(ale, { ai_enabled: true, use_wellbeing: false });
+  await resetGenerations(); mock.reset();
+  const n = await gen(ale, 'daily');
+  assert.equal(n.body.state, 'neutro');
+  assert.ok(!/pesante|umore «/.test(mock.generators()[0].user));
+  assert.match(mock.generators()[0].user, /non ha indicato come si sente/i);
+});
+
+test('UMORE: se lo stato cambia durante la giornata il pensiero si riscrive UNA volta sola; poi non si richiama più il modello', async () => {
+  await setPrefs(ale, { ai_enabled: true, use_wellbeing: true });
+  await setMood(0, 0);
+  await resetGenerations(); mock.reset(); mock.respond((r) => (r.isClassifier ? OK : DAILY()));
+  const first = await gen(ale, 'daily');
+  assert.equal(first.body.state, 'neutro');
+  assert.equal(mock.requests.length, 2);
+  await setMood(5, 4);                          // più tardi Alessia indica come sta
+  mock.reset(); mock.respond((r) => (r.isClassifier ? OK : DAILY({ text: 'Si sente che stai bene oggi, e fa piacere. Goditi la giornata a modo tuo.' })));
+  const second = await gen(ale, 'daily');
+  assert.equal(second.body.state, 'felice');
+  assert.match(second.body.text, /stai bene/);
+  assert.equal(mock.requests.length, 2, 'una sola riscrittura');
+  await setMood(1, 1);                          // un altro cambio: il pensiero resta quello, niente altre richieste
+  mock.reset();
+  const third = await gen(ale, 'daily');
+  assert.equal(third.body.state, 'felice');
+  assert.equal(mock.requests.length, 0, 'mai più di una riscrittura al giorno');
+  const rows = await adminClient().from('ai_generations').select('id').eq('user_id', ale.id).eq('kind', 'daily').eq('status', 'ok');
+  assert.equal(rows.data.length, 1, 'una sola riga per giorno');
+});
+
+test('UMORE: senza Gemini il ripiego è comunque personalizzato (stato, mai pressione) e diverso nei vari stati', async () => {
+  await setPrefs(ale, { ai_enabled: true, use_wellbeing: true });
+  mock.respond(() => ({ status: 503, body: {} }));
+  const { DAILY_BY_STATE } = await import('../../js/data/motivation.js');
+  const seen = {};
+  for (const [m, e, state] of [[1, 2, 'giu'], [5, 4, 'felice'], [3, 1, 'poca_energia'], [4, 1, 'stanca_soddisfatta']]) {
+    await setMood(m, e); await resetGenerations(); mock.reset();
+    const r = await gen(ale, 'daily');
+    assert.equal(r.status, 200); assert.equal(r.body.source, 'fallback'); assert.equal(r.body.state, state);
+    assert.ok(DAILY_BY_STATE[state].some((x) => x.text === r.body.text), `${state}: messaggio non del proprio stato`);
+    seen[state] = r.body.text;
+  }
+  assert.equal(new Set(Object.values(seen)).size, 4);
+  await setMood(0, 0);
+});
+
+test('UMORE: nessuna richiesta in più (una generazione = 2 chiamate) e il pensiero già scritto viene escluso dai nuovi', async () => {
+  await setPrefs(ale, { ai_enabled: true, use_wellbeing: false });
+  await resetGenerations(); mock.reset(); mock.respond((r) => (r.isClassifier ? OK : DAILY({ title: 'Titolo-già-scritto', text: 'Oggi puoi muoverti piano e fermarti quando vuoi: va bene così.' })));
+  await gen(ale, 'daily');
+  await adminClient().from('ai_generations').update({ for_day: '2020-01-01' }).eq('user_id', ale.id).eq('kind', 'daily');   // come se fosse ieri
+  mock.reset();
+  await gen(ale, 'daily');
+  assert.equal(mock.requests.length, 2);
+  assert.match(mock.generators()[0].user, /MESSAGGI RECENTI[^\n]*Titolo-già-scritto/, 'gli ultimi messaggi vengono mostrati al modello per non ripeterli');
+});

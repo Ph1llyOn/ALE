@@ -15,7 +15,7 @@ export function messageCard(m, { senderName = 'Phill', unread = false, actions =
     h('p', { class: 'ticket-body' }, m.body),
     h('footer', { class: 'ticket-foot' },
       h('span', { class: 'ticket-sign' }, `Da ${senderName}`),
-      showDate ? h('span', { class: 'muted' }, fmtRelative(m.sent_at ?? m.send_at), m.edited_at ? ' · modificato' : '') : null,
+      showDate ? h('span', { class: 'muted' }, fmtRelative(m.sent_at ?? m.send_at)) : null,
     ),
     extra,
     actions ? h('div', { class: 'ticket-actions' }, actions) : null);

@@ -5,7 +5,8 @@ import {
   listWorkouts, inProgressSession, getWorkout, listProposals, acceptProposal, rejectProposal, saveWorkout,
   listHabits, addHabit, setHabitDone, archiveHabit, isConsolidated, addWin, listSessions,
 } from '../../core/api-activities.js';
-import { listEquipment } from '../../core/api-personal.js';
+import { listEquipment, listWellbeing } from '../../core/api-personal.js';
+import { moodState, GENTLE_STATES } from '../../data/motivation.js';
 import { getSettings } from '../../core/api-settings.js';
 import { loadTrainingContext, createGuidedSession, planFromWorkout, computeWeekPlan, applyWeekPlan, declinePlanEvent } from '../../core/api-training.js';
 import { generateSession, weekdayOf } from '../../data/planner-core.js';
@@ -118,11 +119,14 @@ export default async function activitiesView() {
       const today = ctx.today;
       const todays = (await weekEventsCached()).find((e) => e.source === 'plan' && e.day === today && !e.completed && e.status !== 'declined');
       const yesterdayDone = ctx.history.some((x) => x.day === addDay(today, -1));
-      const kind = todayKind ?? todays?.plan_data?.kind ?? (yesterdayDone ? 'mobility' : 'strength');
+      // se oggi ha indicato una giornata pesante o poca energia, si parte da qualcosa di molto leggero (e riposare resta sempre una scelta valida)
+      const logToday = (await listWellbeing(profile.id, today).catch(() => [])).find((l) => l.day === today);
+      const gentle = logToday ? GENTLE_STATES.includes(moodState(logToday.mood, logToday.energy)) : false;
+      const kind = todayKind ?? (gentle ? 'mobility' : todays?.plan_data?.kind ?? (yesterdayDone ? 'mobility' : 'strength'));
       card.append(segmented({ label: 'Che allenamento vuoi fare', value: kind, options: Object.entries(KIND_LABELS).map(([value, label]) => ({ value, label })), onChange: (v) => { todayKind = v; todaySeed = 0; paint(); } }).el);
       const plan = generateSession(ctx, { kind });
       if (!plan?.items?.length) { card.append(h('p', { class: 'muted' }, 'Per ora non trovo esercizi adatti. Controlla attrezzi e limitazioni nel Profilo.')); return card; }
-      const intro = todays ? 'Era in programma per oggi.' : yesterdayDone && kind === 'mobility' ? 'Ieri ti sei allenata: oggi qualcosa di più leggero.' : 'Una proposta pensata su quello che hai, sul tempo che hai scelto e su come sono andate le ultime volte.';
+      const intro = gentle && !todayKind ? 'Oggi hai indicato poca energia o una giornata pesante: ti propongo qualcosa di molto leggero. Se preferisci riposare, va benissimo così.' : todays ? 'Era in programma per oggi.' : yesterdayDone && kind === 'mobility' ? 'Ieri ti sei allenata: oggi qualcosa di più leggero.' : 'Una proposta pensata su quello che hai, sul tempo che hai scelto e su come sono andate le ultime volte.';
       card.append(h('p', { class: 'muted' }, `${intro} Circa ${plan.estimated_minutes} minuti.`));
       for (const phase of ['warmup', 'main', 'cardio', 'cooldown']) {
         const list = plan.items.filter((i) => i.phase === phase); if (!list.length) continue;

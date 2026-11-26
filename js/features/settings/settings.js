@@ -88,7 +88,7 @@ export default async function settingsView() {
       } });
       sub.push(t); return t;
     };
-    const master = toggle({ label: 'Consenti l’uso dell’AI', description: 'Acconsenti esplicitamente: puoi revocare quando vuoi e ogni consenso specifico si spegne. I testi li scrive un servizio esterno, Gemini di Google: riceve il tuo nome e solo i dati che consenti qui sotto.', checked: ai.ai_enabled, onChange: async (v) => {
+    const master = toggle({ label: 'Consenti l’uso dell’AI', description: 'Acconsenti esplicitamente: puoi revocare quando vuoi e ogni consenso specifico si spegne. I testi li scrive un servizio esterno, Gemini di Google: riceve il tuo nome, il numero di allenamenti e abitudini degli ultimi 7 giorni e solo gli altri dati che consenti qui sotto.', checked: ai.ai_enabled, onChange: async (v) => {
       try {
         await saveAiPrefs(profile.id, { ai_enabled: v });
         ai.ai_enabled = v;
@@ -99,8 +99,7 @@ export default async function settingsView() {
     const list2 = h('div', { class: 'switch-list' }, master.el,
       mk('use_equipment', 'Usa la mia attrezzatura', 'Invia i nomi dei tuoi attrezzi, per proporre esercizi adatti.').el,
       mk('use_wellbeing', 'Usa umore ed energia', 'Invia solo i numeri di umore ed energia degli ultimi giorni. Mai le note.').el,
-      mk('use_journal', 'Usa le mie voci di diario', 'Invia a Google brevi estratti delle ultime voci, anche private. Attiva solo se ti sta bene.').el,
-      mk('reminders_enabled', 'Suggerisci promemoria', 'Idee gentili che accetti o scarti tu.').el);
+      mk('use_journal', 'Usa le mie voci di diario', 'Invia a Google brevi estratti delle ultime voci, anche private. Attiva solo se ti sta bene.').el);
     for (const t of sub) t.input.disabled = !ai.ai_enabled;
     const time = h('input', { id: 'morning', type: 'time', class: 'input', value: settings.morning_time, 'aria-label': 'Orario della motivazione del mattino' });
     const saveTime = h('button', { class: 'btn btn-secondary', type: 'button', onclick: () => withBusy(saveTime, async () => {

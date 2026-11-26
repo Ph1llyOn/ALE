@@ -63,7 +63,7 @@ export default async function progressView() {
     const btn = h('button', { class: 'btn btn-secondary', type: 'button', onclick: () => withBusy(btn, async () => {
       try {
         const r = await aiReflection();
-        out.replaceChildren(h('p', { class: 'ticket-body' }, r.text), h('p', { class: 'muted small' }, r.source === 'ai' ? 'Scritto dall’assistente AI, con il tuo consenso.' : 'Messaggio già pronto: l’intelligenza artificiale non è collegata.'));
+        out.replaceChildren(h('p', { class: 'ticket-body' }, r.text), h('p', { class: 'muted small' }, r.source === 'ai' ? 'Scritto dall’assistente AI (Gemini di Google), con il tuo consenso.' : 'Messaggio già pronto: l’intelligenza artificiale non è collegata.'));
       } catch (err) { toast(err.message, 'error'); }
     }) }, 'Scrivimi una riflessione');
     reflect.append(h('p', { class: 'muted' }, 'Una breve lettura dei tuoi ultimi giorni, senza giudizi.'), btn, out);

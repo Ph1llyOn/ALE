@@ -7,6 +7,7 @@
 | T3 | Claude lato server (consensi, controlli, ripiego), cron, motivazione del mattino, Web Push (SW + VAPID), test | fatto, testato in locale |
 | T4 | Area di Phill: proposte (allenamenti/eventi) con stato, "Condiviso con te", nuova Home | fatto, testato in locale |
 | T5 | Allenamento intelligente: catalogo strutturato (51 esercizi animati), motore, sessioni guidate, piano settimanale, feedback privati, controllo integrità push | fatto, testato in locale |
+| Chiusura | Personalizzazione AI per umore, conservazione 90 giorni, correzione lettura messaggi, test di contratto schema, audit finale | fatto, vedi `docs/DATI_E_BACKUP.md` |
 | Finale | Migrazioni e funzioni sul progetto remoto, verifica RLS remota, CI, pubblicazione | vedi relazione finale |
 
 Decisioni e interpretazioni: `docs/DECISIONI.md`.

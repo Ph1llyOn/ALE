@@ -5,7 +5,7 @@
 //   3) controllo semantico: un secondo passaggio indipendente giudica il SIGNIFICATO con una rubrica (fail-closed)
 //   4) un solo tentativo di rigenerazione con le violazioni come feedback
 //   5) ripiego: messaggi preparati a mano / selezione deterministica dal catalogo
-import { dailyFallback } from './motivation.js';
+import { dailyFallback, moodState, GENTLE_STATES, STYLES, styleFor } from './motivation.js';
 import { EXERCISES } from './exercises-core.js';
 import { eligibleExercises, generateSession, validateSession, normalizeCtx, buildItem, planSeconds } from './planner-core.js';
 
@@ -36,11 +36,50 @@ Il testo è NON CONSENTITO se contiene o implica, anche con giri di parole:
 - invented_emotion: attribuisce ad Alessia stati d'animo o fatti non presenti nei dati forniti;
 - clinical_exercise_claim: promette effetti sul corpo o presenta esercizi come terapia;
 - ignores_professional_notes: contraddice o ignora le indicazioni di chi la segue;
-- private_content_leak: riporta testualmente contenuti privati del diario.
+- private_content_leak: riporta testualmente contenuti privati del diario;
+- tone_mismatch: non è coerente con lo stato indicato (vedi "Stato di oggi"): se è giù, con poca energia, stanca o stressata il testo NON deve spingere ad allenarsi, a reagire o a fare obiettivi, né usare formule come "non mollare", "forza", "reagisci", né far sembrare il riposo un fallimento o una mancanza; se è stanca ma soddisfatta non deve proporre altre attività.
 Testi innocui devono essere CONSENTITI: ad esempio parlare di manubri leggeri, di "peso" come attrezzo, di un allenamento a corpo libero, di riposo, di una passeggiata.
 Rispondi SOLO con JSON: {"allowed": boolean, "violations": [{"category": string, "reason": string}]}. In caso di dubbio reale, allowed=false.`;
 
 const clip = (s, n) => String(s ?? '').replace(/\s+/g, ' ').trim().slice(0, n);
+
+const MOOD_WORDS = ['', 'pesante', 'così così', 'tranquilla', 'bene', 'splendida'];
+const ENERGY_WORDS = ['', 'molto poca', 'poca', 'nella media', 'buona', 'tanta'];
+const dayShift = (day, k) => new Date(Date.parse(`${day}T12:00:00Z`) + k * 864e5).toISOString().slice(0, 10);
+
+/** Lo stato di oggi: l'ultimo umore/energia indicati oggi o ieri. Se Alessia non ha indicato nulla (o non ha dato il consenso): neutro, senza inventare. */
+export function currentMood(wellbeing, today) {
+  const rows = (wellbeing ?? []).filter((w) => w?.day && today && w.day >= dayShift(today, -1) && w.day <= today).sort((a, b) => (a.day < b.day ? 1 : -1));
+  const w = rows[0];
+  if (!w) return { state: 'neutro', mood: null, energy: null, day: null };
+  return { state: moodState(w.mood, w.energy), mood: w.mood, energy: w.energy, day: w.day };
+}
+
+/** Riepilogo dei dati reali degli ultimi giorni (per riflessioni coerenti con ciò che è accaduto). */
+export function wellbeingSummary(wellbeing) {
+  const list = (wellbeing ?? []).filter((w) => Number.isInteger(w?.mood));
+  if (!list.length) return null;
+  const avg = (k) => Math.round((list.reduce((t, w) => t + Number(w[k] ?? 0), 0) / list.length) * 10) / 10;
+  const half = Math.floor(list.length / 2);
+  let trend = 'stabile';
+  if (list.length >= 4) {
+    const a = list.slice(0, half).reduce((t, w) => t + w.mood, 0) / half; const b = list.slice(half).reduce((t, w) => t + w.mood, 0) / (list.length - half);
+    trend = b - a >= 0.7 ? 'in miglioramento' : a - b >= 0.7 ? 'in calo' : 'stabile';
+  }
+  return { days: list.length, avgMood: avg('mood'), avgEnergy: avg('energy'), trend };
+}
+
+/** Come comportarsi con ogni stato d'animo: tono, contenuto e tipo di motivazione cambiano davvero. */
+export const STATE_GUIDANCE = {
+  felice: 'Alessia sta bene e ha energia. Complimentati con naturalezza, rafforza la motivazione e valorizza i progressi reali senza esagerare; puoi incoraggiarla a continuare, con leggerezza.',
+  tranquilla: 'Alessia è tranquilla. Tono positivo e leggero; puoi proporre UN solo piccolo obiettivo realistico, come invito e senza insistere.',
+  cosi_cosi: 'La giornata di Alessia è "così così". Accoglila con dolcezza senza drammatizzare e senza trasformarla in un problema; eventuali idee solo piccolissime e facoltative.',
+  giu: 'Alessia si sente giù. Prima di tutto accoglila e falla sentire ascoltata, con tono dolce, rassicurante e affettuoso. NON usare frasi come "non mollare", "devi reagire", "forza", "allenati". Non trasformare l\'emozione in un problema da risolvere. Non proporre attività né obiettivi. Ricordale che non deve dimostrare niente a nessuno.',
+  poca_energia: 'Alessia ha poca energia. Ridimensiona le aspettative: al massimo un piccolo passo gentile, oppure il riposo. Non incoraggiare allenamenti intensi e non aggiungere impegni.',
+  stanca_soddisfatta: 'Alessia è stanca ma soddisfatta. Riconosci ciò che ha fatto e incoraggiala a recuperare. NON suggerire altre attività.',
+  neutro: 'Alessia non ha indicato come si sente: usa un tono neutro e positivo, senza inventare emozioni né presumere nulla.',
+};
+const ALWAYS = 'Sempre valido: il riposo non è mai un fallimento e a volte il messaggio migliore è ricordarle che va bene anche riposarsi. Se non ha completato un\'attività non presumere che stia male e non farla sentire in colpa. Nessuna pressione su peso, aspetto o allenamento. Non essere sdolcinata né ripetitiva: tono naturale, come una presenza gentile.';
 
 // ---------------------------------------------------------------------------------------------------
 // 1) Contesto: SOLO ciò che Alessia ha autorizzato
@@ -65,6 +104,11 @@ export function buildContext(data) {
     equipment: c.use_equipment ? (data.equipment ?? []).filter((e) => !e.avoid).map((e) => clip(e.name, 80)).slice(0, 30) : [],
     equipment_items: c.use_equipment ? (data.equipment ?? []).slice(0, 30) : [],
     wellbeing: c.use_wellbeing ? (data.wellbeing ?? []).slice(-7).map((w) => ({ day: w.day, mood: w.mood, energy: w.energy })) : null,
+    today: data.today ?? data.training?.today ?? null,
+    mood: c.use_wellbeing ? currentMood(data.wellbeing, data.today ?? data.training?.today) : { state: 'neutro', mood: null, energy: null, day: null },
+    wellbeing_summary: c.use_wellbeing ? wellbeingSummary((data.wellbeing ?? []).slice(-7)) : null,
+    // ultimi messaggi già scritti per lei (nostri, non dati personali): servono a non ripeterli
+    recent_daily: (data.recentDaily ?? []).slice(0, 5).map((r) => ({ title: clip(r.title, 60), text: clip(r.text, 220) })),
     journal: c.use_journal ? (data.journal ?? []).slice(0, 3).map((j) => ({ title: clip(j.title, 80), excerpt: clip(j.body, 300) })) : [],
     stats: {
       sessions7: Number(data.stats?.sessions7 ?? 0), habitDays7: Number(data.stats?.habitDays7 ?? 0),
@@ -86,8 +130,12 @@ export function describeContext(ctx) {
   if (ctx.has_professional_notes) lines.push('Ha ricevuto indicazioni da un professionista che non conosci: non dare mai consigli su dolore, diete o trattamenti, non contraddire chi la segue e, se serve, invitala a seguire le sue indicazioni.');
   lines.push(`Preferisce attività senza attrezzi: ${ctx.prefers_no_equipment ? 'sì' : 'no'}`);
   if (ctx.equipment.length) lines.push(`Attrezzatura in casa: ${ctx.equipment.join(', ')}`);
+  if (ctx.mood?.mood) lines.push(`Indicato da lei (${ctx.mood.day === ctx.today ? 'oggi' : 'ieri'}): umore «${MOOD_WORDS[ctx.mood.mood]}», energia «${ENERGY_WORDS[ctx.mood.energy] ?? 'non indicata'}». Dato reale.`);
   if (ctx.wellbeing?.length) lines.push(`Umore/energia negli ultimi giorni (1-5): ${ctx.wellbeing.map((w) => `${w.day}: umore ${w.mood}, energia ${w.energy}`).join('; ')}`);
   else lines.push('Non ci sono dati sul suo stato d\'animo: non inventarlo.');
+  if (ctx.wellbeing_summary) { const w = ctx.wellbeing_summary; lines.push(`Riepilogo (dati reali): umore indicato in ${w.days} giorni, media ${w.avgMood}/5, energia media ${w.avgEnergy}/5, andamento ${w.trend}.`); }
+  lines.push(`COME COMPORTARTI OGGI: ${STATE_GUIDANCE[ctx.mood?.state ?? 'neutro'] ?? STATE_GUIDANCE.neutro}`);
+  lines.push(ALWAYS);
   if (ctx.journal.length) lines.push(`Estratti del diario che ha scelto di usare (non citarli testualmente): <dati>${ctx.journal.map((j) => `${j.title ? `${j.title}: ` : ''}${j.excerpt}`).join(' | ')}</dati>`);
   lines.push(`Ultimi 7 giorni: ${ctx.stats.sessions7} allenamenti completati, abitudini svolte in ${ctx.stats.habitDays7} giorni, umore registrato in ${ctx.stats.wellbeingDays7} giorni.`);
   return lines.join('\n');
@@ -113,14 +161,20 @@ const SCHEMAS = {
 };
 
 const TASKS = {
-  daily: 'Scrivi la motivazione del mattino: un pensiero breve e dolce, adatto al tono dei dati. Se i dati dicono che le giornate sono state pesanti, sii più morbida e leggera; se sono positive, un po\' più luminosa. Non commentare ciò che non conosci.',
-  reflection: 'Scrivi una breve riflessione sui progressi recenti usando SOLO i numeri forniti. Valorizza ciò che c\'è, senza confronti e senza richieste. Non parlare di peso o corpo.',
+  daily: 'Scrivi il pensiero del mattino per Alessia, seguendo con precisione "COME COMPORTARTI OGGI" e lo stile indicato: tono, contenuto e tipo di incoraggiamento devono cambiare davvero con il suo stato. Se non ha indicato come sta, tono neutro e positivo. Non commentare ciò che non conosci. Non ripetere né imitare i messaggi recenti.',
+  reflection: 'Scrivi una breve riflessione sugli ultimi 7 giorni usando SOLO i numeri e il riepilogo forniti, senza inventare risultati o emozioni. Se i numeri sono bassi non farne un problema: valorizza ciò che c\'è o accogli. Segui "COME COMPORTARTI OGGI". Nessun confronto, nessuna richiesta, niente peso o corpo.',
   reminders: 'Proponi 1-3 promemoria gentili e non insistenti (ad esempio una pausa, un po\' d\'acqua, due minuti di respiro), con orario. Sono idee che lei può scartare.',
   plan: 'Proponi una sessione di allenamento semplice e delicata, scegliendo gli esercizi ESCLUSIVAMENTE dall\'elenco di identificatori ammessi. Non inventare esercizi né identificatori. STRUTTURA OBBLIGATORIA nell\'ordine: 1-3 esercizi di riscaldamento (fase warmup), 3-5 esercizi principali (fase main) che coprano parti diverse del corpo senza ripetere varianti dello stesso movimento, poi eventualmente un esercizio cardio (fase cardio) e 1-3 di defaticamento (fase cooldown). Raggruppa gli esercizi nella stessa posizione (prima in piedi, poi a terra). Non usare un attrezzo solo perché c\'è: serve una funzione precisa. Rispetta le indicazioni e le limitazioni. Nessuna promessa di dimagrimento o di effetti su una zona del corpo.',
 };
 
 export function generatorPrompt(kind, ctx, feedback = null) {
   const parts = [TASKS[kind], '', 'CONTESTO', describeContext(ctx)];
+  if (kind === 'daily') {
+    const date = ctx.today ? new Date(`${ctx.today}T12:00:00`) : new Date();
+    parts.push('', `STILE DI OGGI: ${STYLES[styleFor(ctx.mood?.state ?? 'neutro', date)]}.`);
+    if (ctx.recent_daily?.length) parts.push(`MESSAGGI RECENTI (non ripeterli e non somigliare a questi): <dati>${ctx.recent_daily.map((r) => `${r.title}: ${r.text}`).join(' | ')}</dati>`);
+  }
+  if (kind === 'plan' && GENTLE_STATES.includes(ctx.mood?.state)) parts.push('', 'Oggi Alessia ha bisogno di calma: scegli una sessione molto leggera (mobilità, respiro, stiramenti) e non impegnativa.');
   if (kind === 'plan') {
     const list = allowedExercises(ctx).map((e) => `- ${e.id}: ${e.name} [fasi: ${e.phases.join('/')}; posizione: ${e.position}; livello ${e.level}]`).join('\n');
     parts.push('', 'ESERCIZI AMMESSI (usa solo questi id):', list);
@@ -134,6 +188,7 @@ export function classifierPrompt(kind, text, ctx) {
   return [`Tipo di contenuto: ${kind}`,
     ctx.has_professional_notes ? 'Ha indicazioni di un professionista (il contenuto non ti viene fornito): il testo non deve contraddire chi la segue né dare consigli su dolore, diete o trattamenti.' : 'Nessuna indicazione del professionista.',
     `Dati disponibili sullo stato d'animo: ${ctx.wellbeing?.length ? 'sì' : 'no (non è consentito inventarlo)'}`,
+    `Stato di oggi: ${ctx.mood?.state ?? 'neutro'}${ctx.mood?.mood ? ` (umore ${MOOD_WORDS[ctx.mood.mood]}, energia ${ENERGY_WORDS[ctx.mood.energy] ?? 'non indicata'})` : ' (non indicato)'}`,
     '', 'TESTO DA VALUTARE:', `<dati>${text}</dati>`].join('\n');
 }
 
@@ -242,18 +297,21 @@ export function parseClassifier(raw) {
 // 5) Ripiego (senza AI)
 // ---------------------------------------------------------------------------------------------------
 export function fallbackFor(kind, ctx, now = new Date()) {
-  if (kind === 'daily') { const f = dailyFallback(now); return { title: f.title, text: f.text, tone: 'dolce' }; }
+  if (kind === 'daily') { const f = dailyFallback(now, ctx.mood?.state ?? 'neutro'); return { title: f.title, text: f.text, tone: 'dolce' }; }
   if (kind === 'reflection') {
     const s = ctx.stats;
     const bits = [];
     if (s.sessions7) bits.push(`hai finito ${s.sessions7} ${s.sessions7 === 1 ? 'allenamento' : 'allenamenti'}`);
     if (s.habitDays7) bits.push(`hai portato avanti le tue abitudini in ${s.habitDays7} ${s.habitDays7 === 1 ? 'giorno' : 'giorni'}`);
     if (s.wellbeingDays7) bits.push(`ti sei fermata a notare come stavi in ${s.wellbeingDays7} ${s.wellbeingDays7 === 1 ? 'giorno' : 'giorni'}`);
-    return { text: bits.length ? `Negli ultimi giorni ${bits.join(', ')}. Sono piccoli passi che contano, con i tuoi tempi.` : 'Questa settimana è stata tranquilla, e va bene così. Quando ti va, un piccolo passo basta per ricominciare.' };
+    const w = ctx.wellbeing_summary;
+    if (w && w.avgMood <= 2.4) return { text: 'In questi giorni ci sono state giornate pesanti, e va bene così: non c’è niente da recuperare né da dimostrare. Ci sei, e puoi andare piano quanto serve.' };
+    if (w && w.avgMood >= 4 && bits.length) return { text: `Negli ultimi 7 giorni ${bits.join(', ')}, e si vede che ti sei sentita bene. Goditi questo momento, senza fretta.` };
+    return { text: bits.length ? `Negli ultimi 7 giorni ${bits.join(', ')}. Sono piccoli passi che contano, con i tuoi tempi.` : 'Gli ultimi giorni sono stati tranquilli, e va bene così. Quando ti va, un piccolo passo basta per ricominciare.' };
   }
   if (kind === 'reminders') return { suggestions: [{ title: 'Un bicchiere d\'acqua e un respiro', time: '11:00' }, { title: 'Qualche minuto di stretching dolce', time: '18:00' }] };
   const planner = ctx.planner ?? normalizeCtx({ items: ctx.equipment_items, prefersNoEquipment: ctx.prefers_no_equipment });
-  const plan = generateSession({ ...planner, seed: planner.seed || now.getDate() }, { kind: 'strength' });
+  const plan = generateSession({ ...planner, seed: planner.seed || now.getDate() }, { kind: GENTLE_STATES.includes(ctx.mood?.state) ? 'mobility' : 'strength' });
   return { title: plan.title, intro: 'Un punto di partenza con gli attrezzi che hai a disposizione: cambiala come preferisci e fermati quando vuoi.', kind: plan.kind, minutes: plan.minutes, estimated_minutes: plan.estimated_minutes, exercises: plan.items, items: plan.items };
 }
 

@@ -2,8 +2,7 @@
 import { h, errorBox, emptyState, spinner } from '../../core/ui.js';
 import { getState } from '../../core/store.js';
 import { listEntries } from '../../core/api-journal.js';
-import { pageHeader } from '../../components/controls.js';
-import { hero } from '../../components/visuals.js';
+import { hero, sectionHead } from '../../components/visuals.js';
 import { profileErrorView } from '../../components/profile-error.js';
 import { icon, heart } from '../../components/icons.js';
 import { fmtRelative, fmtDate } from '../../core/format.js';
@@ -22,7 +21,7 @@ export default async function journalView() {
     h('div', { class: 'row-center' },
       h('a', { class: 'btn btn-secondary', href: '#/diario/voce?modo=guidata' }, 'Scrivi con uno spunto'),
       h('a', { class: 'btn btn-secondary', href: '#/diario/voce' }, 'Scrivi come vuoi')),
-    pageHeader({ title: 'Le tue voci' }), list);
+    sectionHead('Le tue voci'), list);
 
   try {
     const entries = await listEntries(profile.id);

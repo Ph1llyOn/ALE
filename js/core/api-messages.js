@@ -9,7 +9,7 @@ const clean = (v) => { const t = String(v ?? '').trim(); return t === '' ? null 
 /** Biglietti ricevuti, dal più recente. Ogni elemento ha .receipt = { read_at, archived_at } | null. */
 export async function listInbox(userId, { limit = 100 } = {}) {
   const { data, error } = await sb.from('messages')
-    .select('id, title, body, sent_at, edited_at, sender_id, message_receipts(read_at, archived_at)')
+    .select('id, title, body, sent_at, sender_id, message_receipts(read_at, archived_at)')
     .eq('recipient_id', userId).order('sent_at', { ascending: false }).limit(limit);
   if (error) fail(error);
   return data.map(({ message_receipts, ...m }) => ({
@@ -51,7 +51,7 @@ export async function setArchived(userId, messageId, archived) {
 // --- Phill (mittente) -------------------------------------------------------
 export async function listSent(userId, { limit = 100 } = {}) {
   const { data, error } = await sb.from('messages')
-    .select('id, title, body, sent_at, edited_at, recipient_id')
+    .select('id, title, body, sent_at, recipient_id')
     .eq('sender_id', userId).order('sent_at', { ascending: false }).limit(limit);
   if (error) fail(error);
   return data;

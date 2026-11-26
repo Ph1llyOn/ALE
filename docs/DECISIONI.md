@@ -81,3 +81,8 @@ Anthropic API reale (serve una chiave finanziata), SMTP/email (non necessarie: a
 | Tappetino | non conta come "attrezzo" per la preferenza «senza attrezzi» |
 | Addominali e tapis roulant | preferenze di Alessia (modificabili), non obblighi quotidiani |
 | Notifiche | controllo di integrità a ogni apertura con ripristino automatico (vedi `docs/NOTIFICHE.md`) |
+
+## Chiusura (27/11/2026)
+- Personalizzazione AI per umore solo con consenso; senza dati: tono neutro. Nessuna chiamata in più.
+- `ai_generations` conservate 90 giorni, cancellazione notturna automatica.
+- Interruttore «Suggerisci promemoria» rimosso (nessun effetto). Nessun nuovo sviluppo dopo la chiusura.

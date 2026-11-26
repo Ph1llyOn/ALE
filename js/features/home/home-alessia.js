@@ -15,7 +15,7 @@ import { hero, ring, stat, tile, exerciseThumb, sectionHead } from '../../compon
 import { localDay } from '../../core/format.js';
 import { lastDays } from '../../core/chart.js';
 import { moodLabel } from '../../core/moods.js';
-import { dailyFallback } from '../../data/motivation.js';
+import { dailyFallback, moodState } from '../../data/motivation.js';
 import { timeOf, dayKey } from '../../data/calendar-util.js';
 import { navigate } from '../../core/router.js';
 
@@ -49,9 +49,14 @@ export default async function homeAlessia({ profile, partner, partnership }) {
 
   // --- pensiero del giorno
   const g = greeting();
-  let thought = dailyFallback(); let source = 'fallback';
+  // Lo stato d'animo che Alessia ha indicato oggi (dati suoi, letti sul suo dispositivo): sceglie il pensiero preparato a mano anche senza AI.
+  const logToday = (todayLog ?? []).find((l) => l.day === today);
+  const localState = logToday ? moodState(logToday.mood, logToday.energy) : 'neutro';
+  let thought = dailyFallback(new Date(), localState); let source = 'fallback';
   if (ai.ai_enabled) {
-    const cached = (() => { try { return JSON.parse(sessionStorage.getItem(`ale.daily.${today}`)); } catch { return null; } })();
+    // Con il consenso a "umore ed energia" il server conosce lo stato: se è cambiato rispetto al pensiero già in memoria, lo richiede (una sola riscrittura al giorno).
+    const wantState = ai.use_wellbeing ? localState : 'neutro';
+    const cached = (() => { try { const c = JSON.parse(sessionStorage.getItem(`ale.daily.${today}`)); return c && (c.state ?? 'neutro') === wantState ? c : null; } catch { return null; } })();
     const r = cached ?? await safe(aiDaily(), null);
     if (r?.text) {
       thought = { title: r.title, text: r.text }; source = r.source;
@@ -60,7 +65,7 @@ export default async function homeAlessia({ profile, partner, partnership }) {
   }
   const heroEl = hero({ eyebrow: g.text, title: thought.title, text: thought.text,
     cta: session ? { label: 'Riprendi l’allenamento', href: `#/attivita/sessione?id=${session.id}` } : { label: 'Cosa faccio oggi?', href: '#/attivita' } });
-  const origin = h('p', { class: 'muted small center' }, source === 'ai' ? 'Pensato per te dall’assistente, con i tuoi consensi.' : 'Un pensiero scelto per te.');
+  const origin = h('p', { class: 'muted small center' }, source === 'ai' ? 'Scritto per te dall’assistente AI (Gemini di Google), con i tuoi consensi.' : 'Un pensiero scelto per te.');
 
   const sections = [top, heroEl, origin];
 
