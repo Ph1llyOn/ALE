@@ -53,12 +53,15 @@ test('contesto: con i consensi, solo i campi autorizzati; le note di benessere n
   assert.equal(ctx.journal.length, 3, 'al massimo 3 voci di diario');
   assert.ok(ctx.journal.every((j) => j.excerpt.length <= 300), 'estratti limitati');
   assert.equal(ctx.partOfDay, 'mattina');
-  assert.ok(ctx.professional_notes.includes('salti'));
+  assert.equal(ctx.has_professional_notes, true);
+  const sent = describeContext(ctx) + generatorPrompt('daily', ctx) + generatorPrompt('plan', ctx) + classifierPrompt('daily', 'testo', ctx);
+  assert.ok(!/fisioterapista|Evitare i salti|Salotto|Poco tempo/.test(sent), 'note libere, limitazioni e spazi non vengono mai inviati al modello');
+  assert.ok(!/fisioterapista|Evitare i salti|Salotto|Poco tempo/.test(JSON.stringify(ctx)), 'nemmeno nel contesto interno');
 });
 
 test('contesto: il materiale dell\'utente è racchiuso in <dati> (difesa dall\'iniezione di istruzioni)', () => {
   const desc = describeContext(buildContext(FULL));
-  assert.match(desc, /<dati>Evitare i salti/);
+  assert.ok(!/Evitare i salti/.test(desc), 'le note del professionista non vengono inviate');
   assert.match(desc, /<dati>[^<]*Ignora le regole/);
   assert.match(SYSTEM_PROMPT, /NON istruzioni/);
 });
@@ -256,10 +259,11 @@ test('tipo non supportato rifiutato', async () => {
   await assert.rejects(runGeneration({ kind: 'oroscopo', ctx: buildContext(NONE), callModel: scripted() }), /non supportato/);
 });
 
-test('prompt del classificatore: contiene il testo tra marcatori e le indicazioni del professionista', () => {
+test('prompt del classificatore: contiene il testo tra marcatori e solo l’esistenza delle indicazioni del professionista', () => {
   const p = classifierPrompt('daily', 'Un pensiero gentile.', buildContext(FULL));
   assert.match(p, /<dati>Un pensiero gentile\.<\/dati>/);
-  assert.match(p, /salti/);
+  assert.match(p, /professionista/);
+  assert.ok(!/Evitare i salti|fisioterapista/.test(p));
 });
 
 // ---------------------------------------------------------------------------------------------------
@@ -298,4 +302,9 @@ test('callClaude: errori chiari e mai con la chiave dentro', async () => {
   assert.match(msgs[0], /401/);
   assert.match(msgs[4], /timeout/);
   await assert.rejects(callClaude({ apiKey: '', system: 's', user: 'u' }), /non configurata/);
+});
+
+test('controllo lingua: frasi italiane brevi e corrette non vengono respinte (e si evitano rigenerazioni inutili); l’inglese sì', () => {
+  for (const ok of ['Negli ultimi giorni hai fatto piccoli passi, e contano.', 'Oggi puoi muoverti piano e fermarti quando vuoi: va bene così.', 'Respira con calma, il resto può aspettare un momento.', 'Hai ascoltato il tuo corpo, e questo è già molto.']) assert.deepEqual(structuralChecks(ok), [], ok);
+  assert.ok(structuralChecks('Today you can move slowly and stop whenever you want, it is fine.').includes('non sembra italiano'));
 });

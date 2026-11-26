@@ -48,7 +48,7 @@ const clip = (s, n) => String(s ?? '').replace(/\s+/g, ' ').trim().slice(0, n);
 /**
  * data = { firstName, hour, consents: { use_equipment, use_wellbeing, use_journal, reminders_enabled },
  *          equipment: [{name, avoid}], wellbeing: [{day, mood, energy}], journal: [{title, body}],
- *          professionalNotes, spaces, limitations, prefersNoEquipment,
+ *          professionalNotes (solo per sapere se esistono; il testo non viene inviato), prefersNoEquipment,
  *          stats: { sessions7, habitDays7, goalsDone30, wellbeingDays7 } }
  * NON riceve mai: note di benessere, messaggi, dati di Phill, altri utenti.
  */
@@ -58,9 +58,9 @@ export function buildContext(data) {
   return {
     name: clip(data.firstName, 40) || 'Alessia',
     partOfDay: hour >= 5 && hour < 13 ? 'mattina' : hour >= 13 && hour < 19 ? 'pomeriggio' : 'sera',
-    professional_notes: clip(data.professionalNotes, 1000) || null,
-    spaces: clip(data.spaces, 500) || null,
-    limitations: clip(data.limitations, 500) || null,
+    // Le note libere (indicazioni del professionista, limitazioni, spazi) possono contenere informazioni sulla salute: NON escono mai verso il modello.
+    // Il rispetto delle limitazioni è garantito dalle regole del server (attenzioni strutturate, dolore recente), non dal prompt. Al modello si dice solo che esistono.
+    has_professional_notes: Boolean(String(data.professionalNotes ?? '').trim()),
     prefers_no_equipment: Boolean(data.prefersNoEquipment),
     equipment: c.use_equipment ? (data.equipment ?? []).filter((e) => !e.avoid).map((e) => clip(e.name, 80)).slice(0, 30) : [],
     equipment_items: c.use_equipment ? (data.equipment ?? []).slice(0, 30) : [],
@@ -83,9 +83,7 @@ export function buildContext(data) {
 /** Testo del contesto per il modello (il materiale dell'utente è racchiuso tra marcatori). */
 export function describeContext(ctx) {
   const lines = [`Nome: ${ctx.name}`, `Momento della giornata: ${ctx.partOfDay}`];
-  if (ctx.professional_notes) lines.push(`Indicazioni di chi la segue (da rispettare, non interpretare): <dati>${ctx.professional_notes}</dati>`);
-  if (ctx.limitations) lines.push(`Limitazioni pratiche: <dati>${ctx.limitations}</dati>`);
-  if (ctx.spaces) lines.push(`Spazio a disposizione: <dati>${ctx.spaces}</dati>`);
+  if (ctx.has_professional_notes) lines.push('Ha ricevuto indicazioni da un professionista che non conosci: non dare mai consigli su dolore, diete o trattamenti, non contraddire chi la segue e, se serve, invitala a seguire le sue indicazioni.');
   lines.push(`Preferisce attività senza attrezzi: ${ctx.prefers_no_equipment ? 'sì' : 'no'}`);
   if (ctx.equipment.length) lines.push(`Attrezzatura in casa: ${ctx.equipment.join(', ')}`);
   if (ctx.wellbeing?.length) lines.push(`Umore/energia negli ultimi giorni (1-5): ${ctx.wellbeing.map((w) => `${w.day}: umore ${w.mood}, energia ${w.energy}`).join('; ')}`);
@@ -134,7 +132,7 @@ export function generatorPrompt(kind, ctx, feedback = null) {
 
 export function classifierPrompt(kind, text, ctx) {
   return [`Tipo di contenuto: ${kind}`,
-    ctx.professional_notes ? `Indicazioni di chi la segue: <dati>${ctx.professional_notes}</dati>` : 'Nessuna indicazione del professionista.',
+    ctx.has_professional_notes ? 'Ha indicazioni di un professionista (il contenuto non ti viene fornito): il testo non deve contraddire chi la segue né dare consigli su dolore, diete o trattamenti.' : 'Nessuna indicazione del professionista.',
     `Dati disponibili sullo stato d'animo: ${ctx.wellbeing?.length ? 'sì' : 'no (non è consentito inventarlo)'}`,
     '', 'TESTO DA VALUTARE:', `<dati>${text}</dati>`].join('\n');
 }
@@ -149,7 +147,7 @@ export function parseJson(raw) {
   try { return JSON.parse(s.slice(start, end + 1)); } catch { return null; }
 }
 
-const ITALIAN_WORDS = ['il', 'la', 'lo', 'di', 'che', 'e', 'un', 'una', 'per', 'con', 'non', 'è', 'sei', 'oggi', 'puoi', 'ti', 'tu', 'più', 'come', 'del', 'della', 'le', 'i', 'a', 'in', 'da'];
+const ITALIAN_WORDS = ['il', 'la', 'lo', 'gli', 'le', 'i', 'un', 'una', 'di', 'del', 'della', 'dei', 'delle', 'degli', 'a', 'al', 'alla', 'ai', 'alle', 'da', 'dal', 'dalla', 'in', 'nel', 'nella', 'nei', 'nelle', 'negli', 'su', 'sul', 'sulla', 'per', 'con', 'tra', 'fra', 'e', 'ed', 'o', 'ma', 'se', 'che', 'non', 'è', 'sei', 'sono', 'hai', 'ha', 'ho', 'puoi', 'può', 'ti', 'tu', 'te', 'mi', 'ci', 'si', 'più', 'come', 'oggi', 'anche', 'molto', 'poi', 'ogni', 'quando', 'questo', 'questa', 'tutto', 'tutti', 'solo', 'già', 'ancora', 'va', 'bene', 'giorno', 'giorni', 'ultimi', 'tuo', 'tua', 'tuoi', 'tue'];
 
 /** Controlli STRUTTURALI (non lessicali sul contenuto): link, contatti, markup, emoji eccessive, lingua. */
 export function structuralChecks(text) {

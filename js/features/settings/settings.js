@@ -88,7 +88,7 @@ export default async function settingsView() {
       } });
       sub.push(t); return t;
     };
-    const master = toggle({ label: 'Consenti l’uso dell’AI', description: 'Acconsenti esplicitamente: puoi revocare quando vuoi e ogni consenso specifico si spegne.', checked: ai.ai_enabled, onChange: async (v) => {
+    const master = toggle({ label: 'Consenti l’uso dell’AI', description: 'Acconsenti esplicitamente: puoi revocare quando vuoi e ogni consenso specifico si spegne. I testi li scrive un servizio esterno, Gemini di Google: riceve il tuo nome e solo i dati che consenti qui sotto.', checked: ai.ai_enabled, onChange: async (v) => {
       try {
         await saveAiPrefs(profile.id, { ai_enabled: v });
         ai.ai_enabled = v;
@@ -97,9 +97,9 @@ export default async function settingsView() {
       } catch (err) { toast(err.message, 'error'); throw err; }
     } });
     const list2 = h('div', { class: 'switch-list' }, master.el,
-      mk('use_equipment', 'Usa la mia attrezzatura', 'Per proporre esercizi adatti a ciò che hai in casa.').el,
-      mk('use_wellbeing', 'Usa umore ed energia', 'Per adattare il tono alle giornate più o meno leggere. Mai le note.').el,
-      mk('use_journal', 'Usa le mie voci di diario', 'Solo se lo consenti. Il testo non viene salvato altrove.').el,
+      mk('use_equipment', 'Usa la mia attrezzatura', 'Invia i nomi dei tuoi attrezzi, per proporre esercizi adatti.').el,
+      mk('use_wellbeing', 'Usa umore ed energia', 'Invia solo i numeri di umore ed energia degli ultimi giorni. Mai le note.').el,
+      mk('use_journal', 'Usa le mie voci di diario', 'Invia a Google brevi estratti delle ultime voci, anche private. Attiva solo se ti sta bene.').el,
       mk('reminders_enabled', 'Suggerisci promemoria', 'Idee gentili che accetti o scarti tu.').el);
     for (const t of sub) t.input.disabled = !ai.ai_enabled;
     const time = h('input', { id: 'morning', type: 'time', class: 'input', value: settings.morning_time, 'aria-label': 'Orario della motivazione del mattino' });
@@ -107,7 +107,7 @@ export default async function settingsView() {
       try { await saveSettings(profile.id, { morning_time: time.value || '08:00' }); toast('Orario salvato.', 'success'); } catch (err) { toast(err.message, 'error'); }
     }) }, 'Salva l’orario');
     card.append(status, list2, h('div', { class: 'field' }, h('label', { class: 'label', for: 'morning' }, 'Orario del mattino'), time), saveTime,
-      h('p', { class: 'muted small' }, 'L’AI non dà diagnosi, diete, trattamenti né giudizi sul corpo, e rispetta le indicazioni di chi ti segue (le scrivi in Profilo › Attrezzatura e spazi).'));
+      h('p', { class: 'muted small' }, 'L’AI non dà diagnosi, diete, trattamenti né giudizi sul corpo, e rispetta sempre le cose da evitare che indichi in Profilo › Attrezzatura e spazio. Il testo delle indicazioni del professionista non viene mai inviato.'));
     sections.push(card);
   }
 

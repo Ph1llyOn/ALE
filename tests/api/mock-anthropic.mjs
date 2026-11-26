@@ -24,17 +24,16 @@ export async function startMockAnthropic() {
         isClassifier: system.includes('controllore di sicurezza'),
       };
       requests.push(entry);
-      try {
-        const out = handler(entry);
+      Promise.resolve().then(() => handler(entry)).then((out) => {
         if (out && out.status) { res.writeHead(out.status, { 'content-type': 'application/json' }); res.end(JSON.stringify(out.body ?? {})); return; }
         res.writeHead(200, { 'content-type': 'application/json' });
         res.end(JSON.stringify(entry.gemini
           ? { candidates: [{ content: { role: 'model', parts: [{ text: String(out) }] }, finishReason: 'STOP' }] }
           : { id: 'msg_test', type: 'message', role: 'assistant', content: [{ type: 'text', text: String(out) }] }));
-      } catch (err) {
+      }).catch((err) => {
         res.writeHead(500, { 'content-type': 'application/json' });
         res.end(JSON.stringify({ error: String(err.message) }));
-      }
+      });
     });
   });
   await new Promise((resolve) => server.listen(MOCK_PORT, '0.0.0.0', resolve));

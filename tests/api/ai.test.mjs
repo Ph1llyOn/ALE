@@ -99,7 +99,8 @@ test('PRIVACY dei prompt: solo i dati consentiti, mai le note di benessere né i
   assert.equal((await gen(ale, 'reflection')).status, 200);
   let all = mock.requests.map((r) => r.system + r.user).join('\n');
   for (const secret of ['Tappetino rosa', 'NOTA-PRIVATA', 'DIARIO-SEGRETO', 'DIARIO-DI-PHILL']) assert.ok(!all.includes(secret), `"${secret}" inviato senza consenso`);
-  assert.match(all, /INDICAZIONE-DELLA-FISIO/, 'le indicazioni del professionista servono per rispettarle');
+  assert.ok(!/INDICAZIONE-DELLA-FISIO|evitare i salti/.test(all), 'le note libere del professionista (dati sulla salute) non vengono inviate');
+  assert.match(all, /professionista/, 'al modello si dice solo che esistono');
   assert.match(all, /Non ci sono dati sul suo stato d'animo/);
 
   // 2) con tutti i consensi
@@ -286,4 +287,87 @@ test('SENZA ANTHROPIC: il server genera lo stesso una sessione strutturata, con 
   }
   await admin.from('equipment').delete().eq('owner_id', ale.id);
   await admin.from('user_settings').delete().eq('user_id', ale.id);
+});
+
+// ============================================================ audit integrazione Gemini
+test('AUDIT consenso lato server: ogni dato esce solo con il suo consenso specifico (e mai le note, i feedback, i dati di Phill)', async () => {
+  const admin = adminClient();
+  await admin.from('equipment').delete().eq('owner_id', ale.id);
+  await admin.from('journal_entries').delete().eq('owner_id', ale.id);
+  await admin.from('wellbeing_logs').delete().eq('owner_id', ale.id);
+  await admin.from('user_settings').delete().eq('user_id', ale.id);
+  await ale.client.from('equipment').insert({ owner_id: ale.id, name: 'Manubri-SEGNALE' });
+  const log = (await ale.client.from('wellbeing_logs').insert({ owner_id: ale.id, day: new Date().toISOString().slice(0, 10), mood: 1, energy: 5 }).select().single()).data;
+  await ale.client.from('wellbeing_notes').insert({ owner_id: ale.id, log_id: log.id, note: 'NOTA-SEGNALE' });
+  await ale.client.from('journal_entries').insert({ owner_id: ale.id, title: 'T', body: 'DIARIO-SEGNALE una giornata lenta' });
+  await ale.client.from('user_settings').insert({ user_id: ale.id, professional_notes: 'SALUTE-SEGNALE', limitations: 'LIMITE-SEGNALE', spaces: 'SPAZIO-SEGNALE' });
+  const sent = async (prefs) => {
+    await resetGenerations(); mock.reset(); mock.respond((r) => (r.isClassifier ? OK : JSON.stringify({ text: 'Negli ultimi giorni hai fatto piccoli passi, e contano molto.' })));
+    await setPrefs(ale, { ai_enabled: true, use_equipment: false, use_wellbeing: false, use_journal: false, ...prefs });
+    assert.equal((await gen(ale, 'reflection')).status, 200);
+    return mock.requests.map((r) => r.system + r.user).join('\n');
+  };
+  const has = (txt, ...marks) => marks.map((m) => txt.includes(m));
+  let all = await sent({});
+  assert.deepEqual(has(all, 'Manubri-SEGNALE', 'umore 1', 'DIARIO-SEGNALE'), [false, false, false], 'solo il consenso generale: nessun dato di equipaggiamento, umore o diario');
+  all = await sent({ use_equipment: true });
+  assert.deepEqual(has(all, 'Manubri-SEGNALE', 'umore 1', 'DIARIO-SEGNALE'), [true, false, false]);
+  all = await sent({ use_wellbeing: true });
+  assert.deepEqual(has(all, 'Manubri-SEGNALE', 'umore 1', 'DIARIO-SEGNALE'), [false, true, false]);
+  all = await sent({ use_journal: true });
+  assert.deepEqual(has(all, 'Manubri-SEGNALE', 'umore 1', 'DIARIO-SEGNALE'), [false, false, true]);
+  all = await sent({ use_equipment: true, use_wellbeing: true, use_journal: true });
+  assert.deepEqual(has(all, 'Manubri-SEGNALE', 'umore 1', 'DIARIO-SEGNALE'), [true, true, true]);
+  for (const never of ['NOTA-SEGNALE', 'SALUTE-SEGNALE', 'LIMITE-SEGNALE', 'SPAZIO-SEGNALE']) assert.ok(!all.includes(never), `${never} non deve MAI essere inviato`);
+  assert.ok(!/alessia@|phill|@ale-app\.local|[0-9a-f]{8}-[0-9a-f]{4}-/i.test(all), 'nessun indirizzo interno né identificativo utente');
+  await admin.from('equipment').delete().eq('owner_id', ale.id);
+  await admin.from('user_settings').delete().eq('user_id', ale.id);
+});
+
+test('AUDIT consenso: il database impedisce consensi specifici con l\'AI spenta (non solo l\'interfaccia)', async () => {
+  await setPrefs(ale, { ai_enabled: true, use_journal: true, use_wellbeing: true, use_equipment: true });
+  const off = await ale.client.from('ai_preferences').update({ ai_enabled: false, use_journal: true, use_wellbeing: true, use_equipment: true }).eq('user_id', ale.id).select().single();
+  assert.equal(off.error, null);
+  assert.deepEqual([off.data.ai_enabled, off.data.use_journal, off.data.use_wellbeing, off.data.use_equipment, off.data.consent_at], [false, false, false, false, null]);
+  mock.reset();
+  assert.equal((await gen(ale, 'daily')).status, 403);
+  assert.equal(mock.requests.length, 0, 'nessuna richiesta esterna senza consenso');
+  // il consenso lo legge il server dal database: il corpo della richiesta non può dichiararlo
+  const forged = await callFunction('ai', { action: 'generate', kind: 'daily', consents: { ai_enabled: true, use_journal: true }, ai_enabled: true }, { jwt: await token(ale) });
+  assert.equal(forged.status, 403);
+  assert.equal(mock.requests.length, 0);
+});
+
+test('AUDIT chiamate: una generazione = 1 richiesta di scrittura + 1 di controllo, mai di più; la seconda richiesta del giorno non chiama nessuno', async () => {
+  await setPrefs(ale, { ai_enabled: true });
+  for (const kind of ['daily', 'reflection', 'reminders']) {
+    await resetGenerations(); mock.reset();
+    mock.respond((r) => (r.isClassifier ? OK : kind === 'daily' ? DAILY() : kind === 'reflection' ? JSON.stringify({ text: 'Negli ultimi giorni hai fatto piccoli passi, e contano.' }) : JSON.stringify({ suggestions: [{ title: 'Un bicchiere d\'acqua', time: '11:00' }] })));
+    assert.equal((await gen(ale, kind)).status, 200);
+    assert.equal(mock.generators().length, 1, `${kind}: una sola scrittura`);
+    assert.equal(mock.classifiers().length, 1, `${kind}: un solo controllo`);
+  }
+  mock.reset(); await resetGenerations();
+  mock.respond((r) => (r.isClassifier ? OK : DAILY()));
+  await gen(ale, 'daily'); mock.reset();
+  await gen(ale, 'daily');
+  assert.equal(mock.requests.length, 0, 'il pensiero del giorno già generato non richiama il modello');
+});
+
+test('AUDIT robustezza: modello lento (oltre il timeout) → ripiego, nessun blocco; errore HTTP → ripiego; JSON rotto → ripiego', async () => {
+  await setPrefs(ale, { ai_enabled: true });
+  await resetGenerations(); mock.reset();
+  mock.respond(() => new Promise((resolve) => setTimeout(() => resolve(DAILY()), 17_000)));
+  const t0 = Date.now();
+  const slow = await gen(ale, 'daily');
+  assert.equal(slow.status, 200);
+  assert.equal(slow.body.source, 'fallback');
+  assert.ok(Date.now() - t0 < 30_000, `risposta in ${Date.now() - t0} ms`);
+  for (const bad of [() => ({ status: 429, body: { error: 'quota' } }), () => ({ status: 500, body: {} }), () => 'questo non è JSON']) {
+    await resetGenerations(); mock.reset(); mock.respond(bad);
+    const r = await gen(ale, 'reflection');
+    assert.equal(r.status, 200);
+    assert.equal(r.body.source, 'fallback');
+    assert.ok(r.body.text.length > 20);
+  }
 });

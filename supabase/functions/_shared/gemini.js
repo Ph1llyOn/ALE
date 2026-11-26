@@ -7,7 +7,7 @@ export const DEFAULT_GEMINI_MODEL = 'gemini-3.1-flash-lite';
  * Le risposte sono sempre JSON (i prompt di ALE. chiedono uno schema): si chiede il tipo JSON al modello.
  * Errori: lancia Error con messaggio breve (senza mai includere la chiave).
  */
-export async function callGemini({ apiKey, baseUrl = 'https://generativelanguage.googleapis.com', model = DEFAULT_GEMINI_MODEL, system, user, maxTokens = 600, timeoutMs = 25_000, fetchImpl = fetch }) {
+export async function callGemini({ apiKey, baseUrl = 'https://generativelanguage.googleapis.com', model = DEFAULT_GEMINI_MODEL, system, user, maxTokens = 600, timeoutMs = 15_000, fetchImpl = fetch }) {
   if (!apiKey) throw new Error('chiave Gemini non configurata');
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
