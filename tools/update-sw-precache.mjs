@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = join(fileURLToPath(import.meta.url), '..', '..');
 const SKIP = new Set(['node_modules', '.git', '.github', 'supabase', 'tests', 'docs', 'tools']);
-const EXT = /\.(html|css|js|png|webmanifest)$/;
+const EXT = /\.(html|css|js|png|svg|webmanifest)$/;
 
 function walk(dir, out = []) {
   for (const name of readdirSync(dir)) {

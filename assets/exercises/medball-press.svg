@@ -1,9 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" role="img" aria-label="medball-press">
-  <line x1="14" y1="142" x2="186" y2="142" stroke="#e6c3cf" stroke-width="3" stroke-linecap="round"/>
-  <circle cx="100" cy="10" r="11" fill="#f3d7e0" stroke="#a98a96" stroke-width="3"/>
-  <polyline points="100,48 84,44 96,18" fill="none" stroke="#f0a9c1" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
-  <polyline points="100,48 100,94" fill="none" stroke="#d9719a" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
-  <polyline points="100,94 100,118 102,138" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
-  <polyline points="100,48 116,44 104,18" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
-  <circle cx="100" cy="30" r="11" fill="#fde3ea" stroke="#d9719a" stroke-width="5"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" role="img" aria-label="Spinta con la palla medica">
+<title>Spinta con la palla medica</title>
+<desc>La palla parte dal petto e viene spinta sopra la testa a braccia distese, poi torna al petto.</desc>
+<line x1="14" y1="142" x2="186" y2="142" stroke="#e6c3cf" stroke-width="3" stroke-linecap="round"/>
+<polyline points="100,94 104,118 106,138" fill="none" stroke="#f0a9c1" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+<polyline points="112,50 120,70 109,62" fill="none" stroke="#f0a9c1" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"><animate attributeName="points" values="112,50 120,70 109,62;112,50 114,36 109,15;112,50 120,70 109,62" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></polyline>
+<polyline points="100,48 100,94" fill="none" stroke="#d9719a" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><animate attributeName="points" values="100,48 100,94;100,50 100,94;100,48 100,94" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></polyline>
+<polyline points="112,50 100,48 88,50" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><animate attributeName="points" values="112,50 100,48 88,50;112,50 100,50 88,50;112,50 100,48 88,50" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></polyline>
+<polyline points="100,94 96,118 94,138" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="88,50 80,70 91,62" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><animate attributeName="points" values="88,50 80,70 91,62;88,50 86,38 91,15;88,50 80,70 91,62" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></polyline>
+<circle cx="100" cy="30" r="11" fill="#fde3ea" stroke="#d9719a" stroke-width="5"><animate attributeName="cy" values="30;38;30" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></circle>
+<g><circle cx="100" cy="62" r="11" fill="#f3d7e0" stroke="#a98a96" stroke-width="3"/><animateTransform attributeName="transform" type="translate" values="0,0;0,-47;0,0" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></g>
 </svg>

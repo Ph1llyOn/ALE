@@ -50,7 +50,7 @@ test('compatibilità: solo esercizi che si possono davvero fare', () => {
   const dumbbells = compatibleExercises([{ name: 'Manubri' }]);
   assert.ok(dumbbells.some((e) => e.id === 'goblet-squat') && !dumbbells.some((e) => e.id === 'plank'));
   const prefersNone = compatibleExercises([{ name: 'Tappetino' }, { name: 'Manubri' }], { prefersNoEquipment: true });
-  assert.ok(prefersNone.every((e) => e.equipment.length === 0), 'preferenza "senza attrezzi" rispettata');
+  assert.ok(prefersNone.every((e) => e.equipment.every((k) => k === 'mat')), 'preferenza "senza attrezzi" rispettata');
 });
 
 test('suggerimento: deterministico, di lunghezza limitata, parte da un riscaldamento', () => {

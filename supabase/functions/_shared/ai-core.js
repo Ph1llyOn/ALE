@@ -6,7 +6,8 @@
 //   4) un solo tentativo di rigenerazione con le violazioni come feedback
 //   5) ripiego: messaggi preparati a mano / selezione deterministica dal catalogo
 import { dailyFallback } from './motivation.js';
-import { EXERCISES, compatibleExercises, suggestWorkout, exerciseById } from './exercises-core.js';
+import { EXERCISES } from './exercises-core.js';
+import { eligibleExercises, generateSession, validateSession, normalizeCtx, buildItem, planSeconds } from './planner-core.js';
 
 export const KINDS = ['daily', 'plan', 'reflection', 'reminders'];
 
@@ -70,6 +71,12 @@ export function buildContext(data) {
       goalsDone30: Number(data.stats?.goalsDone30 ?? 0), wellbeingDays7: Number(data.stats?.wellbeingDays7 ?? 0),
     },
     consents: { use_equipment: Boolean(c.use_equipment), use_wellbeing: Boolean(c.use_wellbeing), use_journal: Boolean(c.use_journal), reminders_enabled: Boolean(c.reminders_enabled) },
+    // Parametri del motore di allenamento: limiti, livello, storico e feedback servono SOLO ai controlli deterministici del server.
+    // Non compaiono mai nel testo mandato al modello (vedi describeContext): i feedback e le note restano privati.
+    planner: normalizeCtx({
+      items: c.use_equipment ? (data.equipment ?? []).slice(0, 30) : [], prefersNoEquipment: data.prefersNoEquipment, level: data.training?.level, minutes: data.training?.minutes,
+      avoidFlags: data.training?.avoidFlags, prefs: data.training?.prefs, history: data.training?.history, feedback: data.training?.feedback, today: data.training?.today, seed: data.training?.seed,
+    }),
   };
 }
 
@@ -92,7 +99,9 @@ export function describeContext(ctx) {
 // Catalogo ammesso per la scheda: solo esercizi compatibili
 // ---------------------------------------------------------------------------------------------------
 export function allowedExercises(ctx, catalog = EXERCISES) {
-  return compatibleExercises(ctx.equipment_items, { prefersNoEquipment: ctx.prefers_no_equipment, catalog });
+  const planner = ctx.planner ?? normalizeCtx({ items: ctx.equipment_items, prefersNoEquipment: ctx.prefers_no_equipment });
+  const ids = new Set(catalog.map((e) => e.id));
+  return eligibleExercises(planner).filter((e) => ids.has(e.id));   // attrezzi, limitazioni, livello, dolore recente: tutto controllato dalle regole
 }
 
 // ---------------------------------------------------------------------------------------------------
@@ -102,20 +111,20 @@ const SCHEMAS = {
   daily: '{"title": string (max 60), "text": string (max 220, 1-2 frasi), "tone": "dolce" | "energico" | "leggero"}',
   reflection: '{"text": string (max 500, 2-4 frasi)}',
   reminders: '{"suggestions": [{"title": string (max 60), "time": "HH:mm"}]} (da 1 a 3 idee, orari tra 08:00 e 21:00)',
-  plan: '{"title": string (max 60), "intro": string (max 280), "exercises": [{"id": string, "sets": 1-5, "reps": string (max 20), "rest_seconds": 15-180}]} (da 3 a 7 esercizi)',
+  plan: '{"title": string (max 60), "intro": string (max 280), "exercises": [{"id": string, "sets": 1-5, "reps": string (max 20), "rest_seconds": 15-180}]} (da 6 a 14 esercizi, già nell\'ordine di esecuzione)',
 };
 
 const TASKS = {
   daily: 'Scrivi la motivazione del mattino: un pensiero breve e dolce, adatto al tono dei dati. Se i dati dicono che le giornate sono state pesanti, sii più morbida e leggera; se sono positive, un po\' più luminosa. Non commentare ciò che non conosci.',
   reflection: 'Scrivi una breve riflessione sui progressi recenti usando SOLO i numeri forniti. Valorizza ciò che c\'è, senza confronti e senza richieste. Non parlare di peso o corpo.',
   reminders: 'Proponi 1-3 promemoria gentili e non insistenti (ad esempio una pausa, un po\' d\'acqua, due minuti di respiro), con orario. Sono idee che lei può scartare.',
-  plan: 'Proponi una scheda semplice e delicata scegliendo gli esercizi ESCLUSIVAMENTE dall\'elenco di identificatori ammessi. Non inventare esercizi né identificatori. Parti da un riscaldamento se disponibile. Rispetta le indicazioni e le limitazioni.',
+  plan: 'Proponi una sessione di allenamento semplice e delicata, scegliendo gli esercizi ESCLUSIVAMENTE dall\'elenco di identificatori ammessi. Non inventare esercizi né identificatori. STRUTTURA OBBLIGATORIA nell\'ordine: 1-3 esercizi di riscaldamento (fase warmup), 3-5 esercizi principali (fase main) che coprano parti diverse del corpo senza ripetere varianti dello stesso movimento, poi eventualmente un esercizio cardio (fase cardio) e 1-3 di defaticamento (fase cooldown). Raggruppa gli esercizi nella stessa posizione (prima in piedi, poi a terra). Non usare un attrezzo solo perché c\'è: serve una funzione precisa. Rispetta le indicazioni e le limitazioni. Nessuna promessa di dimagrimento o di effetti su una zona del corpo.',
 };
 
 export function generatorPrompt(kind, ctx, feedback = null) {
   const parts = [TASKS[kind], '', 'CONTESTO', describeContext(ctx)];
   if (kind === 'plan') {
-    const list = allowedExercises(ctx).map((e) => `- ${e.id}: ${e.name}`).join('\n');
+    const list = allowedExercises(ctx).map((e) => `- ${e.id}: ${e.name} [fasi: ${e.phases.join('/')}; posizione: ${e.position}; livello ${e.level}]`).join('\n');
     parts.push('', 'ESERCIZI AMMESSI (usa solo questi id):', list);
   }
   parts.push('', `SCHEMA JSON DI RISPOSTA: ${SCHEMAS[kind]}`);
@@ -188,19 +197,25 @@ export function validateOutput(kind, out, ctx) {
   if (kind === 'plan') {
     if (!isStr(out.title, 60) || !isStr(out.intro, 280)) return { ok: false, error: 'titolo o introduzione non validi' };
     const allowed = new Map(allowedExercises(ctx).map((e) => [e.id, e]));
-    if (!Array.isArray(out.exercises) || out.exercises.length < 3 || out.exercises.length > 7) return { ok: false, error: 'servono da 3 a 7 esercizi' };
-    const seen = new Set(); const exercises = [];
+    if (!Array.isArray(out.exercises) || out.exercises.length < 6 || out.exercises.length > 14) return { ok: false, error: 'servono da 6 a 14 esercizi (riscaldamento, parte principale, defaticamento)' };
+    const seen = new Set(); const items = []; let seenMain = false;
     for (const e of out.exercises) {
       const ref = allowed.get(e?.id);
       if (!ref) return { ok: false, error: `esercizio non ammesso: ${String(e?.id).slice(0, 40)}` };
       if (seen.has(e.id)) return { ok: false, error: 'esercizio ripetuto' };
       seen.add(e.id);
-      const sets = Number(e.sets); const rest = Number(e.rest_seconds);
-      if (!Number.isInteger(sets) || sets < 1 || sets > 5 || !isStr(e.reps, 20) || !Number.isInteger(rest) || rest < 15 || rest > 180) return { ok: false, error: 'serie, ripetizioni o recupero fuori misura' };
-      // nome e nota vengono SEMPRE dal catalogo, mai dal modello
-      exercises.push({ exercise_key: ref.id, name: ref.name, sets, reps: e.reps.trim(), rest_seconds: rest, notes: ref.tip });
+      const sets = Number(e.sets);
+      if (!Number.isInteger(sets) || sets < 1 || sets > 5) return { ok: false, error: 'numero di serie fuori misura' };
+      // fase, nome, ripetizioni, durata, recupero e nota vengono SEMPRE dal catalogo: il modello sceglie solo quali esercizi, in che ordine e quante serie
+      const phase = ref.phases.includes('main') ? 'main' : ref.pattern === 'cardio' ? (seenMain ? 'cardio' : 'warmup') : ref.phases.includes('warmup') && !seenMain ? 'warmup' : 'cooldown';
+      if (phase === 'main') seenMain = true;
+      const cap = phase === 'main' ? Math.min(sets, ref.sets + 1) : Math.min(sets, ref.sets);
+      items.push(buildItem(ref, { phase, sets: cap, why: ['Scelto per questa sessione'] }));
     }
-    return { ok: true, value: { title: out.title.trim(), intro: out.intro.trim(), exercises } };
+    const planner = ctx.planner ?? normalizeCtx({ items: ctx.equipment_items, prefersNoEquipment: ctx.prefers_no_equipment });
+    const check = validateSession({ kind: 'strength', minutes: planner.minutes, items }, planner);
+    if (!check.ok) return { ok: false, error: `sequenza non valida: ${check.problems.join(', ')}` };
+    return { ok: true, value: { title: out.title.trim(), intro: out.intro.trim(), kind: 'strength', minutes: planner.minutes, estimated_minutes: Math.round(planSeconds(items) / 60), exercises: items, items } };
   }
   return { ok: false, error: 'tipo sconosciuto' };
 }
@@ -239,8 +254,9 @@ export function fallbackFor(kind, ctx, now = new Date()) {
     return { text: bits.length ? `Negli ultimi giorni ${bits.join(', ')}. Sono piccoli passi che contano, con i tuoi tempi.` : 'Questa settimana è stata tranquilla, e va bene così. Quando ti va, un piccolo passo basta per ricominciare.' };
   }
   if (kind === 'reminders') return { suggestions: [{ title: 'Un bicchiere d\'acqua e un respiro', time: '11:00' }, { title: 'Qualche minuto di stretching dolce', time: '18:00' }] };
-  const picks = suggestWorkout(ctx.equipment_items, { prefersNoEquipment: ctx.prefers_no_equipment, count: 5, seed: now.getDate() });
-  return { title: 'Una scheda semplice', intro: 'Un punto di partenza con gli attrezzi che hai a disposizione: cambiala come preferisci e fermati quando vuoi.', exercises: picks };
+  const planner = ctx.planner ?? normalizeCtx({ items: ctx.equipment_items, prefersNoEquipment: ctx.prefers_no_equipment });
+  const plan = generateSession({ ...planner, seed: planner.seed || now.getDate() }, { kind: 'strength' });
+  return { title: plan.title, intro: 'Un punto di partenza con gli attrezzi che hai a disposizione: cambiala come preferisci e fermati quando vuoi.', kind: plan.kind, minutes: plan.minutes, estimated_minutes: plan.estimated_minutes, exercises: plan.items, items: plan.items };
 }
 
 // ---------------------------------------------------------------------------------------------------

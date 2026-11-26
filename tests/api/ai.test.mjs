@@ -6,6 +6,7 @@ import { startMockAnthropic, MOCK_KEY, MOCK_MODEL, OK, BLOCK, DAILY } from './mo
 
 let mock; let ale; let phill;
 const token = (u) => u.client.auth.getSession().then((s) => s.data.session.access_token);
+const STRUCT = (...mains) => ['march', 'hip-circles', ...mains, 'deep-breathing'];
 const gen = async (u, kind) => callFunction('ai', { action: 'generate', kind }, { jwt: await token(u) });
 const enable = (u, extra = {}) => u.client.from('ai_preferences').upsert({ user_id: u.id, ai_enabled: true, ...extra }, { onConflict: 'user_id' }).then((r) => { if (r.error) throw r.error; });
 // upsert non è consentito sulla chiave: si usa aggiorna-o-inserisci
@@ -163,14 +164,19 @@ test('FAIL-CLOSED: classificatore illeggibile o modello non disponibile → mai 
 
 test('scheda: solo esercizi del catalogo compatibili; id inventati scartati', async () => {
   await setPrefs(ale, { ai_enabled: true, use_equipment: true });
+  const admin0 = adminClient();
+  await admin0.from('equipment').delete().eq('owner_id', ale.id);
+  await ale.client.from('equipment').insert({ owner_id: ale.id, name: 'Tappetino fitness' });
   const plan = (ids) => JSON.stringify({ title: 'Mattina dolce', intro: 'Un punto di partenza semplice, con ciò che hai in casa.', exercises: ids.map((id) => ({ id, sets: 2, reps: '10', rest_seconds: 45 })) });
   let n = 0;
-  mock.respond((r) => (r.isClassifier ? OK : (n++ === 0 ? plan(['march', 'esercizio-inventato', 'plank']) : plan(['march', 'plank', 'glute-bridge']))));
+  mock.respond((r) => (r.isClassifier ? OK : (n++ === 0 ? plan(STRUCT('esercizio-inventato', 'wall-push-up', 'glute-bridge', 'plank-knees')) : plan(STRUCT('squat', 'wall-push-up', 'glute-bridge', 'plank-knees')))));
   const r = await gen(ale, 'plan');
   assert.equal(r.status, 200);
   assert.equal(r.body.source, 'ai');
-  assert.deepEqual(r.body.exercises.map((e) => e.exercise_key), ['march', 'plank', 'glute-bridge']);
+  assert.deepEqual(r.body.exercises.map((e) => e.exercise_key), STRUCT('squat', 'wall-push-up', 'glute-bridge', 'plank-knees'));
   assert.ok(r.body.exercises.every((e) => e.name && e.notes), 'nomi e note vengono dal catalogo');
+  assert.deepEqual(r.body.items.map((i) => i.phase).filter((p, i, arr) => arr.indexOf(p) === i), ['warmup', 'main', 'cooldown'], 'struttura: riscaldamento, parte principale, defaticamento');
+  await admin0.from('equipment').delete().eq('owner_id', ale.id);
   assert.ok(!/esercizio-inventato/.test(JSON.stringify(r.body)));
 });
 
@@ -210,6 +216,9 @@ test('NUOVO INVENTARIO: l\'AI propone solo attività compatibili con gli attrezz
   await setPrefs(ale, { ai_enabled: true, use_equipment: true });
   const admin = adminClient();
   await admin.from('equipment').delete().eq('owner_id', ale.id);
+  await admin.from('user_settings').delete().eq('user_id', ale.id);
+  const settingsIns = await ale.client.from('user_settings').insert({ user_id: ale.id, fitness_level: 'intermediate' });
+  assert.equal(settingsIns.error, null, settingsIns.error?.message);
   const ins = await ale.client.from('equipment').insert([
     { owner_id: ale.id, name: 'Kettlebell' }, { owner_id: ale.id, name: 'Palla da ginnastica' }, { owner_id: ale.id, name: 'Cavigliere con pesi' },
   ]);
@@ -217,7 +226,7 @@ test('NUOVO INVENTARIO: l\'AI propone solo attività compatibili con gli attrezz
   const plan = (ids) => JSON.stringify({ title: 'Con la kettlebell', intro: 'Una scheda semplice con quello che hai.', exercises: ids.map((id) => ({ id, sets: 2, reps: '10', rest_seconds: 45 })) });
   // la prima risposta propone anche "ball-bridge" (serve il tappetino, che non c'è) e "dumbbell-curl" (non ha i manubri): viene rifiutata e rigenerata
   let n = 0;
-  mock.respond((r) => (r.isClassifier ? OK : (n++ === 0 ? plan(['march', 'kettlebell-squat', 'ball-bridge', 'dumbbell-curl']) : plan(['march', 'kettlebell-squat', 'ball-wall-squat']))));
+  mock.respond((r) => (r.isClassifier ? OK : (n++ === 0 ? plan(STRUCT('kettlebell-squat', 'ball-bridge', 'dumbbell-curl', 'wall-push-up')) : plan(STRUCT('kettlebell-squat', 'wall-push-up', 'calf-raise')))));
   const r = await gen(ale, 'plan');
   assert.equal(r.status, 200, JSON.stringify(r.body));
   const prompt = mock.generators()[0].user + mock.generators()[0].system;
@@ -225,8 +234,9 @@ test('NUOVO INVENTARIO: l\'AI propone solo attività compatibili con gli attrezz
   assert.match(prompt, /kettlebell-squat/, 'il catalogo offerto al modello contiene gli esercizi compatibili');
   assert.ok(!/dumbbell-curl/.test(prompt), 'non offre esercizi per attrezzi che non ha');
   assert.ok(!/ball-bridge/.test(prompt), 'serve anche il tappetino: non viene offerto');
-  assert.deepEqual(r.body.exercises.map((e) => e.exercise_key), ['march', 'kettlebell-squat', 'ball-wall-squat']);
+  assert.deepEqual(r.body.exercises.map((e) => e.exercise_key), STRUCT('kettlebell-squat', 'wall-push-up', 'calf-raise'));
   await admin.from('equipment').delete().eq('owner_id', ale.id);
+  await admin.from('user_settings').delete().eq('user_id', ale.id);
 });
 
 test('INVENTARIO: gli attrezzi si salvano su Supabase, si tolgono, restano privati finché non condivisi', async () => {

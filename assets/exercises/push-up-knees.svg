@@ -1,8 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" role="img" aria-label="push-up-knees">
-  <rect x="8" y="138" width="184" height="7" rx="3.5" fill="#f3d7e0"/>
-  
-  <polyline points="50,100 112,116" fill="none" stroke="#d9719a" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
-  <polyline points="112,116 138,132 166,122" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
-  <polyline points="50,100 56,120 56,138" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
-  <circle cx="34" cy="94" r="11" fill="#fde3ea" stroke="#d9719a" stroke-width="5"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" role="img" aria-label="Piegamenti sulle ginocchia">
+<title>Piegamenti sulle ginocchia</title>
+<desc>Sulle ginocchia con le mani a terra: scendi con il petto tenendo la schiena dritta e risali.</desc>
+<rect x="8" y="138" width="184" height="7" rx="3.5" fill="#f3d7e0"/>
+<polyline points="56,100 100,114" fill="none" stroke="#d9719a" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><animate attributeName="points" values="56,100 100,114;58,124 100,126;56,100 100,114" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></polyline>
+<polyline points="100,114 138,131 166,120" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><animate attributeName="points" values="100,114 138,131 166,120;100,126 138,131 166,120;100,114 138,131 166,120" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></polyline>
+<polyline points="56,100 56,118 56,134" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><animate attributeName="points" values="56,100 56,118 56,134;58,124 80,124 56,134;56,100 56,118 56,134" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></polyline>
+<circle cx="39" cy="93" r="11" fill="#fde3ea" stroke="#d9719a" stroke-width="5"><animate attributeName="cx" values="39;41;39" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/><animate attributeName="cy" values="93;118;93" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></circle>
 </svg>

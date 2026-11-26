@@ -1,9 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" role="img" aria-label="step-up">
-  <line x1="14" y1="142" x2="186" y2="142" stroke="#e6c3cf" stroke-width="3" stroke-linecap="round"/>
-  <rect x="118" y="112" width="62" height="30" rx="6" fill="#f3d7e0" stroke="#a98a96" stroke-width="3" opacity=".9"/>
-  <polyline points="100,90 102,116 98,138" fill="none" stroke="#f0a9c1" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
-  <polyline points="96,46 100,90" fill="none" stroke="#d9719a" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
-  <polyline points="100,90 122,96 140,110" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
-  <polyline points="96,46 110,64 102,80" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
-  <circle cx="96" cy="28" r="11" fill="#fde3ea" stroke="#d9719a" stroke-width="5"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" role="img" aria-label="Salita sullo step">
+<title>Salita sullo step</title>
+<desc>Un piede sale sullo step e ti porti in piedi sopra, poi scendi con controllo.</desc>
+<line x1="14" y1="142" x2="186" y2="142" stroke="#e6c3cf" stroke-width="3" stroke-linecap="round"/>
+<rect x="112" y="120" width="74" height="22" rx="5" fill="#f3d7e0" stroke="#a98a96" stroke-width="3"/>
+<polyline points="96,86 97,112 97,138" fill="none" stroke="#f0a9c1" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"><animate attributeName="points" values="96,86 97,112 97,138;128,70 142,88 134,104;96,86 97,112 97,138" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></polyline>
+<polyline points="96,44 96,86" fill="none" stroke="#d9719a" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><animate attributeName="points" values="96,44 96,86;128,28 128,70;96,44 96,86" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></polyline>
+<polyline points="96,86 118,98 128,115" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><animate attributeName="points" values="96,86 118,98 128,115;128,70 129,94 128,115;96,86 118,98 128,115" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></polyline>
+<polyline points="96,44 84,64 94,84" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><animate attributeName="points" values="96,44 84,64 94,84;128,28 116,48 126,68;96,44 84,64 94,84" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></polyline>
+<circle cx="98" cy="26" r="11" fill="#fde3ea" stroke="#d9719a" stroke-width="5"><animate attributeName="cx" values="98;130;98" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/><animate attributeName="cy" values="26;10;26" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></circle>
 </svg>

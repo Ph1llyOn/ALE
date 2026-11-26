@@ -1,9 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" role="img" aria-label="ball-bridge">
-  <rect x="8" y="138" width="184" height="7" rx="3.5" fill="#f3d7e0"/>
-  <circle cx="166" cy="118" r="18" fill="#f3d7e0" stroke="#a98a96" stroke-width="3"/>
-  
-  <polyline points="46,128 104,104" fill="none" stroke="#d9719a" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
-  <polyline points="104,104 140,92 160,124" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
-  <polyline points="46,128 66,134 90,136" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
-  <circle cx="30" cy="128" r="11" fill="#fde3ea" stroke="#d9719a" stroke-width="5"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" role="img" aria-label="Ponte con i piedi sulla palla">
+<title>Ponte con i piedi sulla palla</title>
+<desc>Con i talloni sulla palla sollevi il bacino: la palla si avvicina un po’ a te.</desc>
+<rect x="8" y="138" width="184" height="7" rx="3.5" fill="#f3d7e0"/>
+<g><circle cx="160" cy="116" r="20" fill="#f3d7e0" stroke="#a98a96" stroke-width="3"/><animateTransform attributeName="transform" type="translate" values="0,0;-8,0;0,0" dur="3.4s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></g>
+<polyline points="46,131 98,131" fill="none" stroke="#d9719a" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><animate attributeName="points" values="46,131 98,131;50,130 100,108;46,131 98,131" dur="3.4s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></polyline>
+<polyline points="98,131 126,113 152,96" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><animate attributeName="points" values="98,131 126,113 152,96;100,108 122,82 144,96;98,131 126,113 152,96" dur="3.4s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></polyline>
+<polyline points="46,131 66,134 90,135" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><animate attributeName="points" values="46,131 66,134 90,135;50,130 72,134 94,135;46,131 66,134 90,135" dur="3.4s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></polyline>
+<circle cx="28" cy="131" r="11" fill="#fde3ea" stroke="#d9719a" stroke-width="5"><animate attributeName="cx" values="28;32;28" dur="3.4s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></circle>
 </svg>

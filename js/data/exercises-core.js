@@ -1,38 +1,20 @@
 // Catalogo degli esercizi (PURO, senza dipendenze): usato dal frontend e, copiato, dalle Edge Functions (npm run sync-shared).
 // Nota: sono movimenti generici e delicati, NON prescrizioni. Chi segue Alessia ha sempre la precedenza.
-/** equipment: elenco di chiavi richieste ('mat' | 'dumbbells' | 'band' | 'step'); vuoto = corpo libero. */
-export const EXERCISES = [
-  { id: 'squat', name: 'Squat a corpo libero', equipment: [], sets: 3, reps: '12', rest: 60, tip: 'Scendi con calma, come se ti sedessi. Fermati se senti fastidio.' },
-  { id: 'lunge', name: 'Affondo indietro', equipment: [], sets: 2, reps: '10 per lato', rest: 60, tip: 'Un passo indietro, senza fretta. Tieniti a un appoggio se serve.' },
-  { id: 'calf-raise', name: 'Salita sulle punte', equipment: [], sets: 3, reps: '15', rest: 45, tip: 'Sali piano e scendi piano.' },
-  { id: 'wall-sit', name: 'Seduta al muro', equipment: [], sets: 3, reps: '20 secondi', rest: 45, tip: 'Schiena appoggiata al muro, respira con regolarità.' },
-  { id: 'march', name: 'Marcia sul posto', equipment: [], sets: 3, reps: '1 minuto', rest: 30, tip: 'Un riscaldamento semplice: ginocchia alte quanto ti va.' },
-  { id: 'arm-circles', name: 'Cerchi con le braccia', equipment: [], sets: 2, reps: '15', rest: 30, tip: 'Cerchi ampi e morbidi, avanti e indietro.' },
-  { id: 'glute-bridge', name: 'Ponte per i glutei', equipment: ['mat'], sets: 3, reps: '12', rest: 45, tip: 'Spingi con i piedi e solleva il bacino senza inarcare la schiena.' },
-  { id: 'plank', name: 'Plank sugli avambracci', equipment: ['mat'], sets: 3, reps: '20 secondi', rest: 45, tip: 'Corpo allineato. Se è troppo, appoggia le ginocchia.' },
-  { id: 'bird-dog', name: 'Bird dog', equipment: ['mat'], sets: 2, reps: '8 per lato', rest: 45, tip: 'Braccio e gamba opposti, movimenti lenti e controllati.' },
-  { id: 'superman', name: 'Superman', equipment: ['mat'], sets: 2, reps: '10', rest: 45, tip: 'Solleva poco, basta un piccolo movimento.' },
-  { id: 'push-up-knees', name: 'Flessioni sulle ginocchia', equipment: ['mat'], sets: 3, reps: '8', rest: 60, tip: 'Scendi fin dove ti senti comoda.' },
-  { id: 'side-leg-raise', name: 'Sollevamento laterale della gamba', equipment: ['mat'], sets: 2, reps: '12 per lato', rest: 45, tip: 'Il bacino resta fermo: muove solo la gamba.' },
-  { id: 'dumbbell-curl', name: 'Curl con manubri', equipment: ['dumbbells'], sets: 3, reps: '10', rest: 60, tip: 'Gomiti vicini al corpo, peso leggero.' },
-  { id: 'dumbbell-press', name: 'Spinte sopra la testa con manubri', equipment: ['dumbbells'], sets: 3, reps: '10', rest: 60, tip: 'Peso leggero, spalle rilassate.' },
-  { id: 'goblet-squat', name: 'Squat con manubrio', equipment: ['dumbbells'], sets: 3, reps: '10', rest: 60, tip: 'Il manubrio vicino al petto, schiena dritta.' },
-  { id: 'step-up', name: 'Salita sullo step', equipment: ['step'], sets: 3, reps: '10 per lato', rest: 60, tip: 'Appoggia tutto il piede sullo step prima di spingere.' },
-  { id: 'band-pull-apart', name: 'Apertura con elastico', equipment: ['band'], sets: 3, reps: '12', rest: 45, tip: 'Apri le braccia piano, spalle lontane dalle orecchie.' },
-  { id: 'kettlebell-squat', name: 'Squat con kettlebell', equipment: ['kettlebell'], sets: 3, reps: '10', rest: 60, tip: 'Tieni la kettlebell vicino al petto, schiena dritta. Scegli un peso leggero.' },
-  { id: 'ball-wall-squat', name: 'Squat con la palla al muro', equipment: ['ball'], sets: 3, reps: '10', rest: 60, tip: 'La palla tra te e il muro ti sostiene: scendi piano, risali piano.' },
-  { id: 'ball-bridge', name: 'Ponte con i piedi sulla palla', equipment: ['ball', 'mat'], sets: 2, reps: '8', rest: 60, tip: 'Muoviti con calma: la palla è instabile. Se è troppo, tieni i piedi a terra.' },
-  { id: 'medball-press', name: 'Spinta con la palla medica', equipment: ['medball'], sets: 3, reps: '10', rest: 60, tip: 'Tieni la palla al petto e spingila in alto, senza fretta.' },
-  { id: 'jump-rope', name: 'Saltelli con la corda', equipment: ['rope'], sets: 3, reps: '30 secondi', rest: 45, tip: 'Saltelli bassi e leggeri. Fermati quando vuoi.' },
-  { id: 'ankle-leg-raise', name: 'Sollevamento della gamba con cavigliere', equipment: ['ankle', 'mat'], sets: 2, reps: '10 per lato', rest: 45, tip: 'Cavigliere leggere e movimento lento. Il bacino resta fermo.' },
-  { id: 'treadmill-walk', name: 'Camminata sul tapis roulant', equipment: ['treadmill'], sets: 1, reps: '15 minuti', rest: 0, tip: 'Un passo comodo, in cui riesci a parlare.' },
-  { id: 'easy-pedal', name: 'Pedalata tranquilla', equipment: ['bike'], sets: 1, reps: '15 minuti', rest: 0, tip: 'Resistenza bassa, ritmo piacevole. Puoi fermarti quando vuoi.' },
-];
+import { EXERCISES as CATALOG } from './exercise-catalog.js';
+
+const minutesLabel = (sec) => (sec >= 120 ? `${Math.round(sec / 60)} minuti` : sec === 60 ? '1 minuto' : `${sec} secondi`);
+
+/** Catalogo con i campi di visualizzazione derivati: reps ("12", "10 per lato", "20 secondi") e rest. */
+export const EXERCISES = CATALOG.map((x) => ({
+  ...x,
+  reps: x.mode === 'time' ? `${minutesLabel(x.seconds)}${x.perSide ? ' per lato' : ''}` : `${x.n}${x.perSide ? ' per lato' : ''}`,
+}));
+export const PHASES = ['warmup', 'main', 'cardio', 'cooldown'];
 
 /** Nome mostrato per ogni "tipo" di attrezzo richiesto dagli esercizi. */
 export const EQUIPMENT_LABELS = {
   mat: 'Tappetino', dumbbells: 'Manubri', band: 'Elastico', step: 'Pedana fitness (step)', kettlebell: 'Kettlebell', ball: 'Palla da ginnastica',
-  medball: 'Palla medica', rope: 'Corda per saltare', ankle: 'Cavigliere con pesi', treadmill: 'Tapis roulant', bike: 'Cyclette',
+  medball: 'Palla medica', rope: 'Corda per saltare', ankle: 'Cavigliere con pesi', treadmill: 'Tapis roulant', bike: 'Cyclette', elliptical: 'Ellittica', stepper: 'Mini stepper',
 };
 
 /**
@@ -63,6 +45,8 @@ const KEYWORDS = {
   rope: /corda per saltare|corda da salto|jump rope/i,
   ankle: /cavigliere/i,
   treadmill: /tapis|treadmill/i,
+  elliptical: /ellittic|elliptical|cross trainer/i,
+  stepper: /mini stepper|stepper/i,
   bike: /cyclette|bici da camera|pedaliera|exercise bike/i,
 };
 
@@ -79,7 +63,9 @@ export function equipmentKeysFrom(items) {
 /** Esercizi compatibili con ciò che c'è in casa; con "preferisco senza attrezzi" restano solo quelli a corpo libero. */
 export function compatibleExercises(items, { prefersNoEquipment = false, catalog = EXERCISES } = {}) {
   const have = equipmentKeysFrom(items);
-  return catalog.filter((e) => e.equipment.length === 0 || (!prefersNoEquipment && e.equipment.every((k) => have.has(k))));
+  // Con "preferisco allenarmi senza attrezzi" il tappetino non conta come attrezzo: è solo una superficie comoda.
+  return catalog.filter((e) => e.equipment.length === 0
+    || (prefersNoEquipment ? e.equipment.every((k) => k === 'mat' && have.has('mat')) : e.equipment.every((k) => have.has(k))));
 }
 
 /**

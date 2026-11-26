@@ -3,16 +3,13 @@
 import { VAPID_PUBLIC_KEY } from '../config.js';
 import { sb } from './supabase.js';
 import { fail, AppError } from './api-base.js';
+import { ensureSubscription } from './push-health.js';
+import { getNotificationPrefs } from './api-settings.js';
 
 export const pushConfigured = () => Boolean(VAPID_PUBLIC_KEY);
 export const pushSupported = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
 export const pushPermission = () => (pushSupported() ? Notification.permission : 'unsupported');
 
-const toKey = (b64) => {
-  const pad = '='.repeat((4 - (b64.length % 4)) % 4);
-  const raw = atob((b64 + pad).replace(/-/g, '+').replace(/_/g, '/'));
-  return Uint8Array.from(raw, (c) => c.charCodeAt(0));
-};
 const toB64 = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)));
 
 export function deviceLabel() {
@@ -28,20 +25,49 @@ export async function currentSubscription() {
   return reg.pushManager.getSubscription();
 }
 
-/** Chiede il permesso e iscrive questo dispositivo. Va chiamata da un gesto dell'utente (un tocco). */
-export async function enablePush(userId) {
-  if (!pushSupported()) throw new AppError('Questo dispositivo non può ricevere notifiche.');
-  if (!pushConfigured()) throw new AppError('Le notifiche non sono ancora attive. Riprova più avanti.');
-  const permission = await Notification.requestPermission();
-  if (permission !== 'granted') throw new AppError('Per ricevere le notifiche, permettile dalle impostazioni del dispositivo.');
-  const reg = await navigator.serviceWorker.ready;
-  const sub = (await reg.pushManager.getSubscription()) ?? await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: toKey(VAPID_PUBLIC_KEY) });
+/** Endpoint registrati sul server per questo utente (la RLS limita comunque alle sue righe). */
+export async function listEndpoints(userId) {
+  const { data, error } = await sb.from('push_subscriptions').select('endpoint').eq('user_id', userId);
+  if (error) fail(error);
+  return data.map((r) => r.endpoint);
+}
+
+/** Registra la subscription sul server SENZA duplicati: se l'endpoint c'è già, non fa nulla (ON CONFLICT DO NOTHING). */
+export async function saveSubscription(userId, sub) {
   const json = sub.toJSON();
   const { error } = await sb.from('push_subscriptions').upsert(
     { user_id: userId, endpoint: sub.endpoint, p256dh: json.keys?.p256dh ?? toB64(sub.getKey('p256dh')), auth: json.keys?.auth ?? toB64(sub.getKey('auth')), label: deviceLabel() },
     { onConflict: 'endpoint', ignoreDuplicates: true });
   if (error) fail(error);
-  return sub;
+}
+
+/** Cancella dal server SOLO la riga di quell'endpoint (e solo se è dell'utente). */
+export async function deleteEndpoint(endpoint) {
+  const { error } = await sb.from('push_subscriptions').delete().eq('endpoint', endpoint);
+  if (error) fail(error);
+}
+
+/** Almeno una preferenza di notifica è attiva? In caso di dubbio (errore di lettura) si considera di sì. */
+export async function pushPreferenceWanted(userId) {
+  const p = await getNotificationPrefs(userId);
+  return Object.values(p).some((v) => v === true);
+}
+
+/** Chiede il permesso e iscrive questo dispositivo. Va chiamata da un gesto dell'utente (un tocco). */
+export async function enablePush(userId) {
+  if (!pushSupported()) throw new AppError('Questo dispositivo non può ricevere notifiche.');
+  if (!pushConfigured()) throw new AppError('Le notifiche non sono ancora attive. Riprova più avanti.');
+  const permission = await Notification.requestPermission(); // primo await: resta dentro il gesto dell'utente
+  if (permission !== 'granted') throw new AppError('Per ricevere le notifiche, permettile dalle impostazioni del dispositivo.');
+  const reg = await navigator.serviceWorker.ready;
+  const api = { saveSubscription, deleteEndpoint };
+  try {
+    const { sub } = await ensureSubscription(reg, { userId, serverEndpoints: await listEndpoints(userId), deps: { vapidKey: VAPID_PUBLIC_KEY, api } });
+    return sub;
+  } catch (err) {
+    if (err?.code === 'subscribe-failed') throw new AppError('Non riesco ad attivare le notifiche su questo dispositivo. Chiudi e riapri l’app, poi riprova.');
+    throw err;
+  }
 }
 
 export async function listDevices(userId) {

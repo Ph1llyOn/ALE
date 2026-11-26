@@ -68,3 +68,16 @@ Anthropic API reale (serve una chiave finanziata), SMTP/email (non necessarie: a
 - Gli attrezzi si scelgono da un elenco per categorie (`EQUIPMENT_CATALOG` in `js/data/exercises-core.js`, 31 voci) e si salvano come righe di `equipment`: restano modificabili ed eliminabili dal profilo di Alessia. Le voci scritte a mano continuano a funzionare.
 - Il catalogo esercizi ha 9 esercizi in più (kettlebell, palla, palla medica, corda, cavigliere, tapis roulant, cyclette); l'AI e le schede propongono solo esercizi compatibili con l'inventario.
 - Tutti i testi dell'app riscritti in italiano più semplice e naturale; solo i testi delle notifiche sulle proposte hanno richiesto una migrazione (`20261130000000_testi_notifiche.sql`), senza toccare permessi o logica.
+
+## Allenamento intelligente (26/11/2026) — vedi `docs/ALLENAMENTO.md`
+| Tema | Decisione |
+|---|---|
+| Motore | regole deterministiche condivise frontend/server; l'AI sceglie solo dentro i limiti e il server ricontrolla |
+| Feedback sugli esercizi | tabella privata `exercise_feedback`, mai condivisibile con Phill; progressione prudente (servono più segnali) |
+| Dolore o fastidio | l'esercizio non si ripropone per 14 giorni e non si aumenta mai |
+| Sessione guidata | nulla parte da solo; una sola pressione per serie; il timer scaduto non conferma; tempo da timestamp |
+| Piano settimanale | generato all'apertura dell'app; sessioni nuove automatiche, rimozioni solo con conferma; impegni personali sempre prioritari |
+| Obiettivo dimagrimento | considerato nell'organizzazione (continuità, cardio sostenibile, forza, recupero) senza pesi, calorie o diete (decisione precedente confermata) |
+| Tappetino | non conta come "attrezzo" per la preferenza «senza attrezzi» |
+| Addominali e tapis roulant | preferenze di Alessia (modificabili), non obblighi quotidiani |
+| Notifiche | controllo di integrità a ogni apertura con ripristino automatico (vedi `docs/NOTIFICHE.md`) |

@@ -1,9 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" role="img" aria-label="march">
-  <line x1="14" y1="142" x2="186" y2="142" stroke="#e6c3cf" stroke-width="3" stroke-linecap="round"/>
-  <polyline points="100,92 100,116 100,138" fill="none" stroke="#f0a9c1" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
-  <polyline points="100,48 116,68 128,82" fill="none" stroke="#f0a9c1" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
-  <polyline points="100,48 100,92" fill="none" stroke="#d9719a" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
-  <polyline points="100,92 126,90 126,116" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
-  <polyline points="100,48 86,70 74,86" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
-  <circle cx="100" cy="30" r="11" fill="#fde3ea" stroke="#d9719a" stroke-width="5"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" role="img" aria-label="Marcia sul posto">
+<title>Marcia sul posto</title>
+<desc>Sul posto alzi un ginocchio alla volta, con le braccia che oscillano in alternanza.</desc>
+<line x1="14" y1="142" x2="186" y2="142" stroke="#e6c3cf" stroke-width="3" stroke-linecap="round"/>
+<polyline points="100,92 100,116 100,138" fill="none" stroke="#f0a9c1" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"><animate attributeName="points" values="100,92 100,116 100,138;100,92 126,90 126,116;100,92 100,116 100,138" dur="2s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></polyline>
+<polyline points="100,48 116,68 128,82" fill="none" stroke="#f0a9c1" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"><animate attributeName="points" values="100,48 116,68 128,82;100,48 86,70 74,86;100,48 116,68 128,82" dur="2s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></polyline>
+<polyline points="100,48 100,92" fill="none" stroke="#d9719a" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="100,92 126,90 126,116" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><animate attributeName="points" values="100,92 126,90 126,116;100,92 100,116 102,138;100,92 126,90 126,116" dur="2s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></polyline>
+<polyline points="100,48 86,70 74,86" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><animate attributeName="points" values="100,48 86,70 74,86;100,48 116,68 128,82;100,48 86,70 74,86" dur="2s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></polyline>
+<circle cx="100" cy="30" r="11" fill="#fde3ea" stroke="#d9719a" stroke-width="5"/>
 </svg>

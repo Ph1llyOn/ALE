@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" role="img" aria-label="Piegamenti al muro">
+<title>Piegamenti al muro</title>
+<desc>In piedi di fronte al muro, con le mani sul muro, fletti i gomiti avvicinando il petto e spingi indietro.</desc>
+<line x1="14" y1="142" x2="186" y2="142" stroke="#e6c3cf" stroke-width="3" stroke-linecap="round"/>
+<line x1="168" y1="12" x2="168" y2="142" stroke="#a98a96" stroke-width="5" stroke-linecap="round" opacity=".6"/>
+<polyline points="132,64 101,101" fill="none" stroke="#d9719a" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><animate attributeName="points" values="132,64 101,101;140.5,72.2 105.3,105.1;132,64 101,101" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></polyline>
+<polyline points="101,101 86.7,118 70,138" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><animate attributeName="points" values="101,101 86.7,118 70,138;105.3,105.1 89,120.2 70,138;101,101 86.7,118 70,138" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></polyline>
+<polyline points="132,64 146,66 160,68" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><animate attributeName="points" values="132,64 146,66 160,68;140.5,72.2 150,84 160,68;132,64 146,66 160,68" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></polyline>
+<circle cx="137" cy="47" r="11" fill="#fde3ea" stroke="#d9719a" stroke-width="5"><animate attributeName="cx" values="137;148.5;137" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/><animate attributeName="cy" values="47;56.2;47" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></circle>
+</svg>

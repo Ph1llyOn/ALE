@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" role="img" aria-label="Rotazioni delle spalle">
+<title>Rotazioni delle spalle</title>
+<desc>Le spalle salgono verso le orecchie, poi vanno indietro e giù, in un cerchio rilassato.</desc>
+<line x1="14" y1="142" x2="186" y2="142" stroke="#e6c3cf" stroke-width="3" stroke-linecap="round"/>
+<circle cx="88" cy="50" r="13" fill="none" stroke="#f0a9c1" stroke-width="3" stroke-dasharray="2 6" stroke-linecap="round"/>
+<circle cx="112" cy="50" r="13" fill="none" stroke="#f0a9c1" stroke-width="3" stroke-dasharray="2 6" stroke-linecap="round"/>
+<polyline points="100,94 104,118 106,138" fill="none" stroke="#f0a9c1" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+<polyline points="112,50 120,68 120,88" fill="none" stroke="#f0a9c1" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"><animate attributeName="points" values="112,50 120,68 120,88;112,40 121,60 121,80;109,54 116,72 116,92;112,50 120,68 120,88" dur="3.2s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.3;0.7;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1"/></polyline>
+<polyline points="100,48 100,94" fill="none" stroke="#d9719a" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><animate attributeName="points" values="100,48 100,94;100,44 100,94;100,49 100,94;100,48 100,94" dur="3.2s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.3;0.7;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1"/></polyline>
+<polyline points="112,50 100,48 88,50" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><animate attributeName="points" values="112,50 100,48 88,50;112,40 100,44 88,40;109,54 100,49 91,54;112,50 100,48 88,50" dur="3.2s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.3;0.7;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1"/></polyline>
+<polyline points="100,94 96,118 94,138" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="88,50 80,68 80,88" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><animate attributeName="points" values="88,50 80,68 80,88;88,40 79,60 79,80;91,54 84,72 84,92;88,50 80,68 80,88" dur="3.2s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.3;0.7;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1"/></polyline>
+<circle cx="100" cy="30" r="11" fill="#fde3ea" stroke="#d9719a" stroke-width="5"><animate attributeName="cy" values="30;34;31;30" dur="3.2s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.3;0.7;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1"/></circle>
+</svg>

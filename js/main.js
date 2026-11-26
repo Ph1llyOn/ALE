@@ -1,9 +1,12 @@
 import { initThemeToggle } from './core/theme.js';
 import { resolve } from './config.js';
 import { h, loadingScreen, errorBox } from './core/ui.js';
-import { setState, getState } from './core/store.js';
+import { setState, getState, subscribe } from './core/store.js';
 import { registerView, startRouter, render } from './core/router.js';
 import { startSession, startAutoRefresh } from './core/session.js';
+import { startPushMonitor } from './core/push-health.js';
+import { enablePush } from './core/api-push.js';
+import { showPushDialog, closePushDialog, isPushSnoozed, snoozePush } from './components/push-dialog.js';
 
 import accessView from './features/access/access.js';
 import pairingView from './features/pairing/pairing.js';
@@ -69,6 +72,29 @@ async function registerServiceWorker() {
   catch (err) { console.warn('Service worker non registrato', err); }
 }
 
+// Controllo automatico delle notifiche push: parte quando ci sono sessione e profilo, si ferma quando si esce.
+// Un guasto qui non deve mai toccare il resto dell'app.
+let pushMonitor = null; let pushUser = null;
+function syncPushMonitor() {
+  try {
+    const { session, profile } = getState();
+    const uid = session && profile ? profile.id : null;
+    if (uid === pushUser) return;
+    pushMonitor?.stop(); pushMonitor = null; closePushDialog(); pushUser = uid;
+    if (!uid) return;
+    pushMonitor = startPushMonitor({
+      userId: uid,
+      onProblem: (diag) => { if (!isPushSnoozed()) showPushDialog(diag, {
+        onEnable: async () => { await enablePush(uid); await pushMonitor?.runNow(true); },
+        onLater: () => snoozePush(),
+        onAck: () => snoozePush({ session: true }),
+      }); },
+      onClear: () => closePushDialog(),
+    });
+  } catch (err) { console.warn('Controllo notifiche non avviato', err); }
+}
+subscribe(syncPushMonitor);
+
 async function boot() {
   try {
     await startSession();
@@ -79,6 +105,7 @@ async function boot() {
     app.replaceChildren(h('main', { class: 'shell' }, errorBox('Non riesco ad avviare l’app. Controlla la connessione e riprova.', { onRetry: () => location.reload() })));
   }
   registerServiceWorker();
+  syncPushMonitor();
 }
 
 boot();

@@ -18,6 +18,8 @@ before(async () => {
   phill = await makeUser('phill', 'Phill');
   await link(ale, phill);
   await adminClient().from('notifications').delete().eq('user_id', ale.id);
+  // l'orario del mattino è fissato a fine giornata: nulla parte finché il test non lo sposta (il risultato non dipende dall'ora in cui si lancia)
+  await adminClient().from('user_settings').insert({ user_id: ale.id, morning_time: '23:59' });
 });
 after(async () => { await mock.close(); await adminClient().from('internal_config').delete().in('key', ['functions_url', 'cron_secret']); await cleanup(); });
 
@@ -33,7 +35,7 @@ test('push-dispatch: senza il segreto dei job rifiuta qualunque richiesta', asyn
 
 test('motivazione del mattino: creata dal SERVER una volta al giorno, senza browser aperto', async () => {
   const admin = adminClient();
-  await admin.from('user_settings').insert({ user_id: ale.id, morning_time: '00:00' });
+  await admin.from('user_settings').update({ morning_time: '00:00' }).eq('user_id', ale.id);
   // AI spenta: arriva comunque un pensiero preparato a mano (se la preferenza è attiva)
   let r = await dispatch({ 'x-cron-secret': SECRET });
   assert.ok(r.body.morning >= 1);

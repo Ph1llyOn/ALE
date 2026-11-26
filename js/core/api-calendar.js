@@ -3,7 +3,7 @@ import { sb } from './supabase.js';
 import { fail } from './api-base.js';
 
 const clean = (v) => { const t = String(v ?? '').trim(); return t === '' ? null : t; };
-const COLS = 'id, owner_id, created_by, title, category, starts_at, ends_at, all_day, status, completed, notes';
+const COLS = 'id, owner_id, created_by, title, category, starts_at, ends_at, all_day, status, completed, notes, source, plan_key, plan_data, user_modified';
 
 /** Eventi di Alessia (propri e proposti) nell'intervallo [from, to). */
 export async function listEvents(ownerId, from, to) {
@@ -31,7 +31,7 @@ export async function createEvent(userId, { title, category, startsAt, endsAt, a
 
 export async function updateEvent(id, { title, category, startsAt, endsAt, allDay, notes }) {
   const { data, error } = await sb.from('calendar_events').update({
-    title: title.trim(), category, starts_at: startsAt, ends_at: endsAt || null, all_day: Boolean(allDay), notes: clean(notes),
+    title: title.trim(), category, starts_at: startsAt, ends_at: endsAt || null, all_day: Boolean(allDay), notes: clean(notes), user_modified: true,
   }).eq('id', id).select(COLS).single();
   if (error) fail(error);
   return data;

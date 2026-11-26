@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" role="img" aria-label="Calcio all’indietro in quadrupedia">
+<title>Calcio all’indietro in quadrupedia</title>
+<desc>In quadrupedia spingi il tallone verso il soffitto con il ginocchio piegato, poi riporti la gamba giù.</desc>
+<rect x="8" y="138" width="184" height="7" rx="3.5" fill="#f3d7e0"/>
+<polyline points="124,86 118,118 146,136" fill="none" stroke="#f0a9c1" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+<polyline points="64,84 70,110 70,134" fill="none" stroke="#f0a9c1" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+<polyline points="64,84 124,86" fill="none" stroke="#d9719a" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="124,86 124,118 152,136" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><animate attributeName="points" values="124,86 124,118 152,136;124,86 152,92 154,64;124,86 124,118 152,136" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></polyline>
+<polyline points="64,84 64,110 64,134" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="48" cy="78" r="11" fill="#fde3ea" stroke="#d9719a" stroke-width="5"><animate attributeName="cx" values="48;46;48" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/><animate attributeName="cy" values="78;74;78" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></circle>
+</svg>

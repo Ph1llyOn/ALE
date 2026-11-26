@@ -7,7 +7,7 @@ after(cleanup);
 const TABLES = ['profiles', 'partnerships', 'invitations', 'sharing_permissions', 'equipment', 'workouts', 'workout_exercises',
   'workout_sessions', 'session_exercise_progress', 'workout_proposals', 'habits', 'habit_logs', 'calendar_events', 'journal_entries',
   'wellbeing_logs', 'wellbeing_notes', 'progress_records', 'messages', 'message_receipts', 'scheduled_messages', 'notifications', 'notification_preferences', 'user_settings', 'goals', 'push_subscriptions',
-  'ai_preferences', 'ai_generations'];
+  'ai_preferences', 'ai_generations', 'exercise_feedback'];
 
 async function fill(u, partner) {
   const c = u.client;
@@ -37,7 +37,7 @@ async function leftovers(userId) {
     ['ai_preferences', ['user_id']], ['ai_generations', ['user_id']], ['equipment', ['owner_id']], ['workouts', ['owner_id']],
     ['workout_exercises', ['owner_id']], ['workout_sessions', ['owner_id']], ['session_exercise_progress', ['owner_id']],
     ['habits', ['owner_id']], ['habit_logs', ['owner_id']], ['journal_entries', ['owner_id']], ['wellbeing_logs', ['owner_id']],
-    ['wellbeing_notes', ['owner_id']], ['progress_records', ['owner_id']],
+    ['wellbeing_notes', ['owner_id']], ['progress_records', ['owner_id']], ['exercise_feedback', ['owner_id']], ['user_settings', ['user_id']],
   ]) {
     for (const col of cols) {
       const { data, error } = await admin.from(table).select('*').eq(col, userId);

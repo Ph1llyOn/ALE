@@ -1,9 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" role="img" aria-label="band-pull-apart">
-  <line x1="14" y1="142" x2="186" y2="142" stroke="#e6c3cf" stroke-width="3" stroke-linecap="round"/>
-  <line x1="50" y1="56" x2="150" y2="56" stroke="#a98a96" stroke-width="4" stroke-dasharray="1 7" stroke-linecap="round"/>
-  <polyline points="100,48 126,56 150,56" fill="none" stroke="#f0a9c1" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
-  <polyline points="100,48 100,94" fill="none" stroke="#d9719a" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
-  <polyline points="100,94 100,118 102,138" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
-  <polyline points="100,48 74,56 50,56" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
-  <circle cx="100" cy="30" r="11" fill="#fde3ea" stroke="#d9719a" stroke-width="5"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" role="img" aria-label="Apertura con elastico">
+<title>Apertura con elastico</title>
+<desc>L’elastico è teso davanti al petto: apri le braccia lateralmente e poi le richiudi piano.</desc>
+<line x1="14" y1="142" x2="186" y2="142" stroke="#e6c3cf" stroke-width="3" stroke-linecap="round"/>
+<polyline points="100,94 104,118 106,138" fill="none" stroke="#f0a9c1" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+<polyline points="112,50 116,62 105,58" fill="none" stroke="#f0a9c1" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"><animate attributeName="points" values="112,50 116,62 105,58;112,50 130,54 150,56;112,50 116,62 105,58" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></polyline>
+<polyline points="100,48 100,94" fill="none" stroke="#d9719a" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="112,50 100,48 88,50" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="100,94 96,118 94,138" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="88,50 84,62 95,58" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><animate attributeName="points" values="88,50 84,62 95,58;88,50 70,54 50,56;88,50 84,62 95,58" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></polyline>
+<circle cx="100" cy="30" r="11" fill="#fde3ea" stroke="#d9719a" stroke-width="5"/>
+<polyline points="95,58 100,64 105,58" fill="none" stroke="#a98a96" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><animate attributeName="points" values="95,58 100,64 105,58;50,56 100,56 150,56;95,58 100,64 105,58" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></polyline>
 </svg>

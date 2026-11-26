@@ -132,7 +132,7 @@ test('vendor: il bundle supabase-js è identico a quello della versione bloccata
 test('sw.js: la lista di precache coincide con i file del frontend (npm run precache)', () => {
   const sw = read('sw.js');
   const listed = new Set([...sw.match(/const SHELL = \[([\s\S]*?)\];/)[1].matchAll(/'([^']+)'/g)].map((m) => m[1]).filter((p) => p !== './'));
-  const actual = walk(ROOT).filter((f) => /\.(html|css|js|png|webmanifest)$/.test(f))
+  const actual = walk(ROOT).filter((f) => /\.(html|css|js|png|svg|webmanifest)$/.test(f))
     .map((f) => relative(ROOT, f).split(sep).join('/')).filter((f) => f !== 'sw.js');
   assert.deepEqual([...listed].sort(), actual.sort());
 });
@@ -163,11 +163,11 @@ test('router: ogni rotta dichiarata ha una schermata registrata in main.js, e vi
   assert.deepEqual(registered, declared);
 });
 
-test('frontend: nessun uso di localStorage come archivio dati (solo preferenza del tema)', () => {
+test('frontend: nessun uso di localStorage come archivio dati (solo tema e "Più tardi" del popup notifiche)', () => {
   const offenders = [];
   for (const f of frontend.filter((x) => x.endsWith('.js') && !x.includes(`${sep}vendor${sep}`))) {
     const txt = readFileSync(f, 'utf8');
-    if (/localStorage.(get|set|remove)Item/.test(txt) && !/theme/.test(relative(ROOT, f))) offenders.push(relative(ROOT, f));
+    if (/localStorage.(get|set|remove)Item/.test(txt) && !/theme|push-dialog|activities.session.js/.test(relative(ROOT, f))) offenders.push(relative(ROOT, f));
   }
-  assert.deepEqual(offenders, [], 'localStorage solo per il tema: i dati vivono su Supabase');
+  assert.deepEqual(offenders, [], 'localStorage solo per il tema, per silenziare il popup notifiche e come copia di sicurezza dello stato della sessione in corso (comodità, mai verità): i dati vivono su Supabase');
 });

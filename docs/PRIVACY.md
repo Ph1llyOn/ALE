@@ -79,3 +79,9 @@ spegne ogni consenso specifico e azzera la data. Le funzioni AI (fase successiva
 - **Aggiornamento delle schermate:** non c'è ancora il tempo reale (Fase 6). Un biglietto compare quando si riapre
   l'app o si torna alla schermata; l'app si riallinea da sola quando torna in primo piano.
 - **Registrazione aperta:** da chiudere dopo la registrazione dei due account (vedi `docs/SUPABASE_COLLEGAMENTO.md`).
+
+## Allenamento — Tappa 5
+- **Feedback sugli esercizi e note**: tabella `exercise_feedback`, leggibile e modificabile **solo** da Alessia. Nessuna categoria di condivisione la include, quindi nemmeno con «Attività» o «Progressi» condivisi Phill li vede (test pgTAP e API).
+- **Sessioni**: lo stato di avanzamento (esercizi fatti, serie) segue la categoria «Attività». Il piano, le impostazioni di allenamento (livello, limitazioni, preferenze) e il testo delle indicazioni del professionista restano private.
+- **Piano nel calendario**: gli eventi del piano sono eventi di Alessia (visibili a Phill solo se condivide «Calendario»); solo Alessia può crearli.
+- **Motore e AI**: storico e feedback sono usati solo dalle regole del server per adattare le proposte e **non vengono mai inviati al modello**.

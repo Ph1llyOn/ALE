@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" role="img" aria-label="Plank sulle ginocchia">
+<title>Plank sulle ginocchia</title>
+<desc>Appoggiata su avambracci e ginocchia, corpo in linea: resti ferma e respiri.</desc>
+<rect x="8" y="138" width="184" height="7" rx="3.5" fill="#f3d7e0"/>
+<polyline points="52,106 104,120" fill="none" stroke="#d9719a" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><animate attributeName="points" values="52,106 104,120;52,105 104,120;52,106 104,120" dur="3.6s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></polyline>
+<polyline points="104,120 138,132 166,122" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="52,106 56,132 34,134" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><animate attributeName="points" values="52,106 56,132 34,134;52,105 56,132 34,134;52,106 56,132 34,134" dur="3.6s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></polyline>
+<circle cx="34" cy="102" r="11" fill="#fde3ea" stroke="#d9719a" stroke-width="5"><animate attributeName="cy" values="102;100.5;102" dur="3.6s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></circle>
+<circle cx="96" cy="118" r="9" fill="none" stroke="#f0a9c1" stroke-width="3" opacity=".25"><animate attributeName="r" values="9;15;9" dur="3.6s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/><animate attributeName="opacity" values="0.3;0.7;0.3" dur="3.6s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></circle>
+</svg>

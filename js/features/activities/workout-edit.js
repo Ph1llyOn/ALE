@@ -1,7 +1,8 @@
 // #/attivita/scheda?id=… — creazione e modifica di una scheda, con esercizi illustrati, serie, ripetizioni, recupero e note.
 import { h, field, textField, errorBox, withBusy, toast } from '../../core/ui.js';
 import { getState } from '../../core/store.js';
-import { getWorkout, saveWorkout, deleteWorkout, startSession } from '../../core/api-activities.js';
+import { getWorkout, saveWorkout, deleteWorkout } from '../../core/api-activities.js';
+import { createGuidedSession, planFromWorkout } from '../../core/api-training.js';
 import { listEquipment } from '../../core/api-personal.js';
 import { getSettings } from '../../core/api-settings.js';
 import { pageHeader } from '../../components/controls.js';
@@ -100,7 +101,7 @@ export default async function workoutEditView({ query }) {
   if (existing) {
     const start = h('button', { class: 'btn btn-secondary btn-block', type: 'button', onclick: () => withBusy(start, async () => {
       try {
-        const id = await startSession(profile.id, { workoutId: existing.id, title: existing.title, exercises: items });
+        const id = await createGuidedSession(profile.id, planFromWorkout(await getWorkout(existing.id)), { workoutId: existing.id });
         navigate(`/attivita/sessione?id=${id}`);
       } catch (err) { toast(err.message, 'error'); }
     }) }, 'Inizia questo allenamento');

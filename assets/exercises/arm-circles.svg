@@ -1,10 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" role="img" aria-label="arm-circles">
-  <line x1="14" y1="142" x2="186" y2="142" stroke="#e6c3cf" stroke-width="3" stroke-linecap="round"/>
-  <path d="M34 40 a14 14 0 1 1 -2 18" fill="none" stroke="#f0a9c1" stroke-width="4" stroke-linecap="round"/><path d="M166 40 a14 14 0 1 0 2 18" fill="none" stroke="#f0a9c1" stroke-width="4" stroke-linecap="round"/>
-  <polyline points="100,96 106,118 108,138" fill="none" stroke="#f0a9c1" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
-  <polyline points="100,50 130,52 160,52" fill="none" stroke="#f0a9c1" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
-  <polyline points="100,50 100,96" fill="none" stroke="#d9719a" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
-  <polyline points="100,96 100,118 100,138" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
-  <polyline points="100,50 70,52 40,52" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
-  <circle cx="100" cy="32" r="11" fill="#fde3ea" stroke="#d9719a" stroke-width="5"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" role="img" aria-label="Cerchi con le braccia">
+<title>Cerchi con le braccia</title>
+<desc>Le braccia restano distese ai lati e le mani disegnano cerchi ampi e morbidi.</desc>
+<line x1="14" y1="142" x2="186" y2="142" stroke="#e6c3cf" stroke-width="3" stroke-linecap="round"/>
+<circle cx="40" cy="52" r="12" fill="none" stroke="#f0a9c1" stroke-width="3" stroke-dasharray="2 6" stroke-linecap="round"/>
+<circle cx="160" cy="52" r="12" fill="none" stroke="#f0a9c1" stroke-width="3" stroke-dasharray="2 6" stroke-linecap="round"/>
+<polyline points="100,94 104,118 106,138" fill="none" stroke="#f0a9c1" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+<polyline points="112,50 130,51 148,52" fill="none" stroke="#f0a9c1" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"><animate attributeName="points" values="112,50 130,51 148,52;112,50 136,57 160,64;112,50 142,51 172,52;112,50 136,45 160,40;112,50 130,51 148,52" dur="3s" repeatCount="indefinite" calcMode="linear"/></polyline>
+<polyline points="100,48 100,94" fill="none" stroke="#d9719a" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="112,50 100,48 88,50" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="100,94 96,118 94,138" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="88,50 70,51 52,52" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><animate attributeName="points" values="88,50 70,51 52,52;88,50 64,57 40,64;88,50 58,51 28,52;88,50 64,45 40,40;88,50 70,51 52,52" dur="3s" repeatCount="indefinite" calcMode="linear"/></polyline>
+<circle cx="100" cy="30" r="11" fill="#fde3ea" stroke="#d9719a" stroke-width="5"/>
 </svg>

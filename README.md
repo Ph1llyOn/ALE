@@ -24,6 +24,7 @@ npm run db:stop
 ```
 
 Accesso (ALE/PHILL con PIN, senza email): `docs/ACCESSO.md`. Notifiche e invii pianificati: `docs/NOTIFICHE.md`. Claude/AI: `docs/AI.md`.
+Allenamento intelligente (catalogo, motore, sessioni guidate, piano settimanale): `docs/ALLENAMENTO.md`.
 Log di avanzamento: `docs/AVANZAMENTO.md`.
 
 Modello di privacy: vedi `docs/PRIVACY.md`. Decisioni approvate: `docs/DECISIONI.md`.

@@ -2,16 +2,19 @@
 import { h, errorBox, emptyState, withBusy, toast, spinner, field } from '../../core/ui.js';
 import { getState } from '../../core/store.js';
 import {
-  listWorkouts, inProgressSession, startSession, getWorkout, listProposals, acceptProposal, rejectProposal, saveWorkout,
+  listWorkouts, inProgressSession, getWorkout, listProposals, acceptProposal, rejectProposal, saveWorkout,
   listHabits, addHabit, setHabitDone, archiveHabit, isConsolidated, addWin, listSessions,
 } from '../../core/api-activities.js';
 import { listEquipment } from '../../core/api-personal.js';
 import { getSettings } from '../../core/api-settings.js';
+import { loadTrainingContext, createGuidedSession, planFromWorkout, computeWeekPlan, applyWeekPlan, declinePlanEvent } from '../../core/api-training.js';
+import { generateSession, weekdayOf } from '../../data/planner-core.js';
+import { WEEKDAYS_LONG } from '../../data/calendar-util.js';
 import { segmented, pageHeader } from '../../components/controls.js';
 import { hero, ring, exerciseThumb, sectionHead } from '../../components/visuals.js';
 import { profileErrorView } from '../../components/profile-error.js';
 import { icon } from '../../components/icons.js';
-import { suggestWorkout, DEFAULT_HABITS, compatibleExercises } from '../../data/exercises.js';
+import { DEFAULT_HABITS } from '../../data/exercises.js';
 import { navigate, render } from '../../core/router.js';
 import { lastDays, } from '../../core/chart.js';
 import { localDay, fmtDayMonth } from '../../core/format.js';
@@ -38,12 +41,6 @@ export default async function activitiesView() {
     value: currentTab, onChange: (v) => { currentTab = v; paint(); },
   });
 
-  const freeBtn = () => h('button', { class: 'btn btn-secondary', type: 'button', onclick: async (ev) => {
-    await withBusy(ev.currentTarget, async () => {
-      try { const id = await startSession(profile.id, { title: 'Allenamento libero' }); navigate(`/attivita/sessione?id=${id}`); }
-      catch (err) { toast(err.message, 'error'); }
-    });
-  } }, 'Allenamento libero');
 
   // --- hero
   let heroEl;
@@ -52,7 +49,7 @@ export default async function activitiesView() {
   } else if (workouts.length) {
     heroEl = hero({ eyebrow: 'Attività', title: 'Muoviti', accent: 'con calma', text: 'Scegli una scheda oppure allenati come ti va. Nessuna fretta, nessun obiettivo da raggiungere.', cta: { label: 'Inizia', onClick: () => { currentTab = 'schede'; seg.select('schede'); paint(); document.getElementById('lista-schede')?.scrollIntoView({ behavior: 'smooth' }); } } });
   } else {
-    heroEl = hero({ eyebrow: 'Attività', title: 'Il tuo primo', accent: 'allenamento', text: 'Crea una scheda con gli esercizi che ti piacciono, oppure parti da un suggerimento.', cta: { label: 'Nuova scheda', href: '#/attivita/scheda' } });
+    heroEl = hero({ eyebrow: 'Attività', title: 'Il tuo primo', accent: 'allenamento', text: 'Parti dalla proposta di oggi qui sotto, oppure crea una scheda con gli esercizi che ti piacciono.', cta: { label: 'Nuova scheda', href: '#/attivita/scheda' } });
   }
 
   function paint() {
@@ -64,6 +61,7 @@ export default async function activitiesView() {
   // ---------------------------------------------------------------- schede
   async function schedeTab() {
     const wrap = h('div', { class: 'stack' });
+    wrap.append(await todayCard(), await weekCard());
     if (proposals.length) {
       wrap.append(sectionHead('Proposte da Phill'));
       for (const p of proposals) wrap.append(proposalCard(p));
@@ -79,15 +77,14 @@ export default async function activitiesView() {
         h('button', { class: 'btn btn-secondary', type: 'button', onclick: (ev) => withBusy(ev.currentTarget, async () => {
           try {
             const full = await getWorkout(w.id);
-            const id = await startSession(profile.id, { workoutId: w.id, title: w.title, exercises: full.workout_exercises });
+            const id = await createGuidedSession(profile.id, planFromWorkout(full), { workoutId: w.id });
             navigate(`/attivita/sessione?id=${id}`);
           } catch (err) { toast(err.message, 'error'); }
         }) }, 'Inizia'));
       list.append(row);
     }
     wrap.append(list);
-    wrap.append(h('div', { class: 'row-center' }, freeBtn(), h('a', { class: 'btn btn-secondary', href: '#/attivita/scheda' }, 'Nuova scheda')));
-    wrap.append(suggestionCard());
+    wrap.append(h('div', { class: 'row-center' }, h('a', { class: 'btn btn-secondary', href: '#/attivita/scheda' }, 'Nuova scheda')));
     return wrap;
   }
 
@@ -109,27 +106,85 @@ export default async function activitiesView() {
         h('button', { class: 'btn btn-text', type: 'button', onclick: run(() => rejectProposal(p.id), 'Proposta messa da parte.') }, 'Non ora')));
   }
 
-  function suggestionCard() {
-    const pool = compatibleExercises(equipment, { prefersNoEquipment: settings.prefers_no_equipment });
-    const card = h('section', { class: 'card stack' }, h('h2', { class: 'card-title' }, 'Un suggerimento per te'),
-      h('p', { class: 'muted' }, settings.prefers_no_equipment
-        ? 'Esercizi a corpo libero, perché preferisci non usare attrezzi.'
-        : `Esercizi adatti agli attrezzi che hai a disposizione (${pool.length} tra cui scegliere).`));
-    let seed = new Date().getDate();
-    const preview = h('div', { class: 'stack' });
-    const show = () => {
-      const picks = suggestWorkout(equipment, { prefersNoEquipment: settings.prefers_no_equipment, seed });
-      preview.replaceChildren(
-        ...picks.map((e) => h('div', { class: 'exercise-row' }, exerciseThumb(e.exercise_key), h('div', { class: 'grow' }, h('p', { class: 'list-title' }, e.name), h('p', { class: 'muted' }, `${e.sets} × ${e.reps}`)))),
-        h('div', { class: 'row-center' },
-          h('button', { class: 'btn', type: 'button', onclick: (ev) => withBusy(ev.currentTarget, async () => {
-            try { const id = await saveWorkout(profile.id, { title: 'Scheda suggerita', notes: 'Un punto di partenza: cambiala come preferisci.', exercises: picks }); navigate(`/attivita/scheda?id=${id}`); }
-            catch (err) { toast(err.message, 'error'); }
-          }) }, 'Salva come scheda'),
-          h('button', { class: 'btn btn-secondary', type: 'button', onclick: () => { seed += 1; show(); } }, 'Un altro')));
-    };
-    if (pool.length) { show(); card.append(preview); } else card.append(h('p', { class: 'muted' }, 'Dal Profilo puoi aggiungere qualche attrezzo, oppure lasciare tutto vuoto per fare esercizi a corpo libero.'));
-    card.append(h('p', { class: 'muted small' }, 'Sono solo idee: le indicazioni del professionista che ti segue vengono sempre prima.'));
+  // ---------------------------------------------------------------- oggi e settimana (motore di allenamento)
+  const KIND_LABELS = { strength: 'Forza', cardio: 'Cardio dolce', mobility: 'Mobilità' };
+  const PHASE_TITLES = { warmup: 'Riscaldamento', main: 'Parte principale', cardio: 'Cardio', cooldown: 'Defaticamento' };
+  let todaySeed = 0; let todayKind = null;
+
+  async function todayCard() {
+    const card = h('section', { class: 'card stack' }, h('h2', { class: 'card-title' }, 'Il tuo allenamento di oggi'));
+    try {
+      const { ctx, settings: st } = await loadTrainingContext(profile.id, { seed: new Date().getDate() + todaySeed });
+      const today = ctx.today;
+      const todays = (await weekEventsCached()).find((e) => e.source === 'plan' && e.day === today && !e.completed && e.status !== 'declined');
+      const yesterdayDone = ctx.history.some((x) => x.day === addDay(today, -1));
+      const kind = todayKind ?? todays?.plan_data?.kind ?? (yesterdayDone ? 'mobility' : 'strength');
+      card.append(segmented({ label: 'Che allenamento vuoi fare', value: kind, options: Object.entries(KIND_LABELS).map(([value, label]) => ({ value, label })), onChange: (v) => { todayKind = v; todaySeed = 0; paint(); } }).el);
+      const plan = generateSession(ctx, { kind });
+      if (!plan?.items?.length) { card.append(h('p', { class: 'muted' }, 'Per ora non trovo esercizi adatti. Controlla attrezzi e limitazioni nel Profilo.')); return card; }
+      const intro = todays ? 'Era in programma per oggi.' : yesterdayDone && kind === 'mobility' ? 'Ieri ti sei allenata: oggi qualcosa di più leggero.' : 'Una proposta pensata su quello che hai, sul tempo che hai scelto e su come sono andate le ultime volte.';
+      card.append(h('p', { class: 'muted' }, `${intro} Circa ${plan.estimated_minutes} minuti.`));
+      for (const phase of ['warmup', 'main', 'cardio', 'cooldown']) {
+        const list = plan.items.filter((i) => i.phase === phase); if (!list.length) continue;
+        card.append(h('p', { class: 'eyebrow' }, PHASE_TITLES[phase]), ...list.map((i) => h('div', { class: 'exercise-row' }, exerciseThumb(i.exercise_key),
+          h('div', { class: 'grow' }, h('p', { class: 'list-title' }, i.name), h('p', { class: 'muted small' }, `${i.sets} × ${i.reps}`, i.equipment.length ? ` · ${i.equipment.join(', ')}` : ''),
+            i.why?.length ? h('p', { class: 'muted small' }, `Perché: ${i.why[0]}`) : null))));
+      }
+      if (plan.assumptions?.length) card.append(h('p', { class: 'muted small' }, plan.assumptions.join(' ')));
+      card.append(h('div', { class: 'row-center' },
+        h('button', { class: 'btn', type: 'button', onclick: (ev) => withBusy(ev.currentTarget, async () => {
+          try { const id = await createGuidedSession(profile.id, plan, { eventId: todays?.id ?? null }); navigate(`/attivita/sessione?id=${id}`); } catch (err) { toast(err.message, 'error'); }
+        }) }, 'Inizia'),
+        h('button', { class: 'btn btn-secondary', type: 'button', onclick: () => { todaySeed += 1; paint(); } }, 'Un’altra idea')),
+      h('p', { class: 'muted small' }, 'Sono idee, non obblighi. Le indicazioni del professionista che ti segue vengono sempre prima, e se senti dolore o fastidio ci si ferma.'));
+      void st;
+    } catch (err) { card.append(errorBox(err.message, { onRetry: paint })); }
+    return card;
+  }
+
+  let weekCache = null;
+  async function weekEventsCached() {
+    if (!weekCache) { const { listWeekEvents } = await import('../../core/api-training.js'); weekCache = listWeekEvents(profile.id, localDay()); }
+    return weekCache;
+  }
+  const addDay = (d, k) => { const t = new Date(`${d}T12:00:00`); t.setDate(t.getDate() + k); return localDay(t); };
+
+  async function weekCard() {
+    const card = h('section', { class: 'card stack' }, h('h2', { class: 'card-title' }, 'La tua settimana'));
+    try {
+      const { ctx, settings: st } = await loadTrainingContext(profile.id);
+      let info = await computeWeekPlan(profile.id, { ctx, settings: st });
+      const today = ctx.today;
+      // le sessioni nuove si aggiungono da sole (non tolgono nulla); ciò che cambierebbe qualcosa chiede conferma
+      if (st.auto_plan && info.diff.toAdd.length && !info.diff.needsConfirmation) { await applyWeekPlan(profile.id, info.diff); weekCache = null; info = await computeWeekPlan(profile.id, { ctx, settings: st }); }
+      const events = info.events.filter((e) => e.source === 'plan');
+      const missed = events.filter((e) => !e.completed && e.status !== 'declined' && e.day < today);
+      if (info.diff.needsConfirmation) {
+        card.append(h('div', { class: 'notice stack' }, h('p', null, `La tua disponibilità è cambiata: ci sono ${info.diff.toRemove.length} sessioni del piano che non servono più. Le tolgo e aggiungo quelle nuove?`),
+          h('div', { class: 'row-center' },
+            h('button', { class: 'btn', type: 'button', onclick: (ev) => withBusy(ev.currentTarget, async () => { try { await applyWeekPlan(profile.id, info.diff, { removeStale: true }); weekCache = null; toast('Piano aggiornato.', 'success'); await render(); } catch (err) { toast(err.message, 'error'); } }) }, 'Aggiorna il piano'),
+            h('button', { class: 'btn btn-text', type: 'button', onclick: (ev) => ev.currentTarget.closest('.notice').remove() }, 'Lascia com’è'))));
+      } else if (!st.auto_plan && info.diff.toAdd.length) {
+        card.append(h('div', { class: 'notice stack' }, h('p', null, `Ti propongo ${info.diff.toAdd.length} ${info.diff.toAdd.length === 1 ? 'sessione' : 'sessioni'} per questa settimana, negli orari liberi del tuo calendario.`),
+          h('button', { class: 'btn', type: 'button', onclick: (ev) => withBusy(ev.currentTarget, async () => { try { await applyWeekPlan(profile.id, info.diff); weekCache = null; await render(); } catch (err) { toast(err.message, 'error'); } }) }, 'Aggiungi al calendario')));
+      }
+      const days = Array.from({ length: 7 }, (_, i) => addDay(info.week, i));
+      card.append(h('div', { class: 'list-card' }, days.map((d) => {
+        const ev = events.find((e) => e.day === d);
+        const name = WEEKDAYS_LONG[weekdayOf(d) % 7]; const isToday = d === today;
+        let right; let text;
+        if (!ev) { text = d < today ? 'Giorno libero' : 'Riposo: fa parte del percorso'; right = null; }
+        else if (ev.status === 'declined') { text = 'Messa da parte: nessun problema'; right = null; }
+        else if (ev.completed) { text = `${ev.title} · fatta`; right = icon('check'); }
+        else if (d < today) { text = `${ev.title} · non è stata fatta, va bene così`; right = null; }
+        else {
+          text = `${ev.title} · ${ev.start}`;
+          right = h('button', { class: 'btn btn-text', type: 'button', onclick: (e2) => withBusy(e2.currentTarget, async () => { try { await declinePlanEvent(ev.id); weekCache = null; await render(); } catch (err) { toast(err.message, 'error'); } }) }, 'Metti da parte');
+        }
+        return h('div', { class: `list-row${isToday ? ' is-today' : ''}` }, h('span', { class: 'grow' }, h('span', { class: 'list-title' }, `${name[0].toUpperCase()}${name.slice(1)}${isToday ? ' · oggi' : ''}`), h('span', { class: 'muted block small' }, text)), right);
+      })));
+      card.append(h('p', { class: 'muted small' }, `Le sessioni stanno negli orari liberi, senza toccare i tuoi impegni.${missed.length ? ' Quelle saltate non si recuperano tutte insieme: si riparte con calma.' : ''} Puoi modificarle dal Calendario.`));
+    } catch (err) { card.append(errorBox(err.message)); }
     return card;
   }
 

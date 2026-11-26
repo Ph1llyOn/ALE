@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" role="img" aria-label="Tirata con elastico">
+<title>Tirata con elastico</title>
+<desc>L’elastico è fissato davanti a te: tiri i gomiti indietro avvicinando le scapole e poi torni.</desc>
+<line x1="14" y1="142" x2="186" y2="142" stroke="#e6c3cf" stroke-width="3" stroke-linecap="round"/>
+<line x1="182" y1="12" x2="182" y2="142" stroke="#a98a96" stroke-width="5" stroke-linecap="round" opacity=".6"/>
+<polyline points="148,60 178,62" fill="none" stroke="#a98a96" stroke-width="4" stroke-linecap="round"><animate attributeName="points" values="148,60 178,62;112,56 178,62;148,60 178,62" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></polyline>
+<polyline points="98,88 106,113 108,138" fill="none" stroke="#f0a9c1" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+<polyline points="104,44 128,55 150,63" fill="none" stroke="#f0a9c1" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"><animate attributeName="points" values="104,44 128,55 150,63;104,44 96,67 116,59;104,44 128,55 150,63" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></polyline>
+<polyline points="104,44 98,88" fill="none" stroke="#d9719a" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="98,88 101,113 102,138" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="104,44 126,52 148,60" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><animate attributeName="points" values="104,44 126,52 148,60;104,44 92,64 112,56;104,44 126,52 148,60" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></polyline>
+<circle cx="106" cy="26" r="11" fill="#fde3ea" stroke="#d9719a" stroke-width="5"/>
+</svg>

@@ -26,3 +26,10 @@ Finché mancano, il job non fa nulla.
 
 ## Limiti
 Il piano gratuito di Supabase ha limiti di invocazioni e può mettere in pausa i progetti inattivi: in pausa, gli invii si fermano.
+
+## Controllo automatico dell'integrità (a ogni apertura e ogni ritorno in primo piano)
+`js/core/push-health.js` verifica l'intera catena, non solo `Notification.permission`: supporto del dispositivo, permesso, service worker registrato, sottoscrizione push presente e valida (stessa chiave VAPID), presenza e corrispondenza dell'endpoint su Supabase. Mai `localStorage` per decidere.
+- **Ripristino automatico** (senza gesto dell'utente) se il permesso è già concesso: registra il service worker, ricrea la sottoscrizione con la VAPID pubblica, aggiorna Supabase senza duplicati e cancella dal server solo il vecchio endpoint noto.
+- **Popup** (coerente con ALE.) solo se serve Alessia: permesso da riattivare (chiede quello nativo con un tocco), permesso negato (spiega come riattivarlo da Impostazioni; non si aggira), ripristino fallito, app da installare su iPhone. Con tutto a posto, o se le notifiche non sono mai state attivate, **nessun popup**.
+- Limite di una verifica ogni 20 secondi, mai due insieme; «Più tardi» silenzia 24 ore.
+- Testato con scenari **simulati** (cache e dati locali cancellati, service worker assente, sottoscrizione mancante o con chiave diversa, riga Supabase mancante, permesso revocato o concesso dopo il ritorno, errore di `subscribe`, tutto ok). **Da verificare su iPhone reale**: permesso nativo, `applicationServerKey` in Safari, comportamento dopo cancellazione dei dati del sito, consegna effettiva.

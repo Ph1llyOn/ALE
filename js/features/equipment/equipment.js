@@ -6,6 +6,7 @@ import { pageHeader } from '../../components/controls.js';
 import { getSettings, saveSettings } from '../../core/api-settings.js';
 import { profileErrorView } from '../../components/profile-error.js';
 import { equipmentPicker, norm } from '../../components/equipment-picker.js';
+import { trainingPrefsCard } from './training-prefs.js';
 
 export default async function equipmentView() {
   const { profile } = getState();
@@ -114,9 +115,10 @@ export default async function equipmentView() {
     await reload();
   } });
   const spaces = await spacesCard();
+  const training = await trainingPrefsCard(profile.id).catch((e) => errorBox(e.message));
   return h('main', { class: 'shell with-tabs' },
     pageHeader({ title: 'Attrezzatura e spazio', back: { href: '#/profilo', label: 'Profilo' } }),
     h('p', { class: 'muted' }, 'Scegli gli attrezzi che hai a disposizione. Puoi cambiare idea quando vuoi, per esempio se ne compri uno nuovo.'),
     h('section', { class: 'card stack' }, h('h2', { class: 'card-title' }, 'Quali attrezzi hai a disposizione?'), picker.el),
-    h('h2', { class: 'section-title' }, 'I tuoi attrezzi'), listHost, formHost, spaces);
+    h('h2', { class: 'section-title' }, 'I tuoi attrezzi'), listHost, formHost, spaces, training);
 }

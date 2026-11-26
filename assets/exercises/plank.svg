@@ -1,8 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" role="img" aria-label="plank">
-  <rect x="8" y="138" width="184" height="7" rx="3.5" fill="#f3d7e0"/>
-  
-  <polyline points="50,104 118,116" fill="none" stroke="#d9719a" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
-  <polyline points="118,116 146,124 172,134" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
-  <polyline points="50,104 54,130 80,132" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
-  <circle cx="34" cy="98" r="11" fill="#fde3ea" stroke="#d9719a" stroke-width="5"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" role="img" aria-label="Plank sugli avambracci">
+<title>Plank sugli avambracci</title>
+<desc>Appoggiata su avambracci e punte dei piedi, corpo allineato: resti ferma e respiri.</desc>
+<rect x="8" y="138" width="184" height="7" rx="3.5" fill="#f3d7e0"/>
+<polyline points="52,102 118,119" fill="none" stroke="#d9719a" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><animate attributeName="points" values="52,102 118,119;52,101 118,119;52,102 118,119" dur="3.6s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></polyline>
+<polyline points="118,119 146,126 174,134" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="52,102 56,132 34,134" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><animate attributeName="points" values="52,102 56,132 34,134;52,101 56,132 34,134;52,102 56,132 34,134" dur="3.6s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></polyline>
+<circle cx="33" cy="96" r="11" fill="#fde3ea" stroke="#d9719a" stroke-width="5"><animate attributeName="cy" values="96;94.5;96" dur="3.6s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></circle>
+<circle cx="100" cy="112" r="9" fill="none" stroke="#f0a9c1" stroke-width="3" opacity=".25"><animate attributeName="r" values="9;15;9" dur="3.6s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/><animate attributeName="opacity" values="0.3;0.7;0.3" dur="3.6s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/></circle>
 </svg>

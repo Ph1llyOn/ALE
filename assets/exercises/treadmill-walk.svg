@@ -1,9 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" role="img" aria-label="treadmill-walk">
-  <rect x="40" y="138" width="130" height="8" rx="4" fill="#f3d7e0" stroke="#a98a96" stroke-width="3"/><line x1="160" y1="138" x2="168" y2="60" stroke="#a98a96" stroke-width="5" stroke-linecap="round"/>
-  <polyline points="100,92 94,116 76,132" fill="none" stroke="#f0a9c1" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
-  <polyline points="100,48 116,68 126,82" fill="none" stroke="#f0a9c1" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
-  <polyline points="100,48 100,92" fill="none" stroke="#d9719a" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
-  <polyline points="100,92 122,112 116,134" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
-  <polyline points="100,48 86,70 74,86" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
-  <circle cx="100" cy="30" r="11" fill="#fde3ea" stroke="#d9719a" stroke-width="5"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" role="img" aria-label="Camminata sul tapis roulant">
+<title>Camminata sul tapis roulant</title>
+<desc>Cammini sul posto sul nastro che scorre all’indietro, con le braccia che oscillano.</desc>
+<rect x="36" y="136" width="130" height="10" rx="5" fill="#f3d7e0" stroke="#a98a96" stroke-width="3"/>
+<polyline points="156,138 166,74 140,74" fill="none" stroke="#a98a96" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="100,92 96.5,117.8 78,136" fill="none" stroke="#f0a9c1" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"><animate attributeName="points" values="100,92 96.5,117.8 78,136;100,92 118.8,110 100,128;100,92 118.5,110.2 122,136;100,92 113.9,114 100,136;100,92 96.5,117.8 78,136" dur="2.4s" repeatCount="indefinite" calcMode="linear"/></polyline>
+<polyline points="100,46 93.9,67.1 114,76" fill="none" stroke="#f0a9c1" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"><animate attributeName="points" values="100,46 93.9,67.1 114,76;100,46 83.9,61 100,76;100,46 79.9,54.9 86,76;100,46 83.9,61 100,76;100,46 93.9,67.1 114,76" dur="2.4s" repeatCount="indefinite" calcMode="linear"/></polyline>
+<polyline points="100,46 100,92" fill="none" stroke="#d9719a" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="100,92 118.5,110.2 122,136" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><animate attributeName="points" values="100,92 118.5,110.2 122,136;100,92 113.9,114 100,136;100,92 96.5,117.8 78,136;100,92 118.8,110 100,128;100,92 118.5,110.2 122,136" dur="2.4s" repeatCount="indefinite" calcMode="linear"/></polyline>
+<polyline points="100,46 79.9,54.9 86,76" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><animate attributeName="points" values="100,46 79.9,54.9 86,76;100,46 83.9,61 100,76;100,46 93.9,67.1 114,76;100,46 83.9,61 100,76;100,46 79.9,54.9 86,76" dur="2.4s" repeatCount="indefinite" calcMode="linear"/></polyline>
+<circle cx="100" cy="28" r="11" fill="#fde3ea" stroke="#d9719a" stroke-width="5"/>
+<line x1="48" y1="141" x2="160" y2="141" stroke="#d9719a" stroke-width="2" stroke-dasharray="6 6" opacity=".7"><animate attributeName="stroke-dashoffset" values="0;12" dur="0.6s" repeatCount="indefinite" calcMode="linear"/></line>
 </svg>

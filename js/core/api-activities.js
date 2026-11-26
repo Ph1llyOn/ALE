@@ -63,63 +63,10 @@ export async function inProgressSession(userId) {
   return data[0] ?? null;
 }
 
-/** Avvia una sessione: dalla scheda (workoutId) o libera (workoutId null). I progressi nascono già salvati. */
-export async function startSession(userId, { workoutId = null, title, exercises = [] }) {
-  const { data: s, error } = await sb.from('workout_sessions')
-    .insert({ owner_id: userId, workout_id: workoutId, title: title || 'Allenamento libero' }).select('id').single();
-  if (error) fail(error);
-  if (exercises.length) {
-    const { error: e2 } = await sb.from('session_exercise_progress').insert(exercises.map((e, i) => ({
-      session_id: s.id, owner_id: userId, position: i, name: e.name,
-    })));
-    if (e2) fail(e2);
-  }
-  return s.id;
-}
-
-export async function getSession(id) {
-  const { data, error } = await sb.from('workout_sessions')
-    .select('id, title, status, started_at, ended_at, notes, workout_id, session_exercise_progress(id, position, name, done, done_at)').eq('id', id).maybeSingle();
-  if (error) fail(error);
-  if (!data) return null;
-  data.session_exercise_progress.sort((a, b) => a.position - b.position);
-  return data;
-}
-
-/** Salvataggio automatico: ogni spunta è scritta subito. */
-export async function setExerciseDone(progressId, done) {
-  const { error } = await sb.from('session_exercise_progress').update({ done, done_at: done ? new Date().toISOString() : null }).eq('id', progressId);
-  if (error) fail(error);
-}
-
-export async function addSessionExercise(userId, sessionId, name, position) {
-  const { data, error } = await sb.from('session_exercise_progress')
-    .insert({ session_id: sessionId, owner_id: userId, position, name }).select('id, position, name, done, done_at').single();
-  if (error) fail(error);
-  return data;
-}
-
-export async function saveSessionNotes(id, notes) {
-  const { error } = await sb.from('workout_sessions').update({ notes: clean(notes) }).eq('id', id);
-  if (error) fail(error);
-}
-
-export async function finishSession(userId, session, notes) {
-  const { error } = await sb.from('workout_sessions')
-    .update({ status: 'completed', ended_at: new Date().toISOString(), notes: clean(notes) }).eq('id', session.id);
-  if (error) fail(error);
-  await addWin(userId, 'workout_completed', `Allenamento completato: ${session.title}`);
-}
-
-export async function discardSession(id) {
-  const { error } = await sb.from('workout_sessions').delete().eq('id', id);
-  if (error) fail(error);
-}
-
 export async function listSessions(userId, { limit = 40 } = {}) {
   const { data, error } = await sb.from('workout_sessions')
     .select('id, title, status, started_at, ended_at, session_exercise_progress(done)')
-    .eq('owner_id', userId).eq('status', 'completed').order('started_at', { ascending: false }).limit(limit);
+    .eq('owner_id', userId).in('status', ['completed', 'stopped']).order('started_at', { ascending: false }).limit(limit);
   if (error) fail(error);
   return data.map((s) => ({
     ...s, total: s.session_exercise_progress.length, done: s.session_exercise_progress.filter((p) => p.done).length,

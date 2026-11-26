@@ -16,6 +16,8 @@ async function saveByUser(table, userId, patch) {
 // --- Impostazioni personali -------------------------------------------------------------
 export const DEFAULT_SETTINGS = {
   onboarding_steps: {}, onboarding_done_at: null, spaces: '', prefers_no_equipment: false, limitations: '', professional_notes: '', morning_time: '08:00',
+  fitness_level: 'beginner', session_minutes: 30, weekly_sessions: 3, available_days: [1, 2, 3, 4, 5, 6, 7], avoid_flags: [],
+  preferences: { treadmill: true, abs: true, treadmill_speed: 3.5, treadmill_incline: 0 }, auto_plan: true,
 };
 
 export async function getSettings(userId) {
@@ -24,16 +26,26 @@ export async function getSettings(userId) {
   const s = { ...DEFAULT_SETTINGS, ...(data ?? {}) };
   s.spaces = s.spaces ?? ''; s.limitations = s.limitations ?? ''; s.professional_notes = s.professional_notes ?? '';
   s.morning_time = String(s.morning_time).slice(0, 5);
+  s.preferences = { ...DEFAULT_SETTINGS.preferences, ...(s.preferences ?? {}) };
+  s.available_days = (s.available_days ?? DEFAULT_SETTINGS.available_days).map(Number);
+  s.avoid_flags = s.avoid_flags ?? [];
   return s;
 }
 
-export async function saveSettings(userId, { spaces, prefers_no_equipment, limitations, professional_notes, morning_time }) {
+export async function saveSettings(userId, { spaces, prefers_no_equipment, limitations, professional_notes, morning_time, fitness_level, session_minutes, weekly_sessions, available_days, avoid_flags, preferences, auto_plan }) {
   const patch = {};
   if (spaces !== undefined) patch.spaces = clean(spaces);
   if (prefers_no_equipment !== undefined) patch.prefers_no_equipment = Boolean(prefers_no_equipment);
   if (limitations !== undefined) patch.limitations = clean(limitations);
   if (professional_notes !== undefined) patch.professional_notes = clean(professional_notes);
   if (morning_time !== undefined) patch.morning_time = morning_time;
+  if (fitness_level !== undefined) patch.fitness_level = fitness_level;
+  if (session_minutes !== undefined) patch.session_minutes = Number(session_minutes);
+  if (weekly_sessions !== undefined) patch.weekly_sessions = Number(weekly_sessions);
+  if (available_days !== undefined) patch.available_days = available_days.map(Number);
+  if (avoid_flags !== undefined) patch.avoid_flags = avoid_flags;
+  if (preferences !== undefined) patch.preferences = preferences;
+  if (auto_plan !== undefined) patch.auto_plan = Boolean(auto_plan);
   await saveByUser('user_settings', userId, patch);
 }
 

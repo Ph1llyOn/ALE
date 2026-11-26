@@ -42,7 +42,8 @@ test('i nomi del catalogo vengono riconosciuti nel modo giusto (nessun falso pos
   assert.deepEqual(keys('Bande elastiche circolari'), ['band']);
   assert.deepEqual(keys('Fasce elastiche con maniglie'), ['band']);
   assert.deepEqual(keys('Pedana fitness (step)'), ['step']);
-  assert.deepEqual(keys('Mini stepper'), [], 'lo stepper non è lo step');
+  assert.deepEqual(keys('Mini stepper'), ['stepper'], 'lo stepper non è lo step');
+  assert.deepEqual(keys('Ellittica'), ['elliptical']);
   assert.deepEqual(keys('Pedana vibrante'), []);
   assert.deepEqual(keys('Mattoncini e cinghia per yoga'), []);
   assert.deepEqual(keys('Palla da ginnastica'), ['ball']);

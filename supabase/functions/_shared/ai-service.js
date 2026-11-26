@@ -18,7 +18,7 @@ export async function loadAiContext(sb, userId, now = new Date()) {
   const [{ data: profile }, { data: prefs }, { data: settings }] = await Promise.all([
     sb.from('profiles').select('id, role, display_name').eq('id', userId).maybeSingle(),
     sb.from('ai_preferences').select('*').eq('user_id', userId).maybeSingle(),
-    sb.from('user_settings').select('spaces, limitations, professional_notes, prefers_no_equipment').eq('user_id', userId).maybeSingle(),
+    sb.from('user_settings').select('spaces, limitations, professional_notes, prefers_no_equipment, fitness_level, session_minutes, avoid_flags, preferences').eq('user_id', userId).maybeSingle(),
   ]);
   if (!profile) return { profile: null, prefs: null, ctx: null };
   const consents = {
@@ -26,7 +26,7 @@ export async function loadAiContext(sb, userId, now = new Date()) {
     use_journal: Boolean(prefs?.ai_enabled && prefs.use_journal), reminders_enabled: Boolean(prefs?.ai_enabled && prefs.reminders_enabled),
   };
   const from7 = daysAgo(7, now); const from30 = daysAgo(30, now);
-  const [eq, wb, jr, sessions, habitLogs, goals, wbCount] = await Promise.all([
+  const [eq, wb, jr, sessions, habitLogs, goals, wbCount, hist, fbk] = await Promise.all([
     consents.use_equipment ? sb.from('equipment').select('name, avoid').eq('owner_id', userId) : { data: [] },
     consents.use_wellbeing ? sb.from('wellbeing_logs').select('day, mood, energy').eq('owner_id', userId).gte('day', from7).order('day') : { data: [] },
     consents.use_journal ? sb.from('journal_entries').select('title, body').eq('owner_id', userId).order('created_at', { ascending: false }).limit(3) : { data: [] },
@@ -34,11 +34,25 @@ export async function loadAiContext(sb, userId, now = new Date()) {
     sb.from('habit_logs').select('day').eq('owner_id', userId).eq('done', true).gte('day', from7),
     sb.from('goals').select('id', { count: 'exact', head: true }).eq('owner_id', userId).eq('status', 'done').gte('completed_at', `${from30}T00:00:00Z`),
     sb.from('wellbeing_logs').select('id', { count: 'exact', head: true }).eq('owner_id', userId).gte('day', from7),
+    // storico e feedback servono SOLO alle regole deterministiche del server (adattamento, recupero, dolore): non finiscono mai nel testo per il modello
+    sb.from('workout_sessions').select('started_at, plan, session_exercise_progress(exercise_key, sets_done)').eq('owner_id', userId).in('status', ['completed', 'stopped']).gte('started_at', `${daysAgo(90, now)}T00:00:00Z`).limit(200),
+    sb.from('exercise_feedback').select('exercise_key, rating, created_at').eq('owner_id', userId).gte('created_at', `${daysAgo(90, now)}T00:00:00Z`),
   ]);
+  const history = [];
+  for (const row of hist.data ?? []) {
+    const items = new Map((row.plan?.items ?? []).map((i) => [i.exercise_key, i]));
+    for (const p of row.session_exercise_progress ?? []) {
+      if (!p.exercise_key || !(p.sets_done > 0)) continue;
+      const it = items.get(p.exercise_key);
+      history.push({ day: romeDay(new Date(row.started_at)), key: p.exercise_key, setsDone: p.sets_done, seconds: it?.mode === 'time' ? it.seconds * p.sets_done : null });
+    }
+  }
+  const feedback = (fbk.data ?? []).map((f) => ({ key: f.exercise_key, rating: f.rating, day: romeDay(new Date(f.created_at)) }));
   const ctx = buildContext({
     firstName: profile.display_name, hour: romeHour(now), consents,
     equipment: eq.data ?? [], wellbeing: wb.data ?? [], journal: jr.data ?? [],
     professionalNotes: settings?.professional_notes, spaces: settings?.spaces, limitations: settings?.limitations, prefersNoEquipment: settings?.prefers_no_equipment,
+    training: { level: settings?.fitness_level, minutes: settings?.session_minutes, avoidFlags: settings?.avoid_flags ?? [], prefs: settings?.preferences ?? {}, history, feedback, today: romeDay(now), seed: now.getDate() + now.getMonth() * 31 },
     stats: { sessions7: sessions.count ?? 0, habitDays7: new Set((habitLogs.data ?? []).map((l) => l.day)).size, goalsDone30: goals.count ?? 0, wellbeingDays7: wbCount.count ?? 0 },
   });
   return { profile, prefs, ctx };
