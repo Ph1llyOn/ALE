@@ -3,7 +3,8 @@
 import { h, field, textField, withBusy, toast, errorBox, spinner } from '../../core/ui.js';
 import { getState, setState } from '../../core/store.js';
 import { updateDisplayName } from '../../core/api.js';
-import { addEquipment, listEquipment } from '../../core/api-personal.js';
+import { addEquipment, listEquipment, removeEquipment } from '../../core/api-personal.js';
+import { equipmentPicker, norm } from '../../components/equipment-picker.js';
 import {
   getSettings, saveSettings, setOnboardingStep, finishOnboarding, getAiPrefs, saveAiPrefs, getNotificationPrefs, saveNotificationPrefs,
 } from '../../core/api-settings.js';
@@ -14,16 +15,17 @@ import { logo } from '../../core/ui.js';
 import { profileErrorView } from '../../components/profile-error.js';
 import { validateName } from '../../core/validate.js';
 import { navigate } from '../../core/router.js';
+import { ALL_EQUIPMENT_NAMES } from '../../data/exercises.js';
+
+const CATALOG_BY_NORM = new Map(ALL_EQUIPMENT_NAMES.map((n) => [norm(n), n]));
 
 const STEPS = [
   { key: 'profilo', title: 'Come ti chiami?', text: 'Il nome che vedrai nell’app e che vedrà Phill.' },
-  { key: 'attrezzatura', title: 'Cosa hai in casa?', text: 'Ci serve per proporti attività adatte. Puoi cambiare tutto quando vuoi.' },
+  { key: 'attrezzatura', title: 'Quali attrezzi hai a disposizione?', text: 'Così ti proponiamo attività adatte a te. Tocca quelli che hai: puoi cambiare tutto quando vuoi.' },
   { key: 'ai', title: 'L’assistente Claude', text: 'Può scriverti un pensiero la mattina e proporti idee. Solo se lo vuoi tu.' },
   { key: 'privacy', title: 'Cosa condividi con Phill', text: 'Per impostazione predefinita non condividi nulla. Scegli solo ciò che ti fa piacere.' },
   { key: 'notifiche', title: 'Notifiche', text: 'Gentili e mai insistenti. Puoi spegnerle in ogni momento.' },
 ];
-
-const COMMON_EQUIPMENT = ['Tappetino', 'Manubri', 'Elastici', 'Step', 'Palla da ginnastica'];
 
 export default async function onboardingView() {
   const { profile, partner, partnership } = getState();
@@ -71,20 +73,15 @@ export default async function onboardingView() {
 
   async function stepEquipment(step) {
     const existing = await listEquipment(profile.id);
-    const have = new Set(existing.map((e) => e.name.toLowerCase()));
-    const picked = new Set();
-    const chips = h('div', { class: 'chips' }, COMMON_EQUIPMENT.map((n) => {
-      const on = have.has(n.toLowerCase());
-      const b = h('button', { class: `chip chip-btn${on ? ' chip-on' : ''}`, type: 'button', 'aria-pressed': String(on), disabled: on, onclick: () => {
-        const sel = b.getAttribute('aria-pressed') === 'true'; b.setAttribute('aria-pressed', String(!sel)); b.classList.toggle('chip-on', !sel); (sel ? picked.delete(n) : picked.add(n));
-      } }, n);
-      return b;
-    }));
-    const spaces = textField({ id: 'ob-spaces', label: 'Dove ti muovi?', rows: 2, maxlength: 500, value: settings.spaces, hint: 'Ad esempio: un angolo del salotto o il balcone.' });
+    const selected = new Set(existing.map((e) => norm(e.name)));
+    const picker = equipmentPicker({ selected, onToggle: async () => {} });
+    const spaces = textField({ id: 'ob-spaces', label: 'Dove preferisci allenarti?', rows: 2, maxlength: 500, value: settings.spaces, hint: 'Ad esempio: un angolo del salotto o il balcone.' });
     const noEq = h('input', { type: 'checkbox', id: 'ob-noeq', checked: settings.prefers_no_equipment });
-    const pro = textField({ id: 'ob-pro', label: 'Indicazioni di chi ti segue (facoltativo)', rows: 3, maxlength: 1000, value: settings.professional_notes, hint: 'Le proposte ne tengono conto e hanno sempre la precedenza.' });
-    frame(step, h('div', { class: 'stack' }, chips, h('label', { class: 'check-row', for: 'ob-noeq' }, noEq, h('span', null, 'Preferisco attività senza attrezzi')), spaces.wrap, pro.wrap), { onNext: async () => {
-      for (const n of picked) await addEquipment(profile.id, { name: n, notes: '', avoid: false });
+    const pro = textField({ id: 'ob-pro', label: 'Indicazioni del professionista che ti segue (facoltativo)', rows: 3, maxlength: 1000, value: settings.professional_notes, hint: 'Le attività proposte terranno conto di queste indicazioni, che hanno sempre la precedenza.' });
+    frame(step, h('div', { class: 'stack' }, picker.el, h('label', { class: 'check-row', for: 'ob-noeq' }, noEq, h('span', null, 'Preferisco allenarmi senza attrezzi')), spaces.wrap, pro.wrap), { onNext: async () => {
+      const now = new Map(existing.map((e) => [norm(e.name), e]));
+      for (const k of [...now.keys()]) if (!selected.has(k)) await removeEquipment(now.get(k).id);
+      for (const n of selected) if (!now.has(n)) await addEquipment(profile.id, { name: CATALOG_BY_NORM.get(n) ?? n, notes: '', avoid: false });
       await saveSettings(profile.id, { spaces: spaces.input.value, prefers_no_equipment: noEq.checked, professional_notes: pro.input.value });
       settings.spaces = spaces.input.value; settings.prefers_no_equipment = noEq.checked; settings.professional_notes = pro.input.value;
     } });

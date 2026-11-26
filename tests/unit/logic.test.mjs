@@ -70,11 +70,11 @@ test('router: ogni rotta ha un tipo valido', () => {
 test('messaggi d\'errore: italiano, senza dettagli tecnici', () => {
   assert.match(authMessage({ code: 'invalid_credentials' }), /non corrette/);
   assert.match(authMessage({ message: 'Failed to fetch' }), /connessione/);
-  assert.match(authMessage({ status: 429 }), /Troppe richieste/);
+  assert.match(authMessage({ status: 429 }), /troppe richieste/);
   assert.doesNotMatch(authMessage({ message: 'duplicate key value violates unique constraint "x"' }), /duplicate|constraint/);
-  assert.match(rpcMessage('invalid_code'), /non è valido/);
-  assert.equal(rpcMessage('boh'), 'Qualcosa non ha funzionato. Riprova.');
-  assert.match(dataMessage({ code: '42501' }), /permesso/);
+  assert.match(rpcMessage('invalid_code'), /non va bene/);
+  assert.equal(rpcMessage('boh'), 'Qualcosa non ha funzionato. Riprova tra poco.');
+  assert.match(dataMessage({ code: '42501' }), /non puoi/);
 });
 
 test('accesso: messaggi chiari per PIN errato e blocco', () => {
@@ -82,7 +82,7 @@ test('accesso: messaggi chiari per PIN errato e blocco', () => {
   assert.match(accessMessage('locked', { retry_after: 60 }), /60 secondi|1 minut/);
   assert.match(accessMessage('wrong_setup_code'), /codice/);
   assert.match(accessMessage('already_claimed'), /già/);
-  assert.equal(accessMessage('boh'), 'Qualcosa non ha funzionato. Riprova.');
+  assert.equal(accessMessage('boh'), 'Qualcosa non ha funzionato. Riprova tra poco.');
   assert.equal(formatWait(30), '30 secondi');
   assert.equal(formatWait(300), '5 minuti');
   assert.equal(formatWait(7200), '2 ore');

@@ -233,14 +233,14 @@ export function fallbackFor(kind, ctx, now = new Date()) {
   if (kind === 'reflection') {
     const s = ctx.stats;
     const bits = [];
-    if (s.sessions7) bits.push(`hai completato ${s.sessions7} ${s.sessions7 === 1 ? 'allenamento' : 'allenamenti'}`);
+    if (s.sessions7) bits.push(`hai finito ${s.sessions7} ${s.sessions7 === 1 ? 'allenamento' : 'allenamenti'}`);
     if (s.habitDays7) bits.push(`hai portato avanti le tue abitudini in ${s.habitDays7} ${s.habitDays7 === 1 ? 'giorno' : 'giorni'}`);
     if (s.wellbeingDays7) bits.push(`ti sei fermata a notare come stavi in ${s.wellbeingDays7} ${s.wellbeingDays7 === 1 ? 'giorno' : 'giorni'}`);
     return { text: bits.length ? `Negli ultimi giorni ${bits.join(', ')}. Sono piccoli passi che contano, con i tuoi tempi.` : 'Questa settimana è stata tranquilla, e va bene così. Quando ti va, un piccolo passo basta per ricominciare.' };
   }
   if (kind === 'reminders') return { suggestions: [{ title: 'Un bicchiere d\'acqua e un respiro', time: '11:00' }, { title: 'Qualche minuto di stretching dolce', time: '18:00' }] };
   const picks = suggestWorkout(ctx.equipment_items, { prefersNoEquipment: ctx.prefers_no_equipment, count: 5, seed: now.getDate() });
-  return { title: 'Una scheda semplice', intro: 'Un punto di partenza con ciò che hai in casa: cambialo come preferisci e fermati quando vuoi.', exercises: picks };
+  return { title: 'Una scheda semplice', intro: 'Un punto di partenza con gli attrezzi che hai a disposizione: cambiala come preferisci e fermati quando vuoi.', exercises: picks };
 }
 
 // ---------------------------------------------------------------------------------------------------

@@ -15,14 +15,14 @@ async function call(body) {
   } catch { throw new AppError('Non riesco a collegarmi. Controlla la connessione e riprova.'); }
   let data = {};
   try { data = await res.json(); } catch { /* corpo non JSON */ }
-  if (!res.ok) throw new AppError(MESSAGES[data.error] ?? 'Qualcosa non ha funzionato. Riprova.', data);
+  if (!res.ok) throw new AppError(MESSAGES[data.error] ?? 'Qualcosa non ha funzionato. Riprova tra poco.', data);
   return data;
 }
 
 const MESSAGES = {
-  ai_disabled: 'L’AI è disattivata: puoi attivarla in Impostazioni.',
-  rate_limited: 'Per oggi basta così: riprova domani.',
-  unauthenticated: 'Devi accedere per continuare.',
+  ai_disabled: 'L’AI è spenta: se vuoi, puoi riaccenderla dalle Impostazioni.',
+  rate_limited: 'Per oggi è tutto: riprova domani.',
+  unauthenticated: 'Per continuare devi entrare di nuovo.',
 };
 
 /** Stato del servizio: { configured: bool } (false = chiave non ancora impostata sul server). */

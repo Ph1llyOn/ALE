@@ -35,7 +35,7 @@ export default async function sessionView({ query }) {
     const total = s.session_exercise_progress.length;
     const minutes = Math.max(1, Math.round((new Date(s.ended_at) - new Date(s.started_at)) / 60000));
     return [
-      hero({ eyebrow: 'Allenamento completato', title: 'Che bel', accent: 'passo avanti', text: `${s.title} · ${fmtDateTime(s.started_at)}`, cta: { label: 'Torna alle attività', href: '#/attivita' } }),
+      hero({ eyebrow: 'Allenamento finito', title: 'Che bel', accent: 'passo avanti', text: `${s.title} · ${fmtDateTime(s.started_at)}`, cta: { label: 'Torna alle attività', href: '#/attivita' } }),
       h('section', { class: 'stat-row' },
         h('div', { class: 'stat' }, h('span', { class: 'stat-value' }, String(minutes)), h('span', { class: 'stat-label' }, 'minuti')),
         h('div', { class: 'stat' }, h('span', { class: 'stat-value' }, `${done}/${total}`), h('span', { class: 'stat-label' }, 'esercizi fatti')),
@@ -64,7 +64,7 @@ export default async function sessionView({ query }) {
     const done = rows.filter((r) => r.done).length;
     progressHost.replaceChildren(
       ring({ percent: rows.length ? (done / rows.length) * 100 : 0, label: `${done}/${rows.length}`, ariaLabel: `${done} esercizi su ${rows.length}` }),
-      h('div', { class: 'goal-main' }, h('p', { class: 'card-title' }, 'Avanzamento'), h('p', { class: 'muted' }, 'Ogni spunta si salva da sola: puoi uscire e riprendere quando vuoi.'),
+      h('div', { class: 'goal-main' }, h('p', { class: 'card-title' }, 'A che punto sei'), h('p', { class: 'muted' }, 'Ogni spunta si salva da sola: puoi uscire e riprendere quando vuoi.'),
         h('div', { class: 'progress-bar', role: 'progressbar', 'aria-valuenow': String(done), 'aria-valuemin': '0', 'aria-valuemax': String(rows.length) }, h('span', { class: 'bar-fill', 'data-w': String(rows.length ? Math.round((done / rows.length) * 100) : 0) }))));
     const fill = progressHost.querySelector('.bar-fill');
     if (fill) fill.style.width = `${fill.dataset.w}%`;
@@ -74,7 +74,7 @@ export default async function sessionView({ query }) {
     if (!rows.length) { listHost.replaceChildren(h('div', { class: 'card muted center' }, 'Aggiungi il primo esercizio qui sotto.')); return; }
     listHost.replaceChildren(...rows.map((r) => {
       const d = details.get(r.name);
-      const meta = d ? [d.sets ? `${d.sets} serie` : null, d.reps ? `${d.reps}` : null, d.rest_seconds ? `recupero ${d.rest_seconds}s` : null].filter(Boolean).join(' · ') : '';
+      const meta = d ? [d.sets ? `${d.sets} serie` : null, d.reps ? `${d.reps}` : null, d.rest_seconds ? `pausa ${d.rest_seconds}s` : null].filter(Boolean).join(' · ') : '';
       const btn = h('button', { class: 'check', type: 'button', 'aria-pressed': String(r.done), 'aria-label': `${r.name}: ${r.done ? 'fatto' : 'da fare'}`,
         onclick: async () => {
           const next = !r.done;
@@ -106,7 +106,7 @@ export default async function sessionView({ query }) {
       main.replaceChildren(pageHeader({ title: 'Riepilogo', back }), ...summary(await getSession(session.id)));
       window.scrollTo(0, 0);
     } catch (err) { toast(err.message, 'error'); }
-  }) }, 'Termina l’allenamento');
+  }) }, 'Finisci l’allenamento');
   const discard = h('button', { class: 'btn btn-text btn-danger-text', type: 'button', onclick: () => {
     if (discard.dataset.armed !== '1') { discard.dataset.armed = '1'; discard.textContent = 'Tocca ancora per annullare l’allenamento'; return; }
     withBusy(discard, async () => { try { await discardSession(session.id); clearInterval(tick); toast('Allenamento annullato.'); navigate('/attivita'); } catch (err) { toast(err.message, 'error'); } });

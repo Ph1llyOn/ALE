@@ -19,7 +19,7 @@ export async function hydrate(session) {
         return;
       }
     }
-    setState({ session, profile, partnership, partner, loadError: profile ? null : 'Profilo non trovato.' });
+    setState({ session, profile, partnership, partner, loadError: profile ? null : 'Non trovo il tuo profilo. Riprova tra poco.' });
   } catch (err) {
     setState({ session, profile: null, partnership: null, partner: null, loadError: err.message });
   }

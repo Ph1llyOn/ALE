@@ -205,3 +205,42 @@ test('lo storico delle generazioni è privato e non scrivibile dal client', asyn
   assert.ok((await ale.client.from('ai_generations').insert({ user_id: ale.id, kind: 'daily', status: 'ok', output: { value: { title: 'finto', text: 'finto' } } })).error);
   assert.ok((await ale.client.from('ai_generations').delete().eq('user_id', ale.id)).error);
 });
+
+test('NUOVO INVENTARIO: l\'AI propone solo attività compatibili con gli attrezzi salvati', async () => {
+  await setPrefs(ale, { ai_enabled: true, use_equipment: true });
+  const admin = adminClient();
+  await admin.from('equipment').delete().eq('owner_id', ale.id);
+  const ins = await ale.client.from('equipment').insert([
+    { owner_id: ale.id, name: 'Kettlebell' }, { owner_id: ale.id, name: 'Palla da ginnastica' }, { owner_id: ale.id, name: 'Cavigliere con pesi' },
+  ]);
+  assert.equal(ins.error, null, ins.error?.message);
+  const plan = (ids) => JSON.stringify({ title: 'Con la kettlebell', intro: 'Una scheda semplice con quello che hai.', exercises: ids.map((id) => ({ id, sets: 2, reps: '10', rest_seconds: 45 })) });
+  // la prima risposta propone anche "ball-bridge" (serve il tappetino, che non c'è) e "dumbbell-curl" (non ha i manubri): viene rifiutata e rigenerata
+  let n = 0;
+  mock.respond((r) => (r.isClassifier ? OK : (n++ === 0 ? plan(['march', 'kettlebell-squat', 'ball-bridge', 'dumbbell-curl']) : plan(['march', 'kettlebell-squat', 'ball-wall-squat']))));
+  const r = await gen(ale, 'plan');
+  assert.equal(r.status, 200, JSON.stringify(r.body));
+  const prompt = mock.generators()[0].user + mock.generators()[0].system;
+  assert.match(prompt, /Kettlebell/);
+  assert.match(prompt, /kettlebell-squat/, 'il catalogo offerto al modello contiene gli esercizi compatibili');
+  assert.ok(!/dumbbell-curl/.test(prompt), 'non offre esercizi per attrezzi che non ha');
+  assert.ok(!/ball-bridge/.test(prompt), 'serve anche il tappetino: non viene offerto');
+  assert.deepEqual(r.body.exercises.map((e) => e.exercise_key), ['march', 'kettlebell-squat', 'ball-wall-squat']);
+  await admin.from('equipment').delete().eq('owner_id', ale.id);
+});
+
+test('INVENTARIO: gli attrezzi si salvano su Supabase, si tolgono, restano privati finché non condivisi', async () => {
+  const { ALL_EQUIPMENT_NAMES } = await import('../../js/data/exercises-core.js');
+  const admin = adminClient();
+  await admin.from('equipment').delete().eq('owner_id', ale.id);
+  const rows = ALL_EQUIPMENT_NAMES.map((name) => ({ owner_id: ale.id, name }));
+  const ins = await ale.client.from('equipment').insert(rows);
+  assert.equal(ins.error, null, `nome troppo lungo o non valido? ${ins.error?.message}`);
+  assert.equal((await ale.client.from('equipment').select('id')).data.length, rows.length);
+  assert.equal((await phill.client.from('equipment').select('id').eq('owner_id', ale.id)).data.length, 0, 'privato finché Alessia non condivide');
+  const one = (await ale.client.from('equipment').select('id').eq('name', 'Kettlebell').single()).data;
+  assert.equal((await ale.client.from('equipment').delete().eq('id', one.id)).error, null);
+  assert.equal((await ale.client.from('equipment').select('id')).data.length, rows.length - 1);
+  assert.equal((await ale.client.from('equipment').update({ avoid: true, notes: '4 kg' }).eq('name', 'Manubri').select()).data[0].avoid, true);
+  await admin.from('equipment').delete().eq('owner_id', ale.id);
+});

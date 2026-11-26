@@ -2,11 +2,11 @@
 export const CATEGORIES = [
   { key: 'workout', label: 'Allenamento' },
   { key: 'walk', label: 'Passeggiata' },
-  { key: 'personal', label: 'Appuntamento personale' },
+  { key: 'personal', label: 'Impegno personale' },
   { key: 'reminder', label: 'Promemoria' },
   { key: 'weekly_goal', label: 'Obiettivo settimanale' },
   { key: 'rest', label: 'Riposo e recupero' },
-  { key: 'school_work', label: 'Impegno scolastico o lavorativo' },
+  { key: 'school_work', label: 'Scuola o lavoro' },
 ];
 export const categoryLabel = (key) => CATEGORIES.find((c) => c.key === key)?.label ?? key;
 
@@ -73,7 +73,7 @@ export const timeOf = (iso) => { const d = new Date(iso); return `${pad(d.getHou
 export function validateEvent({ title, day, time, endTime, allDay }) {
   if (!String(title ?? '').trim()) return 'Dai un nome all’evento.';
   if (!day) return 'Scegli il giorno.';
-  if (!allDay && endTime && time && endTime < time) return 'L’ora di fine non può essere prima dell’inizio.';
+  if (!allDay && endTime && time && endTime < time) return 'L’ora di fine non può essere prima di quella di inizio.';
   return null;
 }
 

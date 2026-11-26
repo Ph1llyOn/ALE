@@ -30,10 +30,10 @@ export async function currentSubscription() {
 
 /** Chiede il permesso e iscrive questo dispositivo. Va chiamata da un gesto dell'utente (un tocco). */
 export async function enablePush(userId) {
-  if (!pushSupported()) throw new AppError('Questo dispositivo non supporta le notifiche push.');
-  if (!pushConfigured()) throw new AppError('Le notifiche push non sono ancora attivate sul server.');
+  if (!pushSupported()) throw new AppError('Questo dispositivo non può ricevere notifiche.');
+  if (!pushConfigured()) throw new AppError('Le notifiche non sono ancora attive. Riprova più avanti.');
   const permission = await Notification.requestPermission();
-  if (permission !== 'granted') throw new AppError('Per ricevere notifiche devi consentirle nelle impostazioni del dispositivo.');
+  if (permission !== 'granted') throw new AppError('Per ricevere le notifiche, permettile dalle impostazioni del dispositivo.');
   const reg = await navigator.serviceWorker.ready;
   const sub = (await reg.pushManager.getSubscription()) ?? await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: toKey(VAPID_PUBLIC_KEY) });
   const json = sub.toJSON();

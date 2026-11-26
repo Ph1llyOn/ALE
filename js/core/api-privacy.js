@@ -7,10 +7,10 @@ import { enterProfile } from './api-access.js';
 /** Categorie condivisibili, nell'ordine in cui compaiono. */
 export const CATEGORIES = [
   { key: 'activities', title: 'Attività', text: 'Allenamenti, schede e sessioni.' },
-  { key: 'habits', title: 'Abitudini', text: 'Le abitudini e quando le hai svolte.' },
+  { key: 'habits', title: 'Abitudini', text: 'Le tue abitudini e i giorni in cui le hai fatte.' },
   { key: 'calendar', title: 'Calendario', text: 'Gli eventi che hai confermato.' },
   { key: 'progress', title: 'Progressi', text: 'Le piccole conquiste e gli obiettivi raggiunti.' },
-  { key: 'equipment', title: 'Attrezzatura', text: 'Gli attrezzi che hai in casa.' },
+  { key: 'equipment', title: 'Attrezzatura', text: 'Gli attrezzi che hai a disposizione.' },
   { key: 'wellbeing', title: 'Benessere', text: 'Solo umore ed energia. Le note restano sempre private.' },
   { key: 'journal', title: 'Diario', text: 'Solo le voci che scegli di condividere, una per una.' },
 ];
@@ -30,7 +30,7 @@ export const revokeAllSharing = () => rpc('revoke_all_sharing');
 export async function exportMyData() {
   const { data, error } = await sb.rpc('export_my_data');
   if (error) fail(error);
-  if (!data?.ok) throw new AppError('Non è stato possibile preparare l’esportazione.', data);
+  if (!data?.ok) throw new AppError('Non riesco a preparare i tuoi dati in questo momento. Riprova tra poco.', data);
   return data;
 }
 
@@ -54,8 +54,8 @@ export async function deleteMyAccount({ role, pin, userId }) {
   if (error) fail(error);
   if (!data?.ok) {
     const msg = data?.error === 'reauth_required'
-      ? 'Per sicurezza serve un PIN inserito da pochi minuti. Riprova.'
-      : 'Non è stato possibile eliminare l’account. Riprova.';
+      ? 'Per sicurezza devi aver inserito il PIN da poco: entra di nuovo con il PIN e riprova.'
+      : 'L’account non è stato eliminato. Riprova tra poco.';
     throw new AppError(msg, data);
   }
   await sb.auth.signOut({ scope: 'local' });

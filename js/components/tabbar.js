@@ -21,7 +21,7 @@ export const TABS = {
 
 export function tabbar(currentPath, role = 'alessia') {
   const items = TABS[role] ?? TABS.alessia;
-  return h('nav', { class: 'tabbar', 'aria-label': 'Navigazione principale' },
+  return h('nav', { class: 'tabbar', 'aria-label': 'Menu principale' },
     items.map((it) => h('a', { href: it.href, class: 'tab', 'aria-current': it.match.includes(currentPath) ? 'page' : null },
       icon(it.icon, { className: 'tab-icon' }), h('span', null, it.label))));
 }

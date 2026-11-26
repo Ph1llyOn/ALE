@@ -37,7 +37,7 @@ export default async function progressView() {
 
   const sections = [header,
     h('p', { class: 'muted' }, 'Qui vedi la tua crescita, con i tuoi tempi. Nessuna classifica e nessun confronto: conta solo il tuo percorso.'),
-    h('section', { class: 'stat-row', 'aria-label': 'Ultimi 7 giorni' }, stat(String(sessionsWeek), 'allenamenti'), stat(String(habitDays), 'giorni con abitudini'), stat(String(wbWeek), 'giorni registrati'))];
+    h('section', { class: 'stat-row', 'aria-label': 'Ultimi 7 giorni' }, stat(String(sessionsWeek), 'allenamenti'), stat(String(habitDays), 'giorni con le tue abitudini'), stat(String(wbWeek), 'giorni segnati'))];
 
   // --- andamento
   const moods = alignSeries(logs, days, 'mood'); const energies = alignSeries(logs, days, 'energy');
@@ -47,23 +47,23 @@ export default async function progressView() {
     trends.append(emptyState('Ancora nessun dato', 'Segna come ti senti nella sezione Benessere: qui vedrai l’andamento, con i tuoi tempi.'), h('a', { class: 'btn btn-secondary', href: '#/profilo/benessere' }, 'Vai a Benessere'));
   } else {
     trends.append(
-      h('div', { class: 'spark-block' }, h('p', { class: 'muted small' }, `Umore · ultimi ${DAYS} giorni`), sparkline(moods, { label: `Andamento dell’umore negli ultimi ${DAYS} giorni` })),
-      h('div', { class: 'spark-block' }, h('p', { class: 'muted small' }, `Energia · ultimi ${DAYS} giorni`), sparkline(energies, { label: `Andamento dell’energia negli ultimi ${DAYS} giorni` })),
+      h('div', { class: 'spark-block' }, h('p', { class: 'muted small' }, `Umore · ultimi ${DAYS} giorni`), sparkline(moods, { label: `Come è andato l’umore negli ultimi ${DAYS} giorni` })),
+      h('div', { class: 'spark-block' }, h('p', { class: 'muted small' }, `Energia · ultimi ${DAYS} giorni`), sparkline(energies, { label: `Come è andata l’energia negli ultimi ${DAYS} giorni` })),
       h('p', null, `In ${logs.length} ${logs.length === 1 ? 'giorno' : 'giorni'} ti sei fermata a notare come stavi. `, avgMood ? `In media: umore «${moodLabel(Math.round(avgMood))}», energia «${energyLabel(Math.round(avgEnergy))}».` : ''),
-      h('p', { class: 'muted small' }, 'I giorni senza registro non contano: non c’è nulla da recuperare.'));
+      h('p', { class: 'muted small' }, 'I giorni che non hai segnato non contano: non c’è niente da recuperare.'));
   }
   sections.push(trends);
 
   // --- riflessione (solo con il consenso)
   const reflect = h('section', { class: 'card stack' }, h('h2', { class: 'card-title' }, 'Una riflessione'));
   if (!ai.ai_enabled) {
-    reflect.append(h('p', { class: 'muted' }, 'Se vuoi, ALE. può scriverti una breve riflessione sui tuoi progressi. Serve il tuo consenso: lo trovi in Impostazioni.'), h('a', { class: 'btn btn-secondary', href: '#/profilo/impostazioni' }, 'Vai a Impostazioni'));
+    reflect.append(h('p', { class: 'muted' }, 'Se vuoi, ALE. può scriverti qualche riga sui tuoi progressi. Prima serve il tuo consenso: lo trovi in Impostazioni.'), h('a', { class: 'btn btn-secondary', href: '#/profilo/impostazioni' }, 'Vai a Impostazioni'));
   } else {
     const out = h('div', { class: 'stack', 'aria-live': 'polite' });
     const btn = h('button', { class: 'btn btn-secondary', type: 'button', onclick: () => withBusy(btn, async () => {
       try {
         const r = await aiReflection();
-        out.replaceChildren(h('p', { class: 'ticket-body' }, r.text), h('p', { class: 'muted small' }, r.source === 'ai' ? 'Scritto da Claude, con i tuoi consensi.' : 'Messaggio preparato a mano: l’AI non è collegata.'));
+        out.replaceChildren(h('p', { class: 'ticket-body' }, r.text), h('p', { class: 'muted small' }, r.source === 'ai' ? 'Scritto da Claude, con il tuo consenso.' : 'Messaggio già pronto: l’intelligenza artificiale non è collegata.'));
       } catch (err) { toast(err.message, 'error'); }
     }) }, 'Scrivimi una riflessione');
     reflect.append(h('p', { class: 'muted' }, 'Una breve lettura dei tuoi ultimi giorni, senza giudizi.'), btn, out);
@@ -96,14 +96,14 @@ export default async function progressView() {
 
   // --- abitudini consolidate
   const consolidated = habits.filter((x) => isConsolidated(x.logs));
-  sections.push(h('section', { class: 'card stack' }, h('h2', { class: 'card-title' }, 'Abitudini consolidate'),
-    consolidated.length ? h('div', { class: 'chips' }, consolidated.map((x) => h('span', { class: 'chip' }, x.name))) : h('p', { class: 'muted' }, 'Un’abitudine diventa “consolidata” quando la fai in gran parte dei giorni. Ci vuole tempo, e va bene così.')));
+  sections.push(h('section', { class: 'card stack' }, h('h2', { class: 'card-title' }, 'Abitudini ormai fisse'),
+    consolidated.length ? h('div', { class: 'chips' }, consolidated.map((x) => h('span', { class: 'chip' }, x.name))) : h('p', { class: 'muted' }, 'Un’abitudine diventa “fissa” quando riesci a farla in gran parte dei giorni. Ci vuole tempo, e va bene così.')));
 
   // --- piccole conquiste
   sections.push(sectionHead('Piccole conquiste'));
   sections.push(h('section', { class: 'card stack' }, records.length
     ? h('ul', { class: 'plain-list' }, records.map((r) => h('li', null, h('span', { class: 'list-title' }, r.title), h('span', { class: 'muted block small' }, fmtDayMonth(`${r.achieved_on}T12:00:00`)))))
-    : emptyState('Qui compariranno le tue conquiste', 'Abitudini consolidate, obiettivi raggiunti, allenamenti completati: le troverai qui.')));
+    : emptyState('Qui compariranno le tue conquiste', 'Abitudini ormai fisse, obiettivi raggiunti, allenamenti finiti: le troverai qui.')));
 
   return h('main', { class: 'shell with-tabs' }, ...sections);
 }

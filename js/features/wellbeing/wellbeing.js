@@ -34,7 +34,7 @@ export default async function wellbeingView() {
     energy = existing?.energy ?? null;
     const note = textField({ id: 'wb-note', label: 'Una nota, se ti va', rows: 3, maxlength: 1000, value: existing?.note ?? '',
       hint: 'La nota resta solo tua, anche se condividi umore ed energia.' });
-    const dateInput = h('input', { type: 'date', id: 'wb-day', class: 'input', value: day, max: today, 'aria-label': 'Giorno da registrare',
+    const dateInput = h('input', { type: 'date', id: 'wb-day', class: 'input', value: day, max: today, 'aria-label': 'Giorno da segnare',
       onchange: () => { if (dateInput.value && dateInput.value <= today) { day = dateInput.value; paintForm(); } else dateInput.value = day; } });
     const error = h('p', { class: 'form-error', role: 'alert' });
     const save = h('button', { class: 'btn', type: 'submit' }, existing ? 'Aggiorna' : 'Salva');
@@ -42,7 +42,7 @@ export default async function wellbeingView() {
     const form = h('form', { class: 'stack', novalidate: true, onsubmit: (ev) => {
       ev.preventDefault();
       error.textContent = '';
-      if (!mood || !energy) { error.textContent = 'Scegli un valore per l’umore e uno per l’energia.'; return; }
+      if (!mood || !energy) { error.textContent = 'Scegli come ti senti e quanta energia hai.'; return; }
       withBusy(save, async () => {
         try {
           await saveWellbeing(profile.id, { day, mood, energy, note: note.input.value });
@@ -69,7 +69,7 @@ export default async function wellbeingView() {
     const btn = h('button', { class: 'btn btn-text btn-danger-text', type: 'button', onclick: () => {
       if (btn.dataset.armed !== '1') { btn.dataset.armed = '1'; btn.textContent = 'Tocca ancora per eliminare'; return; }
       withBusy(btn, async () => {
-        try { await deleteWellbeing(existing.id); await load(); toast('Registro eliminato.'); paintForm(); paintHistory(); }
+        try { await deleteWellbeing(existing.id); await load(); toast('Giorno eliminato.'); paintForm(); paintHistory(); }
         catch (err) { toast(err.message, 'error'); }
       });
     } }, 'Elimina questo giorno');
@@ -79,13 +79,13 @@ export default async function wellbeingView() {
   function paintHistory() {
     const recent = logs.slice(0, HISTORY_DAYS);
     if (!recent.length) {
-      historyHost.replaceChildren(h('h2', { class: 'card-title' }, 'Gli ultimi giorni'), emptyState('Ancora nessun registro', 'Quando ne segnerai qualcuno, lo vedrai qui.'));
+      historyHost.replaceChildren(h('h2', { class: 'card-title' }, 'Gli ultimi giorni'), emptyState('Ancora nessun giorno segnato', 'Quando segnerai come stai, lo vedrai qui.'));
       return;
     }
     historyHost.replaceChildren(
       h('h2', { class: 'card-title' }, 'Gli ultimi giorni'),
-      h('div', { class: 'spark-block' }, h('p', { class: 'muted small' }, 'Umore'), sparkline(alignSeries(logs, days, 'mood'), { label: 'Andamento dell’umore negli ultimi 14 giorni' })),
-      h('div', { class: 'spark-block' }, h('p', { class: 'muted small' }, 'Energia'), sparkline(alignSeries(logs, days, 'energy'), { label: 'Andamento dell’energia negli ultimi 14 giorni' })),
+      h('div', { class: 'spark-block' }, h('p', { class: 'muted small' }, 'Umore'), sparkline(alignSeries(logs, days, 'mood'), { label: 'Come è andato l’umore negli ultimi 14 giorni' })),
+      h('div', { class: 'spark-block' }, h('p', { class: 'muted small' }, 'Energia'), sparkline(alignSeries(logs, days, 'energy'), { label: 'Come è andata l’energia negli ultimi 14 giorni' })),
       h('ul', { class: 'plain-list' }, recent.map((l) => h('li', { class: 'row' },
         h('span', { class: 'grow' }, h('span', { class: 'list-title' }, fmtDayLabel(l.day)),
           h('span', { class: 'muted block small' }, `${moodLabel(l.mood)} · energia ${energyLabel(l.energy).toLowerCase()}`)),

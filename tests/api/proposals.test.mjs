@@ -76,3 +76,13 @@ test('"Condiviso con te": ogni categoria compare solo dopo la condivisione e spa
   await ale.client.rpc('revoke_all_sharing');
   assert.deepEqual([await seeHabits(), await seeGoals()], [0, 0]);
 });
+
+test('notifiche sulle proposte: testi naturali', async () => {
+  const p = (await propose(phill, ale, { title: 'Per le notifiche' })).data;
+  const toAle = (await ale.client.from('notifications').select('title, body').eq('body', 'Per le notifiche')).data;
+  assert.match(toAle[0].title, /ti ha proposto un allenamento$/);
+  await ale.client.from('workout_proposals').update({ status: 'rejected' }).eq('id', p.id);
+  const toPhill = (await phill.client.from('notifications').select('title').eq('body', 'Per le notifiche')).data;
+  assert.match(toPhill[0].title, /non ha accettato la tua proposta$/);
+  assert.ok(!toPhill[0].title.includes('declinato'));
+});

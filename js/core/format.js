@@ -56,8 +56,8 @@ export function minScheduleDate(now = new Date()) {
 export function validateSchedule(value, now = new Date()) {
   if (!value) return 'Scegli quando inviare il biglietto.';
   const t = new Date(value).getTime();
-  if (Number.isNaN(t)) return 'La data non è valida.';
-  if (t < minScheduleDate(now).getTime()) return 'Scegli un momento almeno un paio di minuti da adesso.';
-  if (t > now.getTime() + MAX_SCHEDULE_DAYS * 864e5) return 'Si può programmare al massimo un anno in anticipo.';
+  if (Number.isNaN(t)) return 'La data non va bene.';
+  if (t < minScheduleDate(now).getTime()) return 'Scegli un orario almeno un paio di minuti più avanti.';
+  if (t > now.getTime() + MAX_SCHEDULE_DAYS * 864e5) return 'Puoi scegliere una data entro un anno da oggi.';
   return null;
 }

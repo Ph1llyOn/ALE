@@ -63,3 +63,8 @@ Interpretazioni da confermare (la specifica non le dice esplicitamente):
 
 ## Non attivo per scelta (costi)
 Anthropic API reale (serve una chiave finanziata), SMTP/email (non necessarie: accesso senza email), dominio personalizzato.
+
+## Attrezzatura e linguaggio (26/11/2026)
+- Gli attrezzi si scelgono da un elenco per categorie (`EQUIPMENT_CATALOG` in `js/data/exercises-core.js`, 31 voci) e si salvano come righe di `equipment`: restano modificabili ed eliminabili dal profilo di Alessia. Le voci scritte a mano continuano a funzionare.
+- Il catalogo esercizi ha 9 esercizi in più (kettlebell, palla, palla medica, corda, cavigliere, tapis roulant, cyclette); l'AI e le schede propongono solo esercizi compatibili con l'inventario.
+- Tutti i testi dell'app riscritti in italiano più semplice e naturale; solo i testi delle notifiche sulle proposte hanno richiesto una migrazione (`20261130000000_testi_notifiche.sql`), senza toccare permessi o logica.

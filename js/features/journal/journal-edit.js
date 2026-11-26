@@ -33,13 +33,13 @@ export default async function journalEditView({ query }) {
       h('button', { class: 'btn btn-text', type: 'button', onclick: () => { promptIndex = (promptIndex + 1) % PROMPTS.length; prompt = PROMPTS[promptIndex]; paintPrompt(); } }, 'Un altro spunto'));
   };
   paintPrompt();
-  const seg = segmented({ label: 'Tipo di scrittura', options: [{ value: 'free', label: 'Libera' }, { value: 'guided', label: 'Guidata' }], value: mode,
+  const seg = segmented({ label: 'Tipo di scrittura', options: [{ value: 'free', label: 'Libera' }, { value: 'guided', label: 'Con uno spunto' }], value: mode,
     onChange: (v) => { mode = v; promptCard.hidden = v !== 'guided'; } });
 
   // Condivisione: due chiavi. La voce si marca qui; la categoria si attiva in Privacy e dati.
   const categoryOn = shared.has('journal');
   const shareToggle = partnership
-    ? toggle({ label: `Condividi con ${partner?.display_name ?? 'Phill'}`, description: categoryOn ? 'Solo questa voce. Puoi toglierla quando vuoi.' : 'Per condividere voci attiva prima “Diario” in Privacy e dati.',
+    ? toggle({ label: `Condividi con ${partner?.display_name ?? 'Phill'}`, description: categoryOn ? 'Solo questa voce. Puoi smettere di condividerla quando vuoi.' : 'Per condividere voci attiva prima “Diario” in Privacy e dati.',
       checked: sharedFlag && categoryOn, onChange: async (v) => { sharedFlag = v; } })
     : null;
   if (shareToggle && !categoryOn) shareToggle.input.disabled = true;
@@ -71,5 +71,5 @@ export default async function journalEditView({ query }) {
   }
   return h('main', { class: 'shell with-tabs' }, pageHeader({ title: entry ? 'Modifica la voce' : 'Nuova voce', back }),
     h('section', { class: 'card stack' }, form), ...extra,
-    h('p', { class: 'muted small center' }, 'Questa voce è privata. Nessuno la legge, nemmeno ALE., a meno che tu non lo consenta.'));
+    h('p', { class: 'muted small center' }, 'Questa voce è privata. Nessuno la legge, nemmeno ALE., a meno che tu non lo permetta.'));
 }

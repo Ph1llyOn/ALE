@@ -35,7 +35,7 @@ export async function render() {
     content = await views.get(decision.render)({ query });
   } catch (err) {
     console.error(err);
-    content = h('main', { class: 'shell' }, errorBox('Qualcosa non ha funzionato nel caricare la pagina.', { onRetry: render }));
+    content = h('main', { class: 'shell' }, errorBox('Questa pagina non si è aperta. Controlla la connessione e riprova.', { onRetry: render }));
   }
   if (token !== renderToken) return; // una navigazione più recente ha la precedenza
   const withTabs = isAppRoute(decision.render);

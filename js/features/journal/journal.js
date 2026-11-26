@@ -17,11 +17,11 @@ export default async function journalView() {
 
   const list = h('div', { class: 'stack' }, spinner());
   const main = h('main', { class: 'shell with-tabs' },
-    hero({ eyebrow: 'Diario', title: 'Scrivi', accent: 'per te', text: 'Uno spazio solo tuo. Nessuno lo legge, a meno che tu non scelga di condividere una voce.',
+    hero({ eyebrow: 'Diario', title: 'Scrivi', accent: 'per te', text: 'Uno spazio solo tuo. Nessuno lo legge, a meno che tu non decida di condividere una voce.',
       cta: { label: 'Nuova voce', href: '#/diario/voce' } }),
     h('div', { class: 'row-center' },
-      h('a', { class: 'btn btn-secondary', href: '#/diario/voce?modo=guidata' }, 'Scrittura guidata'),
-      h('a', { class: 'btn btn-secondary', href: '#/diario/voce' }, 'Scrittura libera')),
+      h('a', { class: 'btn btn-secondary', href: '#/diario/voce?modo=guidata' }, 'Scrivi con uno spunto'),
+      h('a', { class: 'btn btn-secondary', href: '#/diario/voce' }, 'Scrivi come vuoi')),
     pageHeader({ title: 'Le tue voci' }), list);
 
   try {

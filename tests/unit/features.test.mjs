@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { EXERCISES, equipmentKeysFrom, compatibleExercises, suggestWorkout, exerciseById, DEFAULT_HABITS } from '../../js/data/exercises.js';
+import { EQUIPMENT_LABELS, EXERCISES, equipmentKeysFrom, compatibleExercises, suggestWorkout, exerciseById, DEFAULT_HABITS } from '../../js/data/exercises.js';
 import {
   CATEGORIES, categoryLabel, startOfWeek, weekDays, monthGrid, eventsByDay, dayKey, parseDayKey, addDays, addMonths, toIso, timeOf, validateEvent, monthRange,
 } from '../../js/data/calendar-util.js';
@@ -21,7 +21,7 @@ test('catalogo: ogni esercizio ha illustrazione, valori sensati e testo non clin
     assert.ok(existsSync(join(ROOT, 'assets', 'exercises', `${e.id}.svg`)), `manca l'immagine di ${e.id}`);
     assert.ok(e.sets >= 1 && e.sets <= 50 && e.rest >= 0 && e.rest <= 3600);
     assert.ok(e.name.length >= 3 && e.tip.length > 10);
-    assert.ok(e.equipment.every((k) => ['mat', 'dumbbells', 'band', 'step'].includes(k)));
+    assert.ok(e.equipment.every((k) => k in EQUIPMENT_LABELS), `attrezzo senza nome leggibile in ${e.id}`);
     assert.ok(!/\b(dimagr|calorie|peso corporeo|brucia|terapia|cura|diagnosi|dolore)\b/i.test(`${e.name} ${e.tip}`), `testo non adatto in ${e.id}`);
   }
 });
@@ -37,7 +37,7 @@ test('immagini: ogni SVG è ben formato, senza script né risorse esterne', () =
 
 test('attrezzatura: dalle voci dell\'inventario alle chiavi, escludendo ciò che non vuole usare', () => {
   assert.deepEqual([...equipmentKeysFrom([{ name: 'Tappetino da yoga' }, { name: 'Manubri da 2 kg' }, { name: 'Elastici' }, { name: 'Step' }])].sort(), ['band', 'dumbbells', 'mat', 'step']);
-  assert.deepEqual([...equipmentKeysFrom([{ name: 'Manubri', avoid: true }, { name: 'Cyclette' }])], [], 'ciò che preferisce non usare non conta');
+  assert.deepEqual([...equipmentKeysFrom([{ name: 'Manubri', avoid: true }, { name: 'Pedana vibrante' }])], [], 'ciò che preferisce non usare non conta');
   assert.deepEqual([...equipmentKeysFrom([])], []);
   assert.deepEqual([...equipmentKeysFrom(undefined)], []);
 });

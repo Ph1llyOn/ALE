@@ -78,12 +78,12 @@ export default async function proposalsView() {
         } catch (err) { error.textContent = err.message; }
       });
     } }, h('h2', { class: 'card-title' }, 'Proponi un allenamento'),
-    h('p', { class: 'muted small' }, 'Scegli dal catalogo: sono movimenti semplici e generici. Se Alessia ha indicazioni di un professionista, valgono quelle.'),
+    h('p', { class: 'muted small' }, 'Scegli dall’elenco: sono movimenti semplici e generici. Se Alessia ha indicazioni di un professionista, valgono quelle.'),
     title.wrap, notes.wrap, grid, error, submit);
   }
 
   function eventForm() {
-    const title = field({ id: 'ev-title', label: 'Titolo', maxlength: 120, autocomplete: 'off' });
+    const title = field({ id: 'ev-title', label: 'Nome dell’evento', maxlength: 120, autocomplete: 'off' });
     const day = field({ id: 'ev-day', label: 'Giorno', type: 'date', value: localDay() });
     const time = field({ id: 'ev-time', label: 'Ora', type: 'time', value: '18:00', required: false });
     const cat = h('select', { class: 'input', id: 'ev-cat', 'aria-label': 'Categoria' }, CATEGORIES.map((c) => h('option', { value: c.key }, c.label)));

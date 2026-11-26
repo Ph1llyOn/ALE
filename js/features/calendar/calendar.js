@@ -105,11 +105,11 @@ export default async function calendarView() {
         h('p', { class: 'muted small' }, 'È una proposta: decidi tu. Se accetti, entra nel tuo calendario.'),
         h('div', { class: 'row-center' },
           h('button', { class: 'btn', type: 'button', onclick: run(e, 'confirmed', 'Evento aggiunto.') }, 'Accetta'),
-          h('button', { class: 'btn btn-text', type: 'button', onclick: run(e, 'declined', 'Proposta declinata.') }, 'Non ora')))));
+          h('button', { class: 'btn btn-text', type: 'button', onclick: run(e, 'declined', 'Proposta messa da parte.') }, 'Non ora')))));
   }
 
   function openForm(e) {
-    const title = field({ id: 'ev-title', label: 'Titolo', value: e?.title ?? '', maxlength: 120, autocomplete: 'off' });
+    const title = field({ id: 'ev-title', label: 'Nome dell’evento', value: e?.title ?? '', maxlength: 120, autocomplete: 'off' });
     const catSel = h('select', { id: 'ev-cat', class: 'input', 'aria-label': 'Categoria' }, CATEGORIES.map((c) => h('option', { value: c.key, selected: (e?.category ?? 'personal') === c.key }, c.label)));
     const day = h('input', { id: 'ev-day', type: 'date', class: 'input', value: e ? dayKey(new Date(e.starts_at)) : selected, required: true });
     const allDay = h('input', { id: 'ev-all', type: 'checkbox', checked: Boolean(e?.all_day) });

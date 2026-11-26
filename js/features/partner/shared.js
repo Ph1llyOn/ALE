@@ -28,26 +28,26 @@ export default async function sharedView() {
   const sections = [
     ['wellbeing', 'Benessere', async () => {
       const logs = await sharedWellbeing(partner.id, since);
-      if (!logs.length) return h('p', { class: 'muted' }, 'Nessun registro negli ultimi 14 giorni.');
-      return h('div', { class: 'stack' }, sparkline(alignSeries(logs, days, 'mood'), { label: 'Andamento dell’umore negli ultimi 14 giorni' }),
+      if (!logs.length) return h('p', { class: 'muted' }, 'Nessun giorno segnato negli ultimi 14 giorni.');
+      return h('div', { class: 'stack' }, sparkline(alignSeries(logs, days, 'mood'), { label: 'Come è andato l’umore negli ultimi 14 giorni' }),
         h('ul', { class: 'plain-list' }, logs.slice(0, 5).map((l) => h('li', null, h('span', { class: 'list-title' }, l.day === localDay() ? 'Oggi' : fmtDayMonth(`${l.day}T12:00:00`)),
           h('span', { class: 'muted block small' }, `Umore «${moodLabel(l.mood)}» · energia «${energyLabel(l.energy)}»`)))),
-        h('p', { class: 'muted small' }, 'Le note personali non sono mai condivisibili.'));
+        h('p', { class: 'muted small' }, 'Le note personali non si possono mai condividere.'));
     }],
     ['activities', 'Attività', async () => {
       const s = await sharedSessions(partner.id);
       return s.length ? h('ul', { class: 'plain-list' }, s.map((x) => h('li', null, h('span', { class: 'list-title' }, x.title),
-        h('span', { class: 'muted block small' }, `${fmtDate(x.started_at)} · ${x.done}/${x.total} esercizi`)))) : h('p', { class: 'muted' }, 'Nessun allenamento completato di recente.');
+        h('span', { class: 'muted block small' }, `${fmtDate(x.started_at)} · ${x.done}/${x.total} esercizi`)))) : h('p', { class: 'muted' }, 'Nessun allenamento finito di recente.');
     }],
     ['habits', 'Abitudini', async () => {
       const hs = await sharedHabits(partner.id, since);
       return hs.length ? h('ul', { class: 'plain-list' }, hs.map((x) => h('li', null, h('span', { class: 'list-title' }, x.name),
-        h('span', { class: 'muted block small' }, `${x.days.length} giorni su 14`)))) : h('p', { class: 'muted' }, 'Nessuna abitudine impostata.');
+        h('span', { class: 'muted block small' }, `${x.days.length} giorni su 14`)))) : h('p', { class: 'muted' }, 'Nessuna abitudine aggiunta.');
     }],
     ['progress', 'Progressi e obiettivi', async () => {
       const [recs, goals] = await Promise.all([sharedProgress(partner.id, 8), sharedGoals(partner.id)]);
       return h('div', { class: 'stack' },
-        recs.length ? h('ul', { class: 'plain-list' }, recs.map((r) => h('li', null, h('span', { class: 'list-title' }, r.title), h('span', { class: 'muted block small' }, fmtDayMonth(`${r.achieved_on}T12:00:00`))))) : h('p', { class: 'muted' }, 'Ancora nessuna piccola conquista registrata.'),
+        recs.length ? h('ul', { class: 'plain-list' }, recs.map((r) => h('li', null, h('span', { class: 'list-title' }, r.title), h('span', { class: 'muted block small' }, fmtDayMonth(`${r.achieved_on}T12:00:00`))))) : h('p', { class: 'muted' }, 'Ancora nessuna piccola conquista segnata.'),
         goals.length ? h('div', { class: 'stack' }, h('p', { class: 'card-title' }, 'Obiettivi'), h('ul', { class: 'plain-list' }, goals.map((g) => h('li', { class: 'row' }, h('span', { class: 'grow list-title' }, g.title), chip(g.status === 'done' ? 'Raggiunto' : 'In corso', g.status === 'done' ? 'ok' : ''))))) : null);
     }],
     ['calendar', 'Calendario', async () => {
@@ -56,7 +56,7 @@ export default async function sharedView() {
       return ev.length ? h('ul', { class: 'plain-list' }, ev.map((e) => h('li', null, h('span', { class: 'list-title' }, e.title),
         h('span', { class: 'muted block small' }, `${categoryLabel(e.category)} · ${e.all_day ? fmtDate(e.starts_at) : fmtDateTime(e.starts_at)}`)))) : h('p', { class: 'muted' }, 'Nessun evento nei prossimi 14 giorni.');
     }],
-    ['equipment', 'Attrezzatura', async () => {
+    ['equipment', 'Attrezzi', async () => {
       const items = await sharedEquipment(partner.id);
       return items.length ? h('div', { class: 'chips' }, items.map((i) => chip(i.name, i.avoid ? 'muted' : ''))) : h('p', { class: 'muted' }, 'Nessun attrezzo inserito.');
     }],

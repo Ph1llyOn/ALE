@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" role="img" aria-label="ball-wall-squat">
+  <line x1="14" y1="142" x2="186" y2="142" stroke="#e6c3cf" stroke-width="3" stroke-linecap="round"/>
+  <line x1="48" y1="14" x2="48" y2="142" stroke="#a98a96" stroke-width="5" stroke-linecap="round" opacity=".6"/><circle cx="58" cy="74" r="14" fill="#f3d7e0" stroke="#a98a96" stroke-width="3"/>
+  
+  <polyline points="70,50 78,98" fill="none" stroke="#d9719a" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
+  <polyline points="78,98 116,100 118,138" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
+  <polyline points="70,50 92,72 108,90" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
+  <circle cx="70" cy="34" r="11" fill="#fde3ea" stroke="#d9719a" stroke-width="5"/>
+</svg>

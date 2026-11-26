@@ -1,19 +1,19 @@
 // Saluto in base all'orario. Il testo varia da un giorno all'altro (stessa frase per tutta la giornata).
 export const GREETING_MESSAGES = {
   morning: [
-    'Buongiorno! Un piccolo passo alla volta.',
-    'Buongiorno! Oggi puoi andare con i tuoi tempi.',
-    'Buongiorno! Qualunque cosa farai oggi, sarà abbastanza.',
+    'Buongiorno! Un passo alla volta.',
+    'Buongiorno! Oggi puoi prenderti i tuoi tempi.',
+    'Buongiorno! Qualsiasi cosa farai oggi, andrà bene.',
   ],
   afternoon: [
-    'Buon pomeriggio! Una piccola pausa fa sempre bene.',
+    'Buon pomeriggio! Una piccola pausa ti farà bene.',
     'Buon pomeriggio! Vai con calma.',
-    'Buon pomeriggio! Concediti un momento per te.',
+    'Buon pomeriggio! Prenditi un momento per te.',
   ],
   evening: [
-    'Buonasera! Respira, la giornata può rallentare.',
-    'Buonasera! Hai fatto abbastanza per oggi.',
-    'Buonasera! È il momento di rilassarsi.',
+    'Buonasera! Respira, adesso puoi rallentare.',
+    'Buonasera! Per oggi hai fatto abbastanza.',
+    'Buonasera! È il momento di rilassarti.',
   ],
 };
 

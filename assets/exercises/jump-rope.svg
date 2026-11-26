@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" role="img" aria-label="jump-rope">
+  <line x1="14" y1="142" x2="186" y2="142" stroke="#e6c3cf" stroke-width="3" stroke-linecap="round"/>
+  <path d="M72 86 C 40 150, 160 150, 128 86" fill="none" stroke="#a98a96" stroke-width="3" stroke-linecap="round"/>
+  <polyline points="100,90 106,112 108,128" fill="none" stroke="#f0a9c1" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+  <polyline points="100,46 118,66 128,86" fill="none" stroke="#f0a9c1" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+  <polyline points="100,46 100,90" fill="none" stroke="#d9719a" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
+  <polyline points="100,90 100,112 102,128" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
+  <polyline points="100,46 82,66 72,86" fill="none" stroke="#d9719a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
+  <circle cx="100" cy="28" r="11" fill="#fde3ea" stroke="#d9719a" stroke-width="5"/>
+</svg>

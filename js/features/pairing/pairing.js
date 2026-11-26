@@ -14,7 +14,7 @@ export default async function pairingView() {
   if (!(partnership && partner)) {
     return h('main', { class: 'shell with-tabs' }, header, h('section', { class: 'card stack' },
       h('h2', { class: 'card-title' }, isAlessia ? 'In attesa di Phill' : 'In attesa di Alessia'),
-      h('p', { class: 'muted' }, `Appena ${isAlessia ? 'Phill' : 'Alessia'} configura il proprio profilo su ALE., i vostri account si collegano da soli. Non serve fare nient’altro.`)));
+      h('p', { class: 'muted' }, `Appena ${isAlessia ? 'Phill' : 'Alessia'} prepara il suo profilo su ALE., vi collegate da soli. Tu non devi fare altro.`)));
   }
 
   const url = await avatarUrl(partner.avatar_path);

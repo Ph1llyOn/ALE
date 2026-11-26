@@ -34,7 +34,7 @@ export default async function activitiesView() {
   const body = h('div', { class: 'stack' });
   const seg = segmented({
     label: 'Sezioni delle attività',
-    options: [{ value: 'schede', label: 'Schede' }, { value: 'abitudini', label: 'Abitudini' }, { value: 'storico', label: 'Storico' }],
+    options: [{ value: 'schede', label: 'Schede' }, { value: 'abitudini', label: 'Abitudini' }, { value: 'storico', label: 'Cronologia' }],
     value: currentTab, onChange: (v) => { currentTab = v; paint(); },
   });
 
@@ -48,9 +48,9 @@ export default async function activitiesView() {
   // --- hero
   let heroEl;
   if (session) {
-    heroEl = hero({ eyebrow: 'In corso', title: 'Il tuo allenamento', accent: 'ti aspetta', text: `«${session.title}»: i progressi sono salvati, riprendi quando vuoi.`, cta: { label: 'Riprendi', href: `#/attivita/sessione?id=${session.id}` } });
+    heroEl = hero({ eyebrow: 'In corso', title: 'Il tuo allenamento', accent: 'ti aspetta', text: `«${session.title}»: quello che hai fatto è salvato. Riprendi quando vuoi.`, cta: { label: 'Riprendi', href: `#/attivita/sessione?id=${session.id}` } });
   } else if (workouts.length) {
-    heroEl = hero({ eyebrow: 'Attività', title: 'Muoviti', accent: 'con calma', text: 'Scegli una scheda o fai un allenamento libero. Nessun obiettivo da inseguire.', cta: { label: 'Inizia', onClick: () => { currentTab = 'schede'; seg.select('schede'); paint(); document.getElementById('lista-schede')?.scrollIntoView({ behavior: 'smooth' }); } } });
+    heroEl = hero({ eyebrow: 'Attività', title: 'Muoviti', accent: 'con calma', text: 'Scegli una scheda oppure allenati come ti va. Nessuna fretta, nessun obiettivo da raggiungere.', cta: { label: 'Inizia', onClick: () => { currentTab = 'schede'; seg.select('schede'); paint(); document.getElementById('lista-schede')?.scrollIntoView({ behavior: 'smooth' }); } } });
   } else {
     heroEl = hero({ eyebrow: 'Attività', title: 'Il tuo primo', accent: 'allenamento', text: 'Crea una scheda con gli esercizi che ti piacciono, oppure parti da un suggerimento.', cta: { label: 'Nuova scheda', href: '#/attivita/scheda' } });
   }
@@ -100,13 +100,13 @@ export default async function activitiesView() {
       h('p', { class: 'card-title' }, p.title),
       p.notes ? h('p', { class: 'muted ticket-body-plain' }, p.notes) : null,
       names.length ? h('p', { class: 'muted small' }, names.join(' · ')) : h('p', { class: 'muted small' }, 'Nessun esercizio indicato.'),
-      h('p', { class: 'muted small' }, 'È solo una proposta: puoi accettarla, accettarla e modificarla, oppure declinare. Nessun obbligo.'),
+      h('p', { class: 'muted small' }, 'È solo una proposta: puoi accettarla così com’è, accettarla e cambiarla, oppure lasciarla stare. Nessun obbligo.'),
       h('div', { class: 'row-center' },
         h('button', { class: 'btn', type: 'button', onclick: run(() => acceptProposal(p.id), 'Scheda aggiunta.') }, 'Accetta'),
         h('button', { class: 'btn btn-secondary', type: 'button', onclick: async (ev) => withBusy(ev.currentTarget, async () => {
           try { const r = await acceptProposal(p.id); navigate(`/attivita/scheda?id=${r.workout_id}`); } catch (err) { toast(err.message, 'error'); }
         }) }, 'Accetta e modifica'),
-        h('button', { class: 'btn btn-text', type: 'button', onclick: run(() => rejectProposal(p.id), 'Proposta declinata.') }, 'Non ora')));
+        h('button', { class: 'btn btn-text', type: 'button', onclick: run(() => rejectProposal(p.id), 'Proposta messa da parte.') }, 'Non ora')));
   }
 
   function suggestionCard() {
@@ -114,7 +114,7 @@ export default async function activitiesView() {
     const card = h('section', { class: 'card stack' }, h('h2', { class: 'card-title' }, 'Un suggerimento per te'),
       h('p', { class: 'muted' }, settings.prefers_no_equipment
         ? 'Esercizi a corpo libero, perché preferisci non usare attrezzi.'
-        : `Esercizi compatibili con ciò che hai in casa (${pool.length} disponibili).`));
+        : `Esercizi adatti agli attrezzi che hai a disposizione (${pool.length} tra cui scegliere).`));
     let seed = new Date().getDate();
     const preview = h('div', { class: 'stack' });
     const show = () => {
@@ -128,8 +128,8 @@ export default async function activitiesView() {
           }) }, 'Salva come scheda'),
           h('button', { class: 'btn btn-secondary', type: 'button', onclick: () => { seed += 1; show(); } }, 'Un altro')));
     };
-    if (pool.length) { show(); card.append(preview); } else card.append(h('p', { class: 'muted' }, 'Aggiungi qualche attrezzo, o lascia vuoto per i movimenti a corpo libero, dal Profilo.'));
-    card.append(h('p', { class: 'muted small' }, 'Sono idee generiche, non prescrizioni: le indicazioni di chi ti segue vengono sempre prima di tutto.'));
+    if (pool.length) { show(); card.append(preview); } else card.append(h('p', { class: 'muted' }, 'Dal Profilo puoi aggiungere qualche attrezzo, oppure lasciare tutto vuoto per fare esercizi a corpo libero.'));
+    card.append(h('p', { class: 'muted small' }, 'Sono solo idee: le indicazioni del professionista che ti segue vengono sempre prima.'));
     return card;
   }
 
@@ -154,13 +154,13 @@ export default async function activitiesView() {
           btn.disabled = true;
           try {
             await setHabitDone(profile.id, hb.id, today, next);
-            if (next && isConsolidated([...hb.logs.filter((d) => d !== today), today])) await addWin(profile.id, 'habit_streak', `Abitudine consolidata: ${hb.name}`);
+            if (next && isConsolidated([...hb.logs.filter((d) => d !== today), today])) await addWin(profile.id, 'habit_streak', `Abitudine ormai fissa: ${hb.name}`);
             await render();
           } catch (err) { toast(err.message, 'error'); btn.disabled = false; }
         } }, icon('check', { size: 18 }));
       list.append(h('div', { class: 'list-row' }, btn,
         h('span', { class: 'grow' }, h('span', { class: 'list-title' }, hb.name),
-          h('span', { class: 'muted block small' }, `${hb.logs.length} ${hb.logs.length === 1 ? 'giorno' : 'giorni'} negli ultimi 30`, isConsolidated(hb.logs) ? ' · consolidata' : '')),
+          h('span', { class: 'muted block small' }, `${hb.logs.length} ${hb.logs.length === 1 ? 'giorno' : 'giorni'} su 30`, isConsolidated(hb.logs) ? ' · ormai è un’abitudine' : '')),
         h('button', { class: 'btn btn-text', type: 'button', 'aria-label': `Rimuovi ${hb.name}`, onclick: async () => { try { await archiveHabit(hb.id); toast('Abitudine rimossa.'); await render(); } catch (err) { toast(err.message, 'error'); } } }, 'Rimuovi')));
     }
     if (habits.length) wrap.append(list);
@@ -188,11 +188,11 @@ export default async function activitiesView() {
   // ---------------------------------------------------------------- storico
   async function historyTab() {
     const sessions = await listSessions(profile.id);
-    if (!sessions.length) return h('div', { class: 'card' }, emptyState('Ancora nessun allenamento completato', 'Quando ne terminerai uno, comparirà qui con durata ed esercizi fatti.'));
+    if (!sessions.length) return h('div', { class: 'card' }, emptyState('Ancora nessun allenamento finito', 'Quando ne finirai uno, lo troverai qui, con il tempo e gli esercizi fatti.'));
     const total = sessions.reduce((a, s) => a + s.minutes, 0);
     return h('div', { class: 'stack' },
       h('section', { class: 'stat-row' },
-        h('div', { class: 'stat' }, h('span', { class: 'stat-value' }, String(sessions.length)), h('span', { class: 'stat-label' }, 'completati')),
+        h('div', { class: 'stat' }, h('span', { class: 'stat-value' }, String(sessions.length)), h('span', { class: 'stat-label' }, 'finiti')),
         h('div', { class: 'stat' }, h('span', { class: 'stat-value' }, String(total)), h('span', { class: 'stat-label' }, 'minuti in tutto')),
         h('div', { class: 'stat' }, h('span', { class: 'stat-value' }, String(sessions.filter((s) => Date.now() - new Date(s.started_at) < 7 * 864e5).length)), h('span', { class: 'stat-label' }, 'negli ultimi 7 giorni'))),
       h('section', { class: 'list-card' }, sessions.map((s) => h('a', { class: 'list-row', href: `#/attivita/sessione?id=${s.id}` },

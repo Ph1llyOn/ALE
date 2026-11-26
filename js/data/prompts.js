@@ -8,7 +8,7 @@ export const PROMPTS = [
   'Cosa ti piacerebbe fare con calma nei prossimi giorni?',
   'Un piccolo passo che hai fatto di recente e di cui sei contenta.',
   'Che cosa ti ha dato energia oggi? E cosa te l’ha tolta?',
-  'Descrivi un posto in cui ti senti al sicuro.',
+  'Racconta un posto in cui ti senti al sicuro.',
   'Una cosa che vorresti ricordare di questo periodo.',
   'Cosa ti fa stare bene quando la giornata è pesante?',
   'Scrivi liberamente: tre cose che hai notato oggi.',

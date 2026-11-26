@@ -51,7 +51,7 @@ export async function getAccessStatus() {
 
 async function openSession(tokenData) {
   const { error } = await sb.auth.verifyOtp({ token_hash: tokenData.token_hash, type: tokenData.type });
-  if (error) throw new AccessError('Non è stato possibile aprire la sessione. Riprova.', { code: 'session' });
+  if (error) throw new AccessError('Non riesco ad aprire il tuo spazio. Riprova tra poco.', { code: 'session' });
 }
 
 export async function enterProfile(role, pin) {

@@ -19,17 +19,51 @@ export const EXERCISES = [
   { id: 'goblet-squat', name: 'Squat con manubrio', equipment: ['dumbbells'], sets: 3, reps: '10', rest: 60, tip: 'Il manubrio vicino al petto, schiena dritta.' },
   { id: 'step-up', name: 'Salita sullo step', equipment: ['step'], sets: 3, reps: '10 per lato', rest: 60, tip: 'Appoggia tutto il piede sullo step prima di spingere.' },
   { id: 'band-pull-apart', name: 'Apertura con elastico', equipment: ['band'], sets: 3, reps: '12', rest: 45, tip: 'Apri le braccia piano, spalle lontane dalle orecchie.' },
+  { id: 'kettlebell-squat', name: 'Squat con kettlebell', equipment: ['kettlebell'], sets: 3, reps: '10', rest: 60, tip: 'Tieni la kettlebell vicino al petto, schiena dritta. Scegli un peso leggero.' },
+  { id: 'ball-wall-squat', name: 'Squat con la palla al muro', equipment: ['ball'], sets: 3, reps: '10', rest: 60, tip: 'La palla tra te e il muro ti sostiene: scendi piano, risali piano.' },
+  { id: 'ball-bridge', name: 'Ponte con i piedi sulla palla', equipment: ['ball', 'mat'], sets: 2, reps: '8', rest: 60, tip: 'Muoviti con calma: la palla è instabile. Se è troppo, tieni i piedi a terra.' },
+  { id: 'medball-press', name: 'Spinta con la palla medica', equipment: ['medball'], sets: 3, reps: '10', rest: 60, tip: 'Tieni la palla al petto e spingila in alto, senza fretta.' },
+  { id: 'jump-rope', name: 'Saltelli con la corda', equipment: ['rope'], sets: 3, reps: '30 secondi', rest: 45, tip: 'Saltelli bassi e leggeri. Fermati quando vuoi.' },
+  { id: 'ankle-leg-raise', name: 'Sollevamento della gamba con cavigliere', equipment: ['ankle', 'mat'], sets: 2, reps: '10 per lato', rest: 45, tip: 'Cavigliere leggere e movimento lento. Il bacino resta fermo.' },
+  { id: 'treadmill-walk', name: 'Camminata sul tapis roulant', equipment: ['treadmill'], sets: 1, reps: '15 minuti', rest: 0, tip: 'Un passo comodo, in cui riesci a parlare.' },
+  { id: 'easy-pedal', name: 'Pedalata tranquilla', equipment: ['bike'], sets: 1, reps: '15 minuti', rest: 0, tip: 'Resistenza bassa, ritmo piacevole. Puoi fermarti quando vuoi.' },
 ];
 
-export const EQUIPMENT_LABELS = { mat: 'Tappetino', dumbbells: 'Manubri', band: 'Elastico', step: 'Step' };
+/** Nome mostrato per ogni "tipo" di attrezzo richiesto dagli esercizi. */
+export const EQUIPMENT_LABELS = {
+  mat: 'Tappetino', dumbbells: 'Manubri', band: 'Elastico', step: 'Pedana fitness (step)', kettlebell: 'Kettlebell', ball: 'Palla da ginnastica',
+  medball: 'Palla medica', rope: 'Corda per saltare', ankle: 'Cavigliere con pesi', treadmill: 'Tapis roulant', bike: 'Cyclette',
+};
+
+/**
+ * Attrezzi che si possono scegliere, per categoria. Il nome è quello che viene salvato nell'inventario di Alessia (tabella equipment):
+ * così resta leggibile, modificabile ed eliminabile come qualsiasi altra voce.
+ */
+export const EQUIPMENT_CATALOG = [
+  { key: 'floor', title: 'Per stare a terra', items: ['Tappetino fitness', 'Foam roller (rullo per massaggio)', 'Mattoncini e cinghia per yoga', 'Sedia robusta'] },
+  { key: 'weights', title: 'Pesi', items: ['Manubri', 'Pesi regolabili', 'Kettlebell', 'Cavigliere con pesi', 'Polsiere con pesi', 'Palla medica', 'Bilanciere e dischi'] },
+  { key: 'bands', title: 'Elastici', items: ['Elastici fitness', 'Bande elastiche circolari', 'Fasce elastiche con maniglie'] },
+  { key: 'balance', title: 'Equilibrio e coordinazione', items: ['Pedana fitness (step)', 'Palla da ginnastica', 'Corda per saltare', 'Pedana per l’equilibrio', 'Dischi scorrevoli (slider)', 'Pedana vibrante'] },
+  { key: 'core', title: 'Addominali, schiena e trazioni', items: ['Ruota per addominali', 'Barra per trazioni', 'Panca da allenamento', 'TRX (cinghie da sospensione)', 'Maniglie per flessioni'] },
+  { key: 'cardio', title: 'Per il cardio', items: ['Cyclette', 'Mini cyclette (pedaliera)', 'Tapis roulant', 'Ellittica', 'Mini stepper', 'Vogatore'] },
+];
+export const ALL_EQUIPMENT_NAMES = EQUIPMENT_CATALOG.flatMap((c) => c.items);
 
 export const exerciseById = (id) => EXERCISES.find((e) => e.id === id) ?? null;
 
+// Dal testo di una voce dell'inventario ai tipi di attrezzo (vale anche per le voci scritte a mano).
 const KEYWORDS = {
-  mat: /tappetin|materass|\bmat\b|yoga/i,
-  dumbbells: /manubri|pesi|dumbbell|kettlebell|bilanciere/i,
-  band: /elastic|\bband\b|fascia/i,
+  mat: /tappetin|materass|\bmat\b/i,
+  dumbbells: /manubri|dumbbell|pesi regolabili|^\s*pesi\s*$/i,
+  kettlebell: /kettlebell|kettle bell/i,
+  band: /elastic|\bband[ae]\b|\bfascia\b|\bfasce\b/i,
   step: /\bstep\b|gradino|rialzo|panca/i,
+  ball: /palla da ginnastica|fitball|swiss ball/i,
+  medball: /palla medica|medicine ball/i,
+  rope: /corda per saltare|corda da salto|jump rope/i,
+  ankle: /cavigliere/i,
+  treadmill: /tapis|treadmill/i,
+  bike: /cyclette|bici da camera|pedaliera|exercise bike/i,
 };
 
 /** Dalle voci dell'inventario ({ name, avoid }) alle chiavi di attrezzatura disponibili (esclude ciò che non vuole usare). */

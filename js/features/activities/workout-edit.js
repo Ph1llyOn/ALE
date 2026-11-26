@@ -47,7 +47,7 @@ export default async function workoutEditView({ query }) {
           h('button', { class: 'btn btn-text', type: 'button', disabled: i === 0, 'aria-label': 'Sposta su', onclick: () => { [items[i - 1], items[i]] = [items[i], items[i - 1]]; paintList(); } }, '↑'),
           h('button', { class: 'btn btn-text', type: 'button', disabled: i === items.length - 1, 'aria-label': 'Sposta giù', onclick: () => { [items[i + 1], items[i]] = [items[i], items[i + 1]]; paintList(); } }, '↓'),
           h('button', { class: 'btn btn-text', type: 'button', 'aria-label': `Rimuovi ${it.name}`, onclick: () => { items.splice(i, 1); paintList(); } }, icon('trash', { size: 18 }))),
-        h('div', { class: 'mini-row' }, num('sets', 'Serie', 50), h('label', { class: 'mini-field' }, h('span', { class: 'muted small' }, 'Ripetizioni'), reps), num('rest_seconds', 'Recupero (s)', 3600)),
+        h('div', { class: 'mini-row' }, num('sets', 'Serie', 50), h('label', { class: 'mini-field' }, h('span', { class: 'muted small' }, 'Ripetizioni'), reps), num('rest_seconds', 'Pausa (s)', 3600)),
         note);
     }));
   }
@@ -65,7 +65,7 @@ export default async function workoutEditView({ query }) {
     } }, 'Aggiungi');
     const toggleAll = h('label', { class: 'check-row', for: 'w-all' },
       h('input', { type: 'checkbox', id: 'w-all', checked: showAll, onchange: (ev) => { showAll = ev.currentTarget.checked; paintPicker(); } }),
-      h('span', null, 'Mostra anche quelli che richiedono attrezzi che non ho'));
+      h('span', null, 'Mostra anche gli esercizi con attrezzi che non ho'));
     pickerHost.replaceChildren(
       h('h2', { class: 'card-title' }, 'Aggiungi un esercizio'),
       h('div', { class: 'hscroll' }, pool.map((e) => tile({
@@ -115,5 +115,5 @@ export default async function workoutEditView({ query }) {
   void exerciseById;
   return h('main', { class: 'shell with-tabs' }, header(existing ? 'Modifica la scheda' : 'Nuova scheda'),
     h('section', { class: 'card stack' }, form), ...extra,
-    h('p', { class: 'muted small center' }, 'Le schede sono idee generali, non prescrizioni. Le indicazioni di chi ti segue vengono sempre prima.'));
+    h('p', { class: 'muted small center' }, 'Le schede sono solo idee. Le indicazioni del professionista che ti segue vengono sempre prima.'));
 }
