@@ -9,3 +9,5 @@ supabase/functions/.env
 .DS_Store
 .claude/settings.local.json
 supabase/.vapid.local
+supabase/.setup-code.local
+supabase/.remote-secrets.local
