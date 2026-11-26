@@ -144,16 +144,18 @@ DEFS['chair-squat'] = { dur: 3.2, frames: [SQ0, SQ1], back: [floor, chair(62, 11
   DEFS['step-up'] = { dur: 3, frames: [A, B], back: [floor, stepBlock(112, 120, 74)], desc: 'Un piede sale sullo step e ti porti in piedi sopra, poi scendi con controllo.' };
 }
 {
-  const A = FVA;
-  const B = P(shift(FVA, 0, -8), { foot: [94, 131], foot2: [106, 131] });
-  const toe = (x, y0, y1, color, op) => (an) => `<polyline points="${x},${y0} ${x + 6},138" fill="none" stroke="${color}" stroke-width="9" stroke-linecap="round" opacity="${op}">${an('points', [`${x},${y0} ${x + 6},138`, `${x},${y1} ${x + 6},138`, `${x},${y0} ${x + 6},138`])}</polyline>`;
-  DEFS['calf-raise'] = { dur: 2.6, frames: [A, B], back: [floor], front: [toe(106, 138, 130, FAR, 0.9), toe(94, 138, 130, NEAR, 1)], desc: 'Sali sulle punte dei piedi sollevando i talloni e scendi piano.' };
+  // di profilo: il piede è una linea tallone→punta; sulle punte il tallone sale e tutto il corpo con lui
+  const A = P(SB, { knee2: [104, 112], foot2: [105, 131], foot: [102, 131], elbow: [94, 62], hand: [96, 82] });
+  const B = shift(A, 0, -11);
+  const foot = (hx, color, op) => (an) => `<polyline points="${hx},138 ${hx + 26},138" fill="none" stroke="${color}" stroke-width="9" stroke-linecap="round" opacity="${op}">${an('points', [`${hx},138 ${hx + 26},138`, `${hx + 2},127 ${hx + 26},138`, `${hx},138 ${hx + 26},138`])}</polyline>`;
+  const up = `<path d="M150 104 v-26 m-7 8 l7 -8 l7 8" fill="none" stroke="${FAR}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>`;
+  DEFS['calf-raise'] = { dur: 2.6, frames: [A, B], back: [floor, up], front: [foot(100, FAR, 0.9), foot(96, NEAR, 1)], desc: 'Sali sulle punte dei piedi sollevando i talloni e scendi piano.' };
 }
 {
   const far = (p, dx = 6) => ({ knee2: [p.knee[0] + dx, p.knee[1] + 2], foot2: [p.foot[0] + dx, p.foot[1]] });
   DEFS['glute-bridge'] = { dur: 3, frames: [P(BR_B, far(BR_B)), P(BR_T, far(BR_T))], back: [mat], desc: 'Sdraiata con i piedi a terra, spingi sui talloni e solleva il bacino fino a fare una linea; poi scendi.' };
-  const bot = P(BR_B, { knee2: [113, 105], foot2: [128, 79] });
-  const top = P(BR_T, { knee2: [115, 82], foot2: [130, 56] });
+  const bot = P(BR_B, { knee2: [122, 101], foot2: [146, 71] });
+  const top = P(BR_T, { knee2: [130, 94], foot2: [160, 80] });
   DEFS['single-leg-bridge'] = { dur: 3.2, frames: [bot, top], back: [mat], desc: 'Un piede resta a terra e l’altra gamba è distesa in alto: il bacino sale e scende.' };
   const b = P(BR_B, { knee: [126, 113], foot: [152, 96] });
   const t = P(BR_T, { knee: [122, 82], foot: [144, 96] });
@@ -350,8 +352,9 @@ DEFS['chair-squat'] = { dur: 3.2, frames: [SQ0, SQ1], back: [floor, chair(62, 11
 
 // --- defaticamento e stretching
 {
-  const A = { head: [124, 126], neck: [106, 114], mid: [80, 102], hip: [54, 106], knee: [96, 132], foot: [40, 134], elbow: [136, 126], hand: [168, 134] };
-  DEFS['child-pose'] = { dur: 4, frames: [A], hold: { pulse: [80, 100, 9, 14], breath: { head: [0, -1], neck: [0, -1], mid: [0, -2] } }, back: [mat], desc: 'Seduta sui talloni con il busto in avanti e le braccia distese: resti ferma respirando piano.' };
+  const A = { head: [130, 128], neck: [110, 111], mid: [84, 98], hip: [58, 112], knee: [104, 134], foot: [54, 134], elbow: [142, 128], hand: [176, 136] };
+  const fold = `<path d="M44 78 Q 88 50 126 90" fill="none" stroke="${FAR}" stroke-width="3.5" stroke-dasharray="2 7" stroke-linecap="round"/><path d="M116 82 l11 9 l-14 3" fill="none" stroke="${FAR}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+  DEFS['child-pose'] = { dur: 4, frames: [A], view: [20, 46, 160, 128], hold: { pulse: null, breath: { head: [0, -1.5], neck: [0, -1.5], mid: [0, -3] } }, back: [mat, fold], desc: 'Seduta sui talloni con il busto in avanti e le braccia distese: resti ferma respirando piano.' };
 }
 {
   const A = { head: [118, 34], neck: [108, 46], hip: [88, 84], knee: [110, 98], foot: [130, 112], knee2: [87, 111], foot2: [86, 138], elbow: [116, 72], hand: [122, 100] };
@@ -423,12 +426,12 @@ function render(ex, def) {
     parts.push(dl.every((d) => d === dl[0]) ? body : `<g>${body}${an('transform', dl, 'translate')}</g>`);
   }
   parts.push(...ev(def.front));
-  if (def.hold) {
+  if (def.hold?.pulse) {
     const [cx, cy, r0, r1] = def.hold.pulse;
     parts.push(`<circle cx="${cx}" cy="${cy}" r="${r0}" fill="none" stroke="${FAR}" stroke-width="3" opacity=".25">${an('r', [r0, r1, r0])}${an('opacity', [0.25, 0.7, 0.25])}</circle>`);
   }
   const name = esc(ex.name);
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" role="img" aria-label="${name}">\n<title>${name}</title>\n<desc>${esc(def.desc)}</desc>\n${parts.filter(Boolean).join('\n')}\n</svg>\n`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${(def.view ?? [0, 0, 200, 160]).join(' ')}" role="img" aria-label="${name}">\n<title>${name}</title>\n<desc>${esc(def.desc)}</desc>\n${parts.filter(Boolean).join('\n')}\n</svg>\n`;
 }
 
 // ------------------------------------------------------------------ scrittura

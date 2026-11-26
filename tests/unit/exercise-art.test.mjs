@@ -40,7 +40,7 @@ for (const ex of EXERCISES) {
     assert.equal((svg.match(/<svg\b/g) ?? []).length, 1, 'un solo <svg>');
     assert.equal((svg.match(/<\/svg>/g) ?? []).length, 1);
     assert.match(svg, /xmlns="http:\/\/www\.w3\.org\/2000\/svg"/);
-    assert.match(svg, /viewBox="0 0 200 160"/);
+    assert.match(svg, /viewBox="(0 0 200 160|[0-9]+ [0-9]+ 160 128)"/, "proporzioni 5:4 (inquadratura stretta consentita)");
     assert.match(svg, /role="img"/);
     assert.match(svg, new RegExp(`aria-label="[^"]+"`));
     assert.match(svg, /<title>[^<]+<\/title>/);
@@ -82,7 +82,7 @@ for (const ex of EXERCISES) {
         const ys = valuesOf(a).map(Number);
         assert.ok(Math.max(...ys) - Math.min(...ys) <= 2.5, 'respiro troppo ampio per una tenuta');
       }
-      assert.ok(anims.some((a) => /attributeName="r"/.test(a)), 'manca l\'anello che pulsa');
+      if (ex.id !== 'child-pose') assert.ok(anims.some((a) => /attributeName="r"/.test(a)), 'manca l\'anello che pulsa');
     }
   });
 
@@ -115,4 +115,39 @@ test('i 25 esercizi storici restano nello stesso stile (colori della figura)', (
     assert.ok(svg.includes('#d9719a'), `${id}: manca il colore principale`);
     assert.ok(svg.includes('stroke-linecap="round"'));
   }
+});
+
+// ---- revisione qualitativa (26/11/2026): le tre illustrazioni che erano poco leggibili
+import { readFileSync as rf } from 'node:fs';
+const svgOf = (id) => rf(new URL(`../../assets/exercises/${id}.svg`, import.meta.url), 'utf8');
+const pts = (str) => str.trim().split(/\s+/).map((p) => p.split(',').map(Number));
+const animatedPolyline = (svg, stroke, width, opacity) => {
+  const re = new RegExp(`<polyline points="[^"]+" fill="none" stroke="${stroke}" stroke-width="${width}"[^>]*${opacity ? `opacity="${opacity}"` : ''}[^>]*><animate attributeName="points" values="([^"]+)"`);
+  const m = re.exec(svg);
+  return m ? m[1].split(';').map(pts) : null;
+};
+const collinear = ([a, b, c], tol = 3) => Math.abs((b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])) / Math.hypot(c[0] - a[0], c[1] - a[1]) <= tol;
+
+test('ponte a una gamba: la gamba distesa è dritta e segue la linea del corpo, non è più ripida', () => {
+  const frames = animatedPolyline(svgOf('single-leg-bridge'), '#f0a9c1', 9, '0.9');
+  assert.ok(frames && frames.length >= 2, 'la gamba distesa si muove');
+  for (const f of frames) assert.ok(collinear(f), `gamba piegata: ${JSON.stringify(f)}`);
+  const slope = (f) => (f[2][1] - f[0][1]) / (f[2][0] - f[0][0]);
+  assert.ok(frames.some((f) => Math.abs(slope(f)) < 0.7), 'in alto la gamba prosegue la linea del busto (inclinazione dolce)');
+});
+
+test('salita sulle punte: di profilo, il tallone si stacca e il corpo sale', () => {
+  const svg = svgOf('calf-raise');
+  assert.match(svg, /<animate attributeName="points" values="[^"]*,127[^"]*"/, 'il tallone sale (la linea del piede si inclina)');
+  const body = animatedPolyline(svg, '#d9719a', 11);
+  assert.ok(body, 'il busto si muove');
+  assert.ok(body[0][0][1] - body[1][0][1] >= 8, 'il corpo sale di almeno 8 unità');
+});
+
+test('posizione del bambino: inquadratura più stretta, freccia di piegamento, nessun anello che sembri una seconda testa', () => {
+  const svg = svgOf('child-pose');
+  assert.match(svg, /viewBox="20 46 160 128"/);
+  assert.match(svg, /stroke-dasharray="2 7"/, 'freccia tratteggiata che mostra la piega in avanti');
+  assert.equal((svg.match(/<circle/g) ?? []).length, 1, 'solo la testa è un cerchio');
+  assert.match(svg, /<animate/, 'respira');
 });

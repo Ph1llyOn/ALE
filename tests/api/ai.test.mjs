@@ -254,3 +254,35 @@ test('INVENTARIO: gli attrezzi si salvano su Supabase, si tolgono, restano priva
   assert.equal((await ale.client.from('equipment').update({ avoid: true, notes: '4 kg' }).eq('name', 'Manubri').select()).data[0].avoid, true);
   await admin.from('equipment').delete().eq('owner_id', ale.id);
 });
+
+test('SENZA ANTHROPIC: il server genera lo stesso una sessione strutturata, con limitazioni e preferenze di Alessia', async () => {
+  await setPrefs(ale, { ai_enabled: true, use_equipment: true });
+  const admin = adminClient();
+  await admin.from('equipment').delete().eq('owner_id', ale.id);
+  await admin.from('user_settings').delete().eq('user_id', ale.id);
+  const set = await ale.client.from('user_settings').insert({ user_id: ale.id, fitness_level: 'intermediate', session_minutes: 40, avoid_flags: ['knees', 'impact'], preferences: { abs: false, treadmill: false } });
+  assert.equal(set.error, null, set.error?.message);
+  await ale.client.from('equipment').insert([{ owner_id: ale.id, name: 'Tappetino fitness' }, { owner_id: ale.id, name: 'Manubri' }, { owner_id: ale.id, name: 'Tapis roulant' }]);
+  mock.respond(() => ({ status: 503, body: { error: 'overloaded' } }));
+  const { exercise } = await import('../../js/data/planner-core.js');
+  for (let i = 0; i < 3; i++) {
+    await resetGenerations();
+    const r = await gen(ale, 'plan');
+    assert.equal(r.status, 200, JSON.stringify(r.body));
+    assert.equal(r.body.source, 'fallback');
+    const items = r.body.items;
+    const order = { warmup: 0, main: 1, cardio: 2, cooldown: 3 };
+    assert.equal(items[0].phase, 'warmup');
+    assert.equal(items.at(-1).phase, 'cooldown');
+    for (let k = 1; k < items.length; k++) assert.ok(order[items[k].phase] >= order[items[k - 1].phase], 'fasi in ordine');
+    for (const it of items) {
+      const e = exercise(it.exercise_key);
+      assert.ok(e.equipment.every((q) => ['mat', 'dumbbells', 'treadmill'].includes(q)), `${it.exercise_key}: attrezzo non posseduto`);
+      assert.ok(!e.flags.includes('knees') && !e.flags.includes('impact'), `${it.exercise_key}: limitazione violata`);
+      assert.ok(!e.equipment.includes('treadmill'), 'tapis roulant disattivato nelle preferenze');
+    }
+    assert.ok(items.filter((i) => i.phase === 'main').length >= 3);
+  }
+  await admin.from('equipment').delete().eq('owner_id', ale.id);
+  await admin.from('user_settings').delete().eq('user_id', ale.id);
+});

@@ -26,7 +26,14 @@ export function isoWeekKey(d) {
   const jan4 = Math.floor(Date.UTC(year, 0, 4) / DAY); const week1 = jan4 - (((jan4 + 3) % 7));
   return `${year}-W${String(Math.floor((thursday - week1) / 7) + 1).padStart(2, '0')}`;
 }
-const hash = (s) => { let h = 2166136261; for (const c of String(s)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return (h >>> 0) / 4294967295; };
+// Numero pseudo-casuale in [0,1) riproducibile. L'ultimo passaggio (avalanche di murmur3) è essenziale: senza, semi consecutivi
+// (il giorno del mese!) darebbero valori quasi uguali e le proposte dei giorni vicini si assomiglierebbero troppo.
+const hash = (s) => {
+  let h = 2166136261;
+  for (const c of String(s)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); }
+  h ^= h >>> 16; h = Math.imul(h, 0x85ebca6b); h ^= h >>> 13; h = Math.imul(h, 0xc2b2ae35); h ^= h >>> 16;
+  return (h >>> 0) / 4294967296;
+};
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const daysBetween = (a, b) => dayNum(b) - dayNum(a);
 
@@ -69,19 +76,28 @@ const HARD = new Set(['hard', 'too_hard', 'not_completed']);
  * Cosa fare con un esercizio in base ai feedback (privati) di Alessia. Prudente: una sola indicazione non basta per aumentare.
  * Ritorna { action: 'keep'|'harder'|'easier'|'reduce'|'increase'|'block', reason }.
  */
+/** Continuità: almeno 6 giorni in 8 settimane, in almeno 3 settimane diverse, senza difficoltà o fastidi negli ultimi 30 giorni. */
+function steadyProgress(key, ctx) {
+  if (!ctx.today) return false;
+  const days = [...new Set((ctx.history ?? []).filter((h) => h.key === key && (h.setsDone ?? 1) > 0 && daysBetween(h.day, ctx.today) >= 0 && daysBetween(h.day, ctx.today) <= 56).map((h) => h.day))];
+  if (days.length < 6 || new Set(days.map(isoWeekKey)).size < 3) return false;
+  return !(ctx.feedback ?? []).some((f) => f.key === key && (HARD.has(f.rating) || f.rating === 'pain') && daysBetween(f.day, ctx.today) <= 30);
+}
+const STEADY = { action: 'harder', reason: 'Lo fai con continuità da settimane: provo un passo in più.' };
+
 export function adaptation(key, ctx) {
   const list = ctx.feedback.filter((f) => f.key === key).sort((a, b) => (a.day < b.day ? 1 : -1));
-  if (!list.length) return { action: 'keep', reason: null };
+  if (!list.length) return steadyProgress(key, ctx) ? STEADY : { action: 'keep', reason: null };
   const latest = list[0];
   const age = ctx.today ? daysBetween(latest.day, ctx.today) : 0;
   if (latest.rating === 'pain') return age <= 14 ? { action: 'block', reason: 'Hai segnalato fastidio: per ora non te lo propongo.' } : { action: 'keep', reason: null };
   const recent = list.slice(0, 3).filter((f) => !ctx.today || daysBetween(f.day, ctx.today) <= 60);
-  if (!recent.length) return { action: 'keep', reason: null };
+  if (!recent.length) return steadyProgress(key, ctx) ? STEADY : { action: 'keep', reason: null };
   const hardCount = recent.filter((f) => HARD.has(f.rating)).length;
   if (hardCount >= 2) return { action: 'easier', reason: 'Nelle ultime volte è stato impegnativo: ti propongo qualcosa di più leggero.' };
   if (HARD.has(recent[0].rating) && recent[0].rating !== 'hard') return { action: 'reduce', reason: 'L’ultima volta era troppo impegnativo: meno serie, con calma.' };
   if (recent.length >= 2 && recent[0].rating === 'too_easy' && recent[1].rating === 'too_easy') return { action: 'harder', reason: 'Per più volte ti è sembrato facile: provo un gradino in più.' };
-  return { action: 'keep', reason: null };
+  return steadyProgress(key, ctx) ? STEADY : { action: 'keep', reason: null };
 }
 
 const timesDone = (ctx, id) => new Set(ctx.history.filter((h) => h.key === id && (h.setsDone ?? 1) > 0).map((h) => h.day)).size;
@@ -150,11 +166,18 @@ function scoreCandidate(e, ctx, chosen) {
   const need = e.muscles.filter((m) => m !== 'full').map((m) => muscleRecency(ctx, m));
   const worst = need.length ? Math.min(6, Math.max(...need.map((d) => (d === null ? 6 : d)))) : 0;
   if (worst >= 3 && ctx.history.length) { s += worst; why.push(worst >= 6 ? 'da un po’ non la allenavi' : 'ha riposato qualche giorno'); }
-  if (e.equipment.some((k) => k !== 'mat') && !ctx.prefersNoEquipment) { s += 4; why.push('Usa un attrezzo che hai'); }
-  if (ABS_IDS.has(e.id) && ctx.prefs.abs !== false) { s += 3; why.push('Addominali, una cosa che ti piace'); }
+  if (e.equipment.some((k) => k !== 'mat') && !ctx.prefersNoEquipment) {
+    s += 3; why.push('Usa un attrezzo che hai');
+    if (chosen.some((c) => c.e.equipment.some((k) => k !== 'mat' && e.equipment.includes(k)))) s += 2;   // stesso attrezzo già in mano: meno cambi
+  }
+  if (ABS_IDS.has(e.id)) { if (ctx.prefs.abs !== false) { if (hash(`abs:${ctx.seed}`) < 0.45) { s += 4; why.push('Addominali, una cosa che ti piace'); } else s -= 4; } else s -= 8; }   // le preferenze orientano, non obbligano
   if (e.level === levelNum(ctx)) s += 2;
   if ((chainSize.get(chainRoot(e.id)) ?? 1) > 1) s += 3;             // movimenti di base con una progressione (squat, piegamenti, ponte, plank…)
-  if (!chosen.some((c) => c.pattern === e.pattern)) s += 6;
+  if (!chosen.some((c) => GROUP(c.e) === GROUP(e))) s += 4;
+  else {
+    s -= 2 * chosen.filter((c) => GROUP(c.e) === GROUP(e)).length;      // il bilanciamento prima di tutto: a parità, un gruppo diverso
+    if (e.pattern === 'core') s -= 6;                                    // un secondo esercizio di core solo se serve davvero
+  }
   s += hash(`${e.id}:${ctx.seed}`) * 7; // varietà riproducibile (stesso giorno → stessa proposta)
   return { s, why };
 }
@@ -224,90 +247,136 @@ export function generateSession(ctxIn, { kind = 'strength' } = {}) {
   return best;
 }
 
+const REQUIRED = { strength: ['lower', 'glute', 'push', 'pull', 'core'], cardio: ['lower', 'push', 'core'] };
+const MOBILITY_MAIN = new Set(['bird-dog', 'dead-bug', 'glute-bridge', 'cat-cow']);
+const FLOOR_POSITIONS = ['prone', 'side', 'supine', 'quadruped', 'kneeling'];
+const isFloor = (p) => FLOOR_POSITIONS.includes(p);
+
 function buildSession(ctx, kind) {
   const pool = eligibleExercises(ctx);
   const poolIds = new Set(pool.map((e) => e.id));
   const assumptions = [];
   const minutes = ctx.minutes;
+  if (!equipmentKeysFrom(ctx.items).has('mat')) assumptions.push('Senza un tappetino non propongo esercizi a terra: se ne hai uno, aggiungilo tra gli attrezzi e avrai più scelta.');
+  const machine = !ctx.prefersNoEquipment ? cardioMachine(ctx, pool) : null;
   // la parte cardio nella sessione di forza c'è solo a volte (e non se ieri ne ha già fatta): non serve in ogni allenamento
   const cardioRecent = ctx.history.some((h) => exercise(h.key)?.pattern === 'cardio' && ctx.today && daysBetween(h.day, ctx.today) <= 1);
-  const wantCardio = kind === 'cardio' || (kind === 'strength' && minutes >= 40 && !cardioRecent && hash(`cardio:${ctx.seed}`) < 0.55);
+  const wantCardio = kind === 'cardio' || (kind === 'strength' && Boolean(machine) && minutes >= 40 && !cardioRecent && hash(`cardio:${ctx.seed}`) < 0.55);
   const items = [];
   // la macchina cardio fa da riscaldamento solo se in questa sessione non c'è già una parte cardio (niente doppioni)
-  const machineWarm = !wantCardio && kind === 'strength' && !ctx.prefersNoEquipment && minutes >= 30 && hash(`warm:${ctx.seed}`) < 0.5 ? cardioMachine(ctx, pool) : null;
+  const machineWarm = !wantCardio && kind === 'strength' && machine && minutes >= 30 && hash(`warm:${ctx.seed}`) < 0.5 ? machine : null;
 
   // ---- 1) riscaldamento
-
   if (machineWarm) {
     items.push(buildItem(machineWarm, { phase: 'warmup', seconds: 300, why: ['Riscaldamento graduale con ' + label(machineWarm.equipment[0]).toLowerCase()], treadmill: machineWarm.equipment.includes('treadmill') ? treadmillFor(ctx, 'warmup') : null }));
   } else {
     const warm = pool.filter((e) => e.phases.includes('warmup') && !e.equipment.length && e.pattern !== 'cardio');
     const march = pool.find((e) => e.id === 'march');
-    if (march) items.push(buildItem(march, { phase: 'warmup', sets: 1, seconds: 60, why: ['Scalda il corpo piano piano'] }));
-    const mobility = warm.sort((a, b) => hash(a.id + ctx.seed) - hash(b.id + ctx.seed)).slice(0, kind === 'mobility' ? 3 : 2);
+    if (march) items.push(buildItem(march, { phase: 'warmup', sets: 1, seconds: kind === 'mobility' ? 45 : 60, why: ['Scalda il corpo piano piano'] }));
+    const mobility = warm.sort((a, b) => hash(a.id + ctx.seed) - hash(b.id + ctx.seed)).slice(0, 2);
     for (const e of mobility) items.push(buildItem(e, { phase: 'warmup', sets: 1, why: ['Muove le articolazioni prima dello sforzo'] }));
   }
 
   // ---- 2) parte principale
-  const mainPool = pool.filter((e) => e.phases.includes('main') && !(kind === 'mobility' && e.level > 1));
-  const repsPool = representatives(mainPool, ctx);
-  const warmSecs = planSeconds(items);
-  const coolReserve = minutes >= 20 ? 200 : 0;
-  const cardioReserve = !wantCardio ? 0 : kind === 'cardio' ? Math.max(420, minutes * 60 * 0.35) : Math.min(600, minutes * 60 * 0.22);
-  const targetMainSeconds = Math.max(240, minutes * 60 - warmSecs - coolReserve - cardioReserve);
-  const chosen = []; const used = new Set(); const groupCount = {};
-  const maxCount = kind === 'cardio' ? 3 : kind === 'mobility' ? 4 : 7;
-  const absOk = ctx.prefs.abs !== false;
-  while (chosen.length < maxCount) {
-    const secs = planSeconds(chosen.map((c) => c.item));
-    if (chosen.length >= 3 && secs >= targetMainSeconds) break;
-    const cands = repsPool.filter((e) => (chosen.length < 3 || (daysSince(ctx, e.id) ?? 99) > 1) && !used.has(chainRoot(e.id)) && (groupCount[GROUP(e)] ?? 0) < (MAIN_LIMITS[GROUP(e)] ?? 1) && (absOk || e.pattern !== 'core' || chosen.every((c) => c.pattern !== 'core'))
-      && !(kind === 'cardio' && !['squat', 'hinge', 'core'].includes(e.pattern)));
-    if (!cands.length) break;
-    const scored = cands.map((e) => ({ e, ...scoreCandidate(e, ctx, chosen) })).sort((a, b) => b.s - a.s);
-    const pick = scored[0];
-    const v = resolveVariant(pick.e, ctx, poolIds);
-    const why = [...pick.why]; if (v.note) why.unshift(v.note);
-    const item = buildItem(v.e, { phase: 'main', why, volume: v.volume });
-    chosen.push({ item, pattern: v.e.pattern, e: v.e });
-    used.add(chainRoot(pick.e.id)); used.add(chainRoot(v.e.id));
-    groupCount[GROUP(pick.e)] = (groupCount[GROUP(pick.e)] ?? 0) + 1;
+  const chosen = [];
+  if (kind === 'mobility') {
+    // sessione leggera: solo movimenti di base e dolci, niente forza
+    const used = new Set(items.map((i) => i.exercise_key));
+    const mob = pool.filter((e) => e.level === 1 && !used.has(e.id) && (['mobility', 'stretch'].includes(e.pattern) || MOBILITY_MAIN.has(e.id)) && e.id !== 'deep-breathing' && e.id !== 'shoulder-rolls')
+      .sort((a, b) => hash(a.id + ctx.seed) - hash(b.id + ctx.seed)).slice(0, minutes >= 20 ? 6 : 4);
+    mob.sort((x, y) => (POSITION_RANK[x.position] ?? 0) - (POSITION_RANK[y.position] ?? 0));
+    for (const e of mob) chosen.push({ item: buildItem(e, { phase: 'main', sets: Math.min(e.sets, 2), why: [PATTERN_WHY[e.pattern] ?? 'Movimento dolce'] }), pattern: e.pattern, e });
+  } else {
+    const mainPool = pool.filter((e) => e.phases.includes('main'));
+    const repsPool = representatives(mainPool, ctx);
+    const warmSecs = planSeconds(items);
+    const coolReserve = minutes >= 20 ? 220 : 0;
+    const cardioReserve = !wantCardio ? 0 : kind === 'cardio' ? Math.max(420, minutes * 60 * 0.4) : Math.min(minutes >= 50 ? 900 : 600, minutes * 60 * 0.22);
+    const targetMainSeconds = Math.max(240, minutes * 60 - warmSecs - coolReserve - cardioReserve);
+    const used = new Set(); const groupCount = {};
+    const required = new Set(REQUIRED[kind] ?? []);
+    const maxCount = kind === 'cardio' ? (minutes >= 35 ? 3 : 2) : minutes >= 50 ? 9 : 7;
+    const minCount = kind === 'cardio' ? 2 : 3;
+    const absOk = ctx.prefs.abs !== false;
+    // senza macchina, la sessione "cardio" si fa a corpo libero in piedi: la parte a terra non avrebbe senso tra un intervallo e l'altro
+    const standingOnly = kind === 'cardio' && !machine;
+    let relaxed = false; let extraDone = false;
+    // al massimo 3 tipi di attrezzo diversi nella parte principale (4 per le sessioni lunghe): si raggruppano, non si cambia di continuo
+    const families = new Set(); const famLimit = minutes >= 50 ? 4 : 3;
+    const gearOf = (e) => e.equipment.filter((k) => k !== 'mat');
+    while (chosen.length < maxCount) {
+      const secs = planSeconds(chosen.map((c) => c.item));
+      const uncovered = [...required].filter((g) => !chosen.some((c) => GROUP(c.e) === g));
+      if (chosen.length >= minCount && secs >= targetMainSeconds && !(uncovered.length && secs < targetMainSeconds * 1.1)) break;
+      const cands = repsPool.filter((e) => (chosen.length < 3 || (daysSince(ctx, e.id) ?? 99) > 1) && !used.has(chainRoot(e.id)) && (groupCount[GROUP(e)] ?? 0) < (GROUP(e) === 'core' ? (minutes >= 55 ? 2 : 1) : (MAIN_LIMITS[GROUP(e)] ?? 1) + ((minutes >= 50 && ['lower', 'push', 'pull', 'glute'].includes(GROUP(e))) || (relaxed && ['push', 'pull', 'glute'].includes(GROUP(e))) ? 1 : 0))
+        && (absOk || e.pattern !== 'core' || chosen.every((c) => c.pattern !== 'core'))
+        && (gearOf(e).every((k) => families.has(k)) || families.size + gearOf(e).filter((k) => !families.has(k)).length <= famLimit)
+        && (kind !== 'cardio' || required.has(GROUP(e))) && (!standingOnly || e.position === 'standing'));
+      if (!cands.length) {
+        // poche scelte (pochi attrezzi): se la sessione resta troppo corta si ammette un secondo esercizio per gruppo, mai di più
+        if (!relaxed && !extraDone && secs < targetMainSeconds * 0.8) { relaxed = true; continue; }
+        break;
+      }
+      const scored = cands.map((e) => { const r = scoreCandidate(e, ctx, chosen); return { e, s: r.s + (uncovered.includes(GROUP(e)) ? 12 : 0), why: r.why }; }).sort((a, b) => b.s - a.s);
+      const pick = scored[0];
+      const v = resolveVariant(pick.e, ctx, poolIds);
+      const why = [...pick.why]; if (v.note) why.unshift(v.note);
+      chosen.push({ item: buildItem(v.e, { phase: 'main', why, volume: v.volume }), pattern: v.e.pattern, e: v.e });
+      for (const k of gearOf(v.e)) families.add(k);
+      used.add(chainRoot(pick.e.id)); used.add(chainRoot(v.e.id));
+      groupCount[GROUP(pick.e)] = (groupCount[GROUP(pick.e)] ?? 0) + 1;
+      if (relaxed && !extraDone && groupCount[GROUP(pick.e)] > (MAIN_LIMITS[GROUP(pick.e)] ?? 1)) { relaxed = false; extraDone = true; }   // una sola deroga: mai due esercizi in più
+    }
+    // ordine: dalla posizione in piedi a quelle a terra (meno cambi), addominali impegnativi verso la fine
+    chosen.sort((a, b) => (POSITION_RANK[a.e.position] ?? 0) - (POSITION_RANK[b.e.position] ?? 0) || (a.e.pattern === 'core') - (b.e.pattern === 'core') || a.e.equipment.join().localeCompare(b.e.equipment.join()));
   }
-  // ordine: dalla posizione in piedi a quelle a terra (meno cambi), addominali impegnativi verso la fine
-  chosen.sort((a, b) => (POSITION_RANK[a.e.position] ?? 0) - (POSITION_RANK[b.e.position] ?? 0) || (a.e.pattern === 'core') - (b.e.pattern === 'core') || a.e.equipment.join().localeCompare(b.e.equipment.join()));
   for (const c of chosen) items.push(c.item);
 
   // ---- 3) cardio (solo se previsto e con una funzione precisa)
   if (wantCardio) {
-    const machine = !ctx.prefersNoEquipment ? cardioMachine(ctx, pool) : null;
-    const cap = cardioCapSeconds(ctx);
-    const warmUp = planSeconds(items); const coolEst = 240;
-    const room = Math.max(300, minutes * 60 - warmUp - coolEst);
-    const secs = Math.max(300, Math.min(cap, Math.round(room / 60) * 60));
     if (machine) {
-      items.push(buildItem(machine, { phase: 'cardio', seconds: kind === 'cardio' ? secs : Math.min(secs, 600), why: ['Parte cardio a un ritmo in cui riesci a parlare'], treadmill: machine.equipment.includes('treadmill') ? treadmillFor(ctx, 'cardio') : null }));
+      const cap = cardioCapSeconds(ctx);
+      const room = Math.max(300, minutes * 60 - planSeconds(items) - 240);
+      const want = kind === 'cardio' ? room : Math.min(room, minutes >= 50 ? 900 : 600);
+      const secs = Math.max(300, Math.min(cap, Math.round(want / 60) * 60));
+      items.push(buildItem(machine, { phase: 'cardio', seconds: secs, why: ['Parte cardio a un ritmo in cui riesci a parlare'], treadmill: machine.equipment.includes('treadmill') ? treadmillFor(ctx, 'cardio') : null }));
+      if (secs < Math.round(want / 60) * 60) assumptions.push(`Per ora la parte cardio è di ${Math.round(secs / 60)} minuti: la allungo piano piano, senza aumenti improvvisi.`);
     } else {
       const free = pool.find((e) => e.id === 'step-jack') ?? pool.find((e) => e.id === 'march');
-      if (free) items.push(buildItem(free, { phase: 'cardio', sets: 3, seconds: 40, why: ['Parte cardio a corpo libero, senza salti'] }));
+      const room = Math.max(300, minutes * 60 - planSeconds(items) - 240);
+      if (free) items.push(buildItem(free, { phase: 'cardio', sets: Math.min(12, Math.max(3, Math.round(room / 70))), seconds: 40, why: ['Parte cardio a corpo libero, senza salti'] }));
       assumptions.push('Nessun attrezzo cardio disponibile: parte cardio a corpo libero.');
     }
   }
 
-  // ---- 4) defaticamento
+  // ---- 4) defaticamento: riduzione graduale, nella posizione in cui si è finito
   if (minutes >= 20) {
-    const cool = pool.filter((e) => e.phases.includes('cooldown') && !e.phases.includes('main') && e.pattern !== 'cardio' && !items.some((i) => i.exercise_key === e.id)).sort((a, b) => hash(a.id + ctx.seed) - hash(b.id + ctx.seed));
-    const lastFloor = ['prone', 'side', 'supine', 'quadruped'].includes(items[items.length - 1]?.exercise_key && exercise(items[items.length - 1].exercise_key)?.position);
+    const last = items[items.length - 1]; const lastEx = exercise(last?.exercise_key);
+    const onFloor = isFloor(lastEx?.position);
+    const afterMachine = last?.phase === 'cardio' && lastEx?.position === 'machine';
+    if (afterMachine && last.seconds >= 420 && lastEx.phases.includes('cooldown')) {
+      items.push(buildItem(lastEx, { phase: 'cooldown', seconds: 120, why: ['Rallenta piano per far calare il ritmo'], treadmill: lastEx.equipment.includes('treadmill') ? treadmillFor(ctx, 'cooldown') : null }));
+    }
+    const taken = new Set(items.map((i) => i.exercise_key));
+    const cool = pool.filter((e) => e.phases.includes('cooldown') && !e.phases.includes('main') && e.pattern !== 'cardio' && !taken.has(e.id) && (onFloor || !['kneeling', 'quadruped'].includes(e.position)))
+      .sort((a, b) => hash(a.id + ctx.seed) - hash(b.id + ctx.seed));
     const stretches = [];
-    const child = cool.find((e) => e.id === 'child-pose'); if (lastFloor && child) stretches.push(child);
+    const child = cool.find((e) => e.id === 'child-pose'); if (onFloor && child) stretches.push(child);
     for (const e of cool) { if (stretches.length >= 2) break; if (e.id !== 'deep-breathing' && !stretches.includes(e)) stretches.push(e); }
     const breath = cool.find((e) => e.id === 'deep-breathing');
     stretches.sort((a, b) => (POSITION_RANK[b.position] ?? 0) - (POSITION_RANK[a.position] ?? 0));
     if (breath) stretches.push(breath);
     for (const e of stretches) items.push(buildItem(e, { phase: 'cooldown', sets: Math.min(e.sets, 1), why: ['Fa scendere piano il ritmo'] }));
-    // dopo un cardio di macchina, un breve defaticamento camminando può bastare: non lo aggiungo di default
   }
 
   // ---- 5) adattamento alla durata
+  // con poche scelte (pochi attrezzi) e una sessione troppo corta, chi non è alle prime armi fa una serie in più, mai oltre 4
+  let top = 0;
+  while (ctx.level !== 'beginner' && planSeconds(items) < minutes * 60 * 0.85 && top++ < 6) {
+    const target = items.filter((i) => i.phase === 'main' && i.sets < 4 && exercise(i.exercise_key)?.pattern !== 'core').sort((a, b) => a.sets - b.sets)[0];
+    if (!target) break;
+    target.sets += 1;
+  }
   let guard = 0;
   while (planSeconds(items) > minutes * 60 * 1.15 && guard++ < 8) {
     const mains = items.filter((i) => i.phase === 'main');
@@ -349,7 +418,7 @@ export function validateSession(plan, ctxIn) {
     if (seen.has(e.id) && it.phase === 'main') problems.push('duplicate_exercise');
     if (it.phase === 'main') { const r = chainRoot(e.id); if (roots.has(r)) problems.push('duplicate_chain'); roots.add(r); }
     seen.add(e.id);
-    if (!(it.sets >= 1 && it.sets <= 6)) problems.push('bad_sets');
+    if (!(it.sets >= 1 && it.sets <= (it.phase === 'cardio' ? 12 : 6))) problems.push('bad_sets');
     if (it.phase === 'main' && e.mode === 'reps' && it.sets > 1 && (it.rest_seconds ?? 0) < 20) problems.push('rest_too_short');
   }
   const order = { warmup: 0, main: 1, cardio: 2, cooldown: 3 };
@@ -360,16 +429,25 @@ export function validateSession(plan, ctxIn) {
   if (!phases.has('warmup') && kind !== 'mobility') problems.push('no_warmup');
   if (kind === 'strength' || kind === 'cardio') {
     const patterns = new Set(mains.map((i) => exercise(i.exercise_key)?.pattern).filter(Boolean));
+    const groups = new Set(mains.map((i) => GROUP(exercise(i.exercise_key) ?? { pattern: 'x' })));
     if (mains.length < (kind === 'cardio' ? 2 : 3)) problems.push('main_too_short');
-    if (patterns.size < Math.min(3, mains.length)) problems.push('poor_variety');
+    if (groups.size < Math.min(2, mains.length)) problems.push('poor_variety');
     if (kind === 'strength' && mains.length >= 3 && !patterns.has('push') && !patterns.has('pull') && !items.some((i) => i.phase === 'cardio')) notes.push('upper_missing');
     if (kind === 'cardio' && !phases.has('cardio')) problems.push('cardio_missing');
   }
+  if (kind === 'mobility' && items.some((i) => { const x = exercise(i.exercise_key); return !x || x.level > 1 || (i.phase === 'main' && !(['mobility', 'stretch', 'breath'].includes(x.pattern) || MOBILITY_MAIN.has(x.id))); })) problems.push('mobility_too_hard');
   const core = mains.filter((i) => exercise(i.exercise_key)?.pattern === 'core');
   if (core.length > 2) problems.push('too_much_core');
   const counts = {}; for (const i of mains) { const g = GROUP(exercise(i.exercise_key) ?? { pattern: 'x' }); counts[g] = (counts[g] ?? 0) + 1; }
-  for (const [g, n] of Object.entries(counts)) if (n > (MAIN_LIMITS[g] ?? 1) + 1) problems.push('unbalanced');
+  if (kind !== 'mobility') for (const [g, n] of Object.entries(counts)) if (n > (MAIN_LIMITS[g] ?? 1) + 1) problems.push('unbalanced');
   if (kind !== 'mobility' && plan.minutes >= 20 && !phases.has('cooldown')) problems.push('no_cooldown');
+  // il cardio non si confonde col riscaldamento e non finisce con un ritorno a terra
+  const cardioIdx = items.findIndex((i) => i.phase === 'cardio');
+  if (cardioIdx >= 0) {
+    if (items.some((i, k) => i.phase === 'warmup' && exercise(i.exercise_key)?.position === 'machine')) problems.push('machine_warmup_and_cardio');
+    if (items.slice(cardioIdx + 1).some((i) => i.phase === 'main' || FLOOR_POSITIONS.includes(exercise(i.exercise_key)?.position)) && items.slice(cardioIdx + 1).some((i) => FLOOR_POSITIONS.includes(exercise(i.exercise_key)?.position))) problems.push('floor_after_cardio');
+  }
+  if (items.some((i) => i.phase === 'warmup' && (i.seconds ?? 0) > 420)) problems.push('warmup_too_long');
   // transizioni: cambi di posizione e di attrezzo nella parte principale
   let posChanges = 0; let eqChanges = 0;
   for (let i = 1; i < mains.length; i++) {

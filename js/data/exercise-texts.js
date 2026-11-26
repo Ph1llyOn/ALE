@@ -662,7 +662,7 @@ export const TEXTS = {
       'Evita di alzare il sedere troppo in alto.',
       'Evita di trattenere il respiro.',
     ],
-    safety: null,
+    safety: 'Se le ginocchia danno fastidio, appoggia un asciugamano piegato sotto o scegli un altro esercizio.',
   },
   'plank': {
     desc: 'Resti ferma sugli avambracci con il corpo in linea: una tenuta per pancia e spalle.',

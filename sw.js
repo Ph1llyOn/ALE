@@ -1,6 +1,6 @@
 // Service worker di ALE. — app shell offline.
 // Tutti i percorsi sono relativi alla posizione di questo file (lo scope = sottopercorso del sito).
-const VERSION = 'v14';
+const VERSION = 'v15';
 const CACHE = `ale-shell-${VERSION}`;
 
 const SHELL = [

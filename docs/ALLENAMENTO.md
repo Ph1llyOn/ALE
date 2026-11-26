@@ -54,3 +54,15 @@ L'obiettivo comprende forma fisica e dimagrimento, ma ALE. **non** imposta pesi 
 
 ## Preferenze di Alessia (modificabili da Profilo → Attrezzatura e spazio)
 Livello, minuti, volte a settimana, giorni disponibili, cose da evitare, «mi piacciono gli addominali» e «mi piace il tapis roulant» (default sì, modificabili), velocità e inclinazione del tapis roulant, piano nel calendario sì/no. Sono preferenze, non obblighi: ogni tanto compare altro, per un programma equilibrato.
+
+## Revisione qualitativa (26/11/2026)
+`node tools/show-samples.mjs` stampa 16 sessioni campione (attrezzi, livello, durata, preferenze, storico, feedback, limitazioni) con ordine, fase, serie, ripetizioni/durata, recupero, posizione e attrezzi. I test `tests/unit/planner-quality.test.mjs` bloccano le regole emerse dalla revisione:
+- il riscaldamento non si confonde col cardio (la macchina fa riscaldamento **oppure** cardio, mai entrambi; dopo il tapis roulant ci sono 2 minuti di camminata lenta e solo stretching in piedi);
+- niente ritorno a terra dopo il cardio, niente posizioni a terra nel defaticamento se si finisce in piedi;
+- i cinque gruppi (gambe, glutei, spinta, tirata, core) coperti quando possibile e nessuno dominante; core 1 esercizio (2 solo sopra i 55 minuti);
+- al massimo 3 tipi di attrezzo diversi nella parte principale (4 se lunga): l'inventario si usa, non tutto insieme;
+- addominali e tapis roulant sono preferenze, non obblighi: compaiono in una parte delle sessioni, spenti quasi mai;
+- chi evita le ginocchia non riceve esercizi in ginocchio o a quattro zampe; la sessione di mobilità è davvero leggera;
+- progressione dallo storico: dopo 6 giorni in 3 settimane senza difficoltà si sale di **un** gradino; con una difficoltà recente no; con fastidio l'esercizio sparisce;
+- durata realistica (recuperi 30–90 s) e sessioni di cardio che crescono con gradualità (10 minuti all'inizio, e lo dice);
+- semi consecutivi (il giorno del mese) producono sessioni diverse (il generatore pseudo-casuale aveva un difetto: ora usa un mescolamento finale).
