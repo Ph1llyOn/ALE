@@ -78,8 +78,8 @@ export default async function settingsView() {
     const status = h('p', { class: 'notice' }, 'Verifico lo stato del servizio…');
     aiStatus().then((s) => {
       status.textContent = s.configured
-        ? 'Claude è collegato: può scrivere la motivazione del mattino e proporre idee, solo con i consensi che dai qui sotto.'
-        : 'Claude non è ancora collegato (sul server manca la chiave). Finché non c’è, ricevi messaggi gentili preparati a mano: nessuna AI è in funzione.';
+        ? 'L’assistente AI è collegato: può scrivere la motivazione del mattino e proporre idee, solo con i consensi che dai qui sotto.'
+        : 'L’assistente AI non è ancora collegato (sul server manca la chiave). Finché non c’è, ricevi messaggi gentili preparati a mano: nessuna AI è in funzione.';
     }).catch(() => { status.textContent = 'Non riesco a verificare lo stato del servizio in questo momento.'; });
     const sub = [];
     const mk = (key, label, text) => {

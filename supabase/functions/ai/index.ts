@@ -1,4 +1,4 @@
-// Edge Function `ai` — Claude lato server. La chiave Anthropic (secret ANTHROPIC_API_KEY) non esce mai da qui.
+// Edge Function `ai` — assistente AI lato server (Gemini o Claude). La chiave (secret GEMINI_API_KEY o ANTHROPIC_API_KEY) non esce mai da qui.
 //   POST { action: 'status' }                       → { configured, enabled }
 //   POST { action: 'generate', kind: 'daily'|'plan'|'reflection'|'reminders' }
 // Richiede l'accesso (JWT dell'utente) e il consenso esplicito salvato in ai_preferences.
@@ -17,7 +17,7 @@ const json = (req: Request, body: unknown, status = 200) => new Response(JSON.st
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors(req) });
   if (req.method !== 'POST') return json(req, { error: 'method_not_allowed' }, 405);
-  const env = { ANTHROPIC_API_KEY: Deno.env.get('ANTHROPIC_API_KEY'), ANTHROPIC_BASE_URL: Deno.env.get('ANTHROPIC_BASE_URL'), ANTHROPIC_MODEL: Deno.env.get('ANTHROPIC_MODEL') };
+  const env = { GEMINI_API_KEY: Deno.env.get('GEMINI_API_KEY'), GEMINI_BASE_URL: Deno.env.get('GEMINI_BASE_URL'), GEMINI_MODEL: Deno.env.get('GEMINI_MODEL'), ANTHROPIC_API_KEY: Deno.env.get('ANTHROPIC_API_KEY'), ANTHROPIC_BASE_URL: Deno.env.get('ANTHROPIC_BASE_URL'), ANTHROPIC_MODEL: Deno.env.get('ANTHROPIC_MODEL') };
   const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false, autoRefreshToken: false } });
 
   const jwt = (req.headers.get('authorization') ?? '').replace(/^Bearer\s+/i, '');

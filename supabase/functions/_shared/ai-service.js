@@ -1,7 +1,8 @@
 // Servizio AI lato server: carica SOLO i dati autorizzati, applica consensi e limiti, chiama Claude (se la chiave c'è),
 // registra ogni generazione. Riceve il client Supabase con service role come argomento: nessuna dipendenza npm qui.
 import { buildContext, runGeneration, fallbackFor, KINDS } from './ai-core.js';
-import { callClaude, DEFAULT_MODEL } from './anthropic.js';
+import { aiConfigured, makeCallModel } from './llm.js';
+export { aiConfigured };
 
 export const DAILY_LIMIT = 12;   // generazioni (compresi i tentativi scartati) per persona nelle ultime 24 ore
 
@@ -11,7 +12,6 @@ export const romeHour = (d = new Date()) => Number(new Intl.DateTimeFormat('en-G
 export const romeHM = (d = new Date()) => new Intl.DateTimeFormat('en-GB', { timeZone: TZ, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(d);
 const daysAgo = (n, d = new Date()) => romeDay(new Date(d.getTime() - n * 864e5));
 
-export const aiConfigured = (env) => Boolean(env.ANTHROPIC_API_KEY);
 
 /** Legge dal database SOLO ciò che le preferenze consentono. Restituisce { profile, prefs, ctx }. */
 export async function loadAiContext(sb, userId, now = new Date()) {
@@ -81,11 +81,9 @@ export async function generateFor(sb, { userId, kind, env, now = new Date(), cal
   if ((count ?? 0) >= DAILY_LIMIT) return { ok: false, error: 'rate_limited' };
 
   let result;
-  const callModel = callModelImpl ?? (aiConfigured(env)
-    ? ({ system, user }) => callClaude({ apiKey: env.ANTHROPIC_API_KEY, baseUrl: env.ANTHROPIC_BASE_URL || undefined, model: env.ANTHROPIC_MODEL || DEFAULT_MODEL, system, user })
-    : null);
+  const callModel = callModelImpl ?? makeCallModel(env);
   if (callModel) result = await runGeneration({ kind, ctx, callModel, now });
-  else result = { source: 'fallback', value: fallbackFor(kind, ctx, now), rejections: [{ stage: 'not_configured', reason: 'chiave Anthropic non impostata' }] };
+  else result = { source: 'fallback', value: fallbackFor(kind, ctx, now), rejections: [{ stage: 'not_configured', reason: 'nessuna chiave AI impostata' }] };
 
   // archivio: i tentativi scartati senza il testo, quello finale con il testo
   for (const r of result.rejections.slice(0, 3)) {

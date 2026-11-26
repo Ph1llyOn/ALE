@@ -18,7 +18,7 @@ Deno.serve(async (req) => {
   if (!safeEqual(req.headers.get('x-cron-secret') ?? '', secret)) return json({ error: 'unauthorized' }, 401);
 
   const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false, autoRefreshToken: false } });
-  const env = { ANTHROPIC_API_KEY: Deno.env.get('ANTHROPIC_API_KEY'), ANTHROPIC_BASE_URL: Deno.env.get('ANTHROPIC_BASE_URL'), ANTHROPIC_MODEL: Deno.env.get('ANTHROPIC_MODEL') };
+  const env = { GEMINI_API_KEY: Deno.env.get('GEMINI_API_KEY'), GEMINI_BASE_URL: Deno.env.get('GEMINI_BASE_URL'), GEMINI_MODEL: Deno.env.get('GEMINI_MODEL'), ANTHROPIC_API_KEY: Deno.env.get('ANTHROPIC_API_KEY'), ANTHROPIC_BASE_URL: Deno.env.get('ANTHROPIC_BASE_URL'), ANTHROPIC_MODEL: Deno.env.get('ANTHROPIC_MODEL') };
   const now = new Date();
   const report: Record<string, unknown> = {};
 

@@ -1,4 +1,4 @@
-# Claude nell'app
+# Assistente AI nell'app
 
 **Disattivato per impostazione predefinita.** Alessia lo attiva da Profilo → Impostazioni e sceglie cosa far vedere a Claude (attrezzatura,
 benessere, diario). Revocando il consenso, ogni consenso specifico si spegne.
@@ -9,7 +9,7 @@ giorni, idee per promemoria non insistenti. Adatta il tono senza inventare emozi
 Alessia. Niente diete, diagnosi, obiettivi di peso, giudizi sul corpo.
 
 ## Dove gira
-Solo nelle Edge Function `ai` e `push-dispatch`. La chiave `ANTHROPIC_API_KEY` non è mai nel frontend né nel repository.
+Solo nelle Edge Function `ai` e `push-dispatch`. La chiave del modello non è mai nel frontend né nel repository.
 
 ## Pipeline di sicurezza
 1. Contesto minimo e autorizzato (mai le note di benessere, mai i dati di Phill); i testi dell'utente stanno tra `<dati>…</dati>` contro il prompt injection.
@@ -18,11 +18,12 @@ Solo nelle Edge Function `ai` e `push-dispatch`. La chiave `ANTHROPIC_API_KEY` n
 4. Una sola rigenerazione con le violazioni come feedback; poi un messaggio di ripiego preparato a mano. Il testo vietato non viene conservato.
 5. Massimo 12 generazioni nelle 24 ore, una motivazione al giorno, storico privato (`ai_generations`, non scrivibile dal client).
 
-## Stato e costi
-- **Senza `ANTHROPIC_API_KEY` l'app non usa Claude**: mostra i messaggi di ripiego e lo dichiara nell'interfaccia. Le chiamate all'API Anthropic sono
-  a consumo e **non sono state attivate né finanziate**: serve una chiave creata e finanziata da te.
-- Per attivarla: `supabase secrets set ANTHROPIC_API_KEY=… ANTHROPIC_MODEL=…` (progetto remoto). Nessun'altra modifica.
-- I test usano un finto server Anthropic locale (`tests/api/mock-anthropic.mjs`): verificano il comportamento, non la qualità del modello reale.
+## Modello e stato (aggiornato 27/11/2026)
+- **Modello attivo: Gemini (Google), `gemini-3.1-flash-lite`**, scelto dal proprietario. Segreti delle Edge Functions: `GEMINI_API_KEY` e `GEMINI_MODEL`. Il codice supporta anche Claude (`ANTHROPIC_API_KEY`): se ci sono entrambe le chiavi vince Gemini (`supabase/functions/_shared/llm.js`). La chiave Anthropic fornita in precedenza è stata rimossa dai segreti (l'account non aveva crediti).
+- La chiave viaggia solo nell'intestazione `x-goog-api-key`, mai nell'URL né nei log, e solo dal server.
+- **Privacy**: con un piano gratuito Google può usare i contenuti inviati per migliorare i propri prodotti. L'AI riceve solo ciò che Alessia ha consentito (umore, energia, estratti del diario, attrezzatura); le note di benessere, i feedback, lo storico e i dati di Phill non vengono mai inviati. Alessia può disattivare l'AI o togliere ogni consenso in ogni momento. Se si preferisce evitare del tutto questo rischio: rimuovere `GEMINI_API_KEY` (l'app resta completa con il motore a regole).
+- Verificato con chiamate reali (motivazione, riflessione, promemoria, sessione di allenamento: tutte passate dai controlli); i test automatici usano un finto server (`tests/api/mock-anthropic.mjs`, parla il protocollo Gemini e quello Anthropic).
+- Per cambiare modello: `supabase secrets set GEMINI_MODEL=…`. Senza chiavi l'AI è spenta e l'app mostra il ripiego.
 
 ## Sessione di allenamento (aggiornato)
 - Il tipo `plan` chiede una **sessione strutturata** (riscaldamento, parte principale, cardio facoltativo, defaticamento) scegliendo solo da un elenco di esercizi **già filtrato dalle regole** (attrezzi, limitazioni, livello, dolore recente), con fase, posizione e livello di ciascuno.

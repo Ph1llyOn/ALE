@@ -69,9 +69,10 @@ test('motivazione del giorno: generata da Claude, richiesta corretta, una sola a
   assert.equal(mock.generators().length, 1);
   assert.equal(mock.classifiers().length, 1, 'ogni testo passa dal controllo semantico indipendente');
   const g = mock.generators()[0];
-  assert.equal(g.headers['x-api-key'], MOCK_KEY);
-  assert.ok(g.headers['anthropic-version']);
-  assert.equal(g.body.model, MOCK_MODEL);
+  assert.equal(g.headers['x-goog-api-key'], MOCK_KEY, 'la chiave viaggia nell\'intestazione');
+  assert.ok(!g.url.includes(MOCK_KEY), 'mai nell\'URL (finirebbe nei log)');
+  assert.equal(g.model, MOCK_MODEL);
+  assert.equal(g.body.generationConfig.responseMimeType, 'application/json');
   assert.match(g.system, /diagnosi/);
   assert.match(g.user, /Nome: Alessia/);
   assert.ok(!g.user.includes('Manubri segreti'), 'senza consenso l\'attrezzatura non viene inviata');

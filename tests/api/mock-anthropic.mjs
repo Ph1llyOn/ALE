@@ -4,7 +4,7 @@ import { createServer } from 'node:http';
 
 export const MOCK_PORT = 9911;
 export const MOCK_KEY = 'sk-ant-test-local-key';
-export const MOCK_MODEL = 'claude-test';
+export const MOCK_MODEL = 'gemini-test';
 
 export async function startMockAnthropic() {
   const requests = [];
@@ -15,17 +15,22 @@ export async function startMockAnthropic() {
     req.on('end', () => {
       let body = {};
       try { body = JSON.parse(raw); } catch { /* corpo non JSON */ }
+      const gemini = /:generateContent$/.test(req.url ?? '');
+      const system = String(gemini ? body.systemInstruction?.parts?.[0]?.text ?? '' : body.system ?? '');
       const entry = {
-        url: req.url, method: req.method, headers: req.headers, body,
-        system: String(body.system ?? ''), user: String(body.messages?.[0]?.content ?? ''),
-        isClassifier: String(body.system ?? '').includes('controllore di sicurezza'),
+        url: req.url, method: req.method, headers: req.headers, body, gemini,
+        model: gemini ? decodeURIComponent(/models\/([^:]+):/.exec(req.url)?.[1] ?? '') : body.model,
+        system, user: String(gemini ? body.contents?.[0]?.parts?.[0]?.text ?? '' : body.messages?.[0]?.content ?? ''),
+        isClassifier: system.includes('controllore di sicurezza'),
       };
       requests.push(entry);
       try {
         const out = handler(entry);
         if (out && out.status) { res.writeHead(out.status, { 'content-type': 'application/json' }); res.end(JSON.stringify(out.body ?? {})); return; }
         res.writeHead(200, { 'content-type': 'application/json' });
-        res.end(JSON.stringify({ id: 'msg_test', type: 'message', role: 'assistant', content: [{ type: 'text', text: String(out) }] }));
+        res.end(JSON.stringify(entry.gemini
+          ? { candidates: [{ content: { role: 'model', parts: [{ text: String(out) }] }, finishReason: 'STOP' }] }
+          : { id: 'msg_test', type: 'message', role: 'assistant', content: [{ type: 'text', text: String(out) }] }));
       } catch (err) {
         res.writeHead(500, { 'content-type': 'application/json' });
         res.end(JSON.stringify({ error: String(err.message) }));

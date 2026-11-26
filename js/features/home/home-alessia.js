@@ -1,4 +1,4 @@
-// Home di Alessia: saluto, pensiero del giorno (Claude se consentito, altrimenti preparato a mano), "il tuo giorno",
+// Home di Alessia: saluto, pensiero del giorno (AI se consentita, altrimenti preparato a mano), "il tuo giorno",
 // statistiche gentili, biglietti di Phill, schede e notifiche.
 import { h, avatarEl, emptyState, errorBox } from '../../core/ui.js';
 import { greeting } from '../../core/greeting.js';
@@ -60,7 +60,7 @@ export default async function homeAlessia({ profile, partner, partnership }) {
   }
   const heroEl = hero({ eyebrow: g.text, title: thought.title, text: thought.text,
     cta: session ? { label: 'Riprendi l’allenamento', href: `#/attivita/sessione?id=${session.id}` } : { label: 'Cosa faccio oggi?', href: '#/attivita' } });
-  const origin = h('p', { class: 'muted small center' }, source === 'ai' ? 'Pensato per te da Claude, con i tuoi consensi.' : 'Un pensiero scelto per te.');
+  const origin = h('p', { class: 'muted small center' }, source === 'ai' ? 'Pensato per te dall’assistente, con i tuoi consensi.' : 'Un pensiero scelto per te.');
 
   const sections = [top, heroEl, origin];
 

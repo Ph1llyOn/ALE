@@ -37,9 +37,9 @@ jobs:
         run: |
           {
             echo 'CRON_SECRET=test-cron-secret-locale'
-            echo 'ANTHROPIC_API_KEY=sk-ant-test-local-key'
-            echo 'ANTHROPIC_BASE_URL=http://172.17.0.1:9911'
-            echo 'ANTHROPIC_MODEL=claude-test'
+            echo 'GEMINI_API_KEY=sk-ant-test-local-key'
+            echo 'GEMINI_BASE_URL=http://172.17.0.1:9911'
+            echo 'GEMINI_MODEL=gemini-test'
           } > supabase/functions/.env
       - name: Avvia Supabase locale (Docker, Edge Runtime incluso, nessuna risorsa remota)
         run: npm run db:start

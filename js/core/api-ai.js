@@ -1,4 +1,4 @@
-// Claude (assistente AI): chiamato SOLO tramite la Edge Function `ai`. La chiave Anthropic non esce mai dal server.
+// Assistente AI: chiamato SOLO tramite la Edge Function `ai`. La chiave del modello non esce mai dal server.
 import { FUNCTIONS_URL, SUPABASE_PUBLISHABLE_KEY } from '../config.js';
 import { sb } from './supabase.js';
 import { AppError } from './api-base.js';

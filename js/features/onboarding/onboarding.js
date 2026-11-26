@@ -22,7 +22,7 @@ const CATALOG_BY_NORM = new Map(ALL_EQUIPMENT_NAMES.map((n) => [norm(n), n]));
 const STEPS = [
   { key: 'profilo', title: 'Come ti chiami?', text: 'Il nome che vedrai nell’app e che vedrà Phill.' },
   { key: 'attrezzatura', title: 'Quali attrezzi hai a disposizione?', text: 'Così ti proponiamo attività adatte a te. Tocca quelli che hai: puoi cambiare tutto quando vuoi.' },
-  { key: 'ai', title: 'L’assistente Claude', text: 'Può scriverti un pensiero la mattina e proporti idee. Solo se lo vuoi tu.' },
+  { key: 'ai', title: 'L’assistente AI', text: 'Può scriverti un pensiero la mattina e proporti idee. Solo se lo vuoi tu.' },
   { key: 'privacy', title: 'Cosa condividi con Phill', text: 'Per impostazione predefinita non condividi nulla. Scegli solo ciò che ti fa piacere.' },
   { key: 'notifiche', title: 'Notifiche', text: 'Gentili e mai insistenti. Puoi spegnerle in ogni momento.' },
 ];
