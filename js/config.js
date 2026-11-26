@@ -17,7 +17,7 @@ export const FUNCTIONS_URL = `${SUPABASE_URL}/functions/v1`;
 
 // Chiave pubblica VAPID per le notifiche Web Push (la parte privata sta solo nei segreti del server).
 // Vuota finché le chiavi non sono state generate e caricate (vedi docs/NOTIFICHE.md).
-export const VAPID_PUBLIC_KEY = '';
+export const VAPID_PUBLIC_KEY = 'BGPfHm6o4E4oiN8TrcuEmVLaFjK_Nr9jNaFRVPS-PuX31eewXXfNFpoTemZFGqgb1UrbgFgdRq7nuJKefwbT7E8';
 
 // Tutti i percorsi dell'app sono RELATIVI. Il sito vive sotto /<repo>/ su GitHub Pages.
 export const BASE_URL = new URL('../', import.meta.url);

@@ -1,6 +1,6 @@
 // Service worker di ALE. — app shell offline.
 // Tutti i percorsi sono relativi alla posizione di questo file (lo scope = sottopercorso del sito).
-const VERSION = 'v9';
+const VERSION = 'v10';
 const CACHE = `ale-shell-${VERSION}`;
 
 const SHELL = [
@@ -52,6 +52,7 @@ const SHELL = [
   'js/core/ui.js',
   'js/core/validate.js',
   'js/data/calendar-util.js',
+  'js/data/exercises-core.js',
   'js/data/exercises.js',
   'js/data/motivation.js',
   'js/data/prompts.js',
@@ -98,6 +99,32 @@ self.addEventListener('activate', (event) => {
       .then((keys) => Promise.all(keys.filter((k) => k.startsWith('ale-shell-') && k !== CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
+});
+
+// Notifiche push: il payload è JSON { title, body, link } inviato dal server (push-dispatch).
+self.addEventListener('push', (event) => {
+  let data = {};
+  try { data = event.data ? event.data.json() : {}; } catch { data = { body: event.data ? event.data.text() : '' }; }
+  const title = typeof data.title === 'string' && data.title ? data.title : 'ALE.';
+  event.waitUntil(self.registration.showNotification(title, {
+    body: typeof data.body === 'string' ? data.body : '',
+    icon: new URL('assets/icons/icon-192.png', scopeUrl).toString(),
+    badge: new URL('assets/icons/icon-192.png', scopeUrl).toString(),
+    tag: typeof data.tag === 'string' ? data.tag : undefined,
+    data: { link: typeof data.url === 'string' && data.url.startsWith('#/') ? data.url : '#/notifiche' },
+  }));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const target = new URL(event.notification.data?.link ?? '#/', scopeUrl).toString();
+  event.waitUntil((async () => {
+    const wins = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const w of wins) {
+      if (w.url.startsWith(scopeUrl.toString())) { await w.focus(); w.navigate?.(target); return; }
+    }
+    await self.clients.openWindow(target);
+  })());
 });
 
 const NETWORK_TIMEOUT_MS = 4000; // con rete lenta/instabile si ripiega sulla cache

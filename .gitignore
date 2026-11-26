@@ -8,3 +8,4 @@ supabase/functions/.env
 *.log
 .DS_Store
 .claude/settings.local.json
+supabase/.vapid.local

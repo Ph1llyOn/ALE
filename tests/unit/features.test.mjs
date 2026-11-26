@@ -142,7 +142,8 @@ test('pensieri del mattino: dolci, senza peso/corpo/prestazioni, stabili nella g
   assert.notDeepEqual(dailyFallback(new Date(2026, 10, 5)), dailyFallback(new Date(2026, 10, 6)));
 });
 
-test('la libreria dei pensieri usata dal server è identica a quella del frontend (npm run sync-shared)', () => {
+test('le librerie condivise con il server sono identiche a quelle del frontend (npm run sync-shared)', () => {
+  assert.equal(readFileSync(join(ROOT, 'supabase/functions/_shared/exercises-core.js'), 'utf8'), readFileSync(join(ROOT, 'js/data/exercises-core.js'), 'utf8'));
   assert.equal(readFileSync(join(ROOT, 'supabase/functions/_shared/motivation.js'), 'utf8'), readFileSync(join(ROOT, 'js/data/motivation.js'), 'utf8'));
 });
 

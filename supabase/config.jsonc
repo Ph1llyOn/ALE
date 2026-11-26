@@ -452,6 +452,8 @@
   // Funzioni pubbliche (autenticano da sole, con PIN o segreto dei job): niente verifica JWT del gateway.
   "functions": {
     "access": { "verify_jwt": false },
+    "ai": { "verify_jwt": false },
+    "push-dispatch": { "verify_jwt": false },
   },
 
   "edge_runtime": {
