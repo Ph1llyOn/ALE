@@ -1,5 +1,7 @@
-// Genera icone PLACEHOLDER (sfondo rosa, punto bianco) senza dipendenze.
+// Genera le icone PLACEHOLDER (sfondo rosa, punto bianco) senza dipendenze.
 // Da sostituire con il logo definitivo. Uso: node tools/make-icons.mjs
+// Tutte le icone sono PNG RGB PIENI, senza canale alpha e senza angoli trasparenti:
+// iOS e alcuni launcher riempiono le zone trasparenti di nero (in chiaro e in scuro).
 import { deflateSync } from 'node:zlib';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -25,40 +27,32 @@ const chunk = (type, data) => {
   return Buffer.concat([len, td, c]);
 };
 
-function png(size, { rounded }) {
+// RGB a 8 bit (colorType 2): nessun canale alpha.
+function png(size) {
   const bg = [0xe5, 0x8a, 0xa5], fg = [0xff, 0xff, 0xff];
   const cx = size / 2, cy = size / 2, r = size * 0.18;
-  const corner = size * 0.22;
-  const raw = Buffer.alloc(size * (size * 4 + 1));
+  const row = size * 3 + 1;
+  const raw = Buffer.alloc(size * row);
   for (let y = 0; y < size; y++) {
-    raw[y * (size * 4 + 1)] = 0;
+    raw[y * row] = 0;
     for (let x = 0; x < size; x++) {
-      const i = y * (size * 4 + 1) + 1 + x * 4;
-      let inside = true;
-      if (rounded) {
-        const dx = Math.max(corner - x, 0, x - (size - 1 - corner));
-        const dy = Math.max(corner - y, 0, y - (size - 1 - corner));
-        inside = dx * dx + dy * dy <= corner * corner;
-      }
+      const i = y * row + 1 + x * 3;
       const dot = (x - cx) ** 2 + (y - cy) ** 2 <= r * r;
       const col = dot ? fg : bg;
-      raw[i] = col[0]; raw[i + 1] = col[1]; raw[i + 2] = col[2]; raw[i + 3] = inside ? 255 : 0;
+      raw[i] = col[0]; raw[i + 1] = col[1]; raw[i + 2] = col[2];
     }
   }
   const ihdr = Buffer.alloc(13);
   ihdr.writeUInt32BE(size, 0); ihdr.writeUInt32BE(size, 4);
-  ihdr[8] = 8; ihdr[9] = 6;
+  ihdr[8] = 8; ihdr[9] = 2; // 8 bit, RGB
   return Buffer.concat([
     Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
     chunk('IHDR', ihdr), chunk('IDAT', deflateSync(raw)), chunk('IEND', Buffer.alloc(0)),
   ]);
 }
 
-// "any": angoli arrotondati. apple-touch e maskable: pieno, il sistema applica la maschera.
-writeFileSync(join(out, 'icon-192.png'), png(192, { rounded: true }));
-writeFileSync(join(out, 'icon-512.png'), png(512, { rounded: true }));
-writeFileSync(join(out, 'icon-maskable-512.png'), png(512, { rounded: false }));
-writeFileSync(join(out, 'apple-touch-icon.png'), png(180, { rounded: false }));
-console.log('Icone placeholder generate in', out);
-// apple-touch-icon: pieno e SENZA trasparenza. iOS riempie di nero gli angoli trasparenti.
-writeFileSync(join(out, 'apple-touch-icon.png'), png(180, { rounded: false }));
+writeFileSync(join(out, 'icon-192.png'), png(192));
+writeFileSync(join(out, 'icon-512.png'), png(512));
+writeFileSync(join(out, 'icon-maskable-512.png'), png(512));
+writeFileSync(join(out, 'apple-touch-icon.png'), png(180));
+console.log('Icone placeholder generate (RGB pieno) in', out);
