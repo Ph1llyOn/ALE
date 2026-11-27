@@ -9,7 +9,7 @@ export { accessMessage };
 
 export const ROLE_INFO = {
   alessia: { role: 'alessia', label: 'ALE', emoji: '💗', name: 'Alessia', sub: 'Il tuo spazio' },
-  phill: { role: 'phill', label: 'PHILL', emoji: '', name: 'Phill', sub: 'La tua area' },
+  phill: { role: 'phill', label: 'FIL', emoji: '', name: 'Fil', sub: 'La tua area' },
 };
 
 export class AccessError extends AppError {
