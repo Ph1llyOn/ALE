@@ -43,6 +43,12 @@ export default async function homeAlessia({ profile, partner, partnership }) {
     return h('main', { class: 'shell' });
   }
 
+  // Tutorial iniziale (solo Alessia, una sola volta): si riapre sempre dal Profilo. Se è a metà, Home lo propone con un avviso.
+  if (profile.role === 'alessia' && settings && !settings.app_tour_status) {
+    queueMicrotask(() => navigate('/tutorial', { replace: true }));
+    return h('main', { class: 'shell' });
+  }
+
   // --- barra superiore
   const bell = h('a', { class: 'bell', href: '#/notifiche', 'aria-label': unread ? `Notifiche: ${unread} da leggere` : 'Notifiche' }, icon('mail', { size: 22 }), unread ? h('span', { class: 'bell-count' }, String(Math.min(unread, 99))) : null);
   const top = h('div', { class: 'topbar' }, h('p', { class: 'eyebrow' }, `Ciao, ${profile.display_name}`), bell);
@@ -122,6 +128,10 @@ export default async function homeAlessia({ profile, partner, partnership }) {
   if (settings && !settings.onboarding_done_at) {
     const skipped = Object.values(settings.onboarding_steps).filter((v) => v === 'skipped').length;
     sections.push(h('a', { class: 'notice', href: '#/benvenuta' }, skipped ? `Hai saltato ${skipped} ${skipped === 1 ? 'passo' : 'passi'} della configurazione: vuoi completarla?` : 'Vuoi completare la configurazione guidata?'));
+  }
+
+  if (settings && settings.app_tour_status === 'in_progress') {
+    sections.push(h('a', { class: 'notice', href: '#/tutorial' }, 'Hai lasciato il tutorial a metà: riprendilo quando vuoi.'));
   }
 
   // --- collegamento

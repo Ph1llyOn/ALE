@@ -18,6 +18,7 @@ export const DEFAULT_SETTINGS = {
   onboarding_steps: {}, onboarding_done_at: null, spaces: '', prefers_no_equipment: false, limitations: '', professional_notes: '', morning_time: '08:00',
   fitness_level: 'beginner', session_minutes: 30, weekly_sessions: 3, available_days: [1, 2, 3, 4, 5, 6, 7], avoid_flags: [],
   preferences: { treadmill: true, abs: true, treadmill_speed: 3.5, treadmill_incline: 0 }, auto_plan: true,
+  app_tour_status: null, app_tour_step: 0, app_tour_at: null,
 };
 
 export async function getSettings(userId) {
@@ -103,3 +104,8 @@ export async function getAiPrefs(userId) {
 }
 
 export const saveAiPrefs = (userId, patch) => saveByUser('ai_preferences', userId, patch);
+
+/** Stato del tutorial iniziale: 'in_progress' (con il passo), 'done' o 'skipped'. Si riapre sempre dal Profilo. */
+export async function saveTour(userId, { status, step = 0 }) {
+  await saveByUser('user_settings', userId, { app_tour_status: status, app_tour_step: step, app_tour_at: new Date().toISOString() });
+}

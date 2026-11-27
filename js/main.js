@@ -27,6 +27,7 @@ import journalEditView from './features/journal/journal-edit.js';
 import notificationsView from './features/notifications/notifications.js';
 import settingsView from './features/settings/settings.js';
 import onboardingView from './features/onboarding/onboarding.js';
+import tutorialView from './features/tutorial/tutorial.js';
 import proposalsView from './features/partner/proposals.js';
 import sharedView from './features/partner/shared.js';
 
@@ -55,6 +56,7 @@ registerView('/diario/voce', journalEditView);
 registerView('/notifiche', notificationsView);
 registerView('/profilo/impostazioni', settingsView);
 registerView('/benvenuta', onboardingView);
+registerView('/tutorial', tutorialView);
 registerView('/proposte', proposalsView);
 registerView('/condiviso', sharedView);
 

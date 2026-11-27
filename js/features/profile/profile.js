@@ -89,6 +89,7 @@ export default async function profileView() {
     listRow({ href: '#/profilo/privacy', iconName: 'shield', title: 'Privacy e dati', text: isAlessia ? 'Cosa condividi, i tuoi dati, il tuo account.' : 'I tuoi dati e il tuo account.' }),
     listRow({ href: '#/profilo/impostazioni', iconName: 'clock', title: 'Impostazioni', text: isAlessia ? 'Notifiche, intelligenza artificiale, PIN, aspetto.' : 'Notifiche, PIN, aspetto.' }));
   if (isAlessia) rows.push(listRow({ href: '#/benvenuta', iconName: 'check', title: 'Configurazione guidata', text: 'Rivedi o completa i passi iniziali.' }));
+  if (isAlessia) rows.push(listRow({ href: '#/tutorial?replay=1', iconName: 'spark', title: 'Tutorial di ALE.', text: 'Rivedi la guida alle funzioni principali.' }));
 
   return h('main', { class: 'shell with-tabs' },
     pageHeader({ title: 'Il tuo profilo' }),

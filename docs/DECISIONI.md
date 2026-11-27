@@ -86,3 +86,8 @@ Anthropic API reale (serve una chiave finanziata), SMTP/email (non necessarie: a
 - Personalizzazione AI per umore solo con consenso; senza dati: tono neutro. Nessuna chiamata in più.
 - `ai_generations` conservate 90 giorni, cancellazione notturna automatica.
 - Interruttore «Suggerisci promemoria» rimosso (nessun effetto). Nessun nuovo sviluppo dopo la chiusura.
+
+## Tutorial iniziale (27/11/2026) — vedi `docs/TUTORIAL.md`
+- Solo Alessia; stato sull'account (non sul dispositivo), così vale su tutti i dispositivi.
+- Alla prima Home di Alessia: il tutorial parte da solo una volta. «Esci» lascia l'avviso per riprendere, «Salta» e «Iniziamo» non riappaiono da soli.
+- Gli account già esistenti senza stato vedono il tutorial una volta alla prossima Home.

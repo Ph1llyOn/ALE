@@ -14,6 +14,7 @@ export const ROUTES = Object.assign(Object.create(null), {
   '/attivita/scheda': 'auth',
   '/attivita/sessione': 'auth',
   '/benvenuta': 'auth',
+  '/tutorial': 'auth',
   '/calendario': 'auth',
   '/diario': 'auth',
   '/diario/voce': 'auth',
@@ -33,6 +34,7 @@ export const ROUTE_ROLES = Object.assign(Object.create(null), {
   '/attivita/scheda': 'alessia',
   '/attivita/sessione': 'alessia',
   '/benvenuta': 'alessia',
+  '/tutorial': 'alessia',
   '/calendario': 'alessia',
   '/diario': 'alessia',
   '/diario/voce': 'alessia',
@@ -76,5 +78,5 @@ export function decide(path, { session, role }) {
 }
 
 /** Rotte dell'area autenticata (mostrano la barra di navigazione). */
-const BARE = new Set(['/benvenuta']); // schermate a tutto schermo, senza barra di navigazione
+const BARE = new Set(['/benvenuta', '/tutorial']); // schermate a tutto schermo, senza barra di navigazione
 export const isAppRoute = (path) => ROUTES[path] === 'auth' && !BARE.has(path);
