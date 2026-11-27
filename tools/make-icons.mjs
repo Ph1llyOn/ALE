@@ -60,3 +60,5 @@ writeFileSync(join(out, 'icon-512.png'), png(512, { rounded: true }));
 writeFileSync(join(out, 'icon-maskable-512.png'), png(512, { rounded: false }));
 writeFileSync(join(out, 'apple-touch-icon.png'), png(180, { rounded: false }));
 console.log('Icone placeholder generate in', out);
+// apple-touch-icon: pieno e SENZA trasparenza. iOS riempie di nero gli angoli trasparenti.
+writeFileSync(join(out, 'apple-touch-icon.png'), png(180, { rounded: false }));
