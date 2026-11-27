@@ -1,6 +1,6 @@
 // Service worker di ALE. — app shell offline.
 // Tutti i percorsi sono relativi alla posizione di questo file (lo scope = sottopercorso del sito).
-const VERSION = 'v22';
+const VERSION = 'v23';
 const CACHE = `ale-shell-${VERSION}`;
 
 const SHELL = [
@@ -57,6 +57,7 @@ const SHELL = [
   'assets/exercises/treadmill-walk.svg',
   'assets/exercises/wall-push-up.svg',
   'assets/exercises/wall-sit.svg',
+  'assets/icons/apple-touch-icon-dark.png',
   'assets/icons/apple-touch-icon.png',
   'assets/icons/icon-192.png',
   'assets/icons/icon-512.png',

@@ -55,4 +55,6 @@ writeFileSync(join(out, 'icon-192.png'), png(192));
 writeFileSync(join(out, 'icon-512.png'), png(512));
 writeFileSync(join(out, 'icon-maskable-512.png'), png(512));
 writeFileSync(join(out, 'apple-touch-icon.png'), png(180));
+// variante per il tema scuro (stessa grafica: serve a verificare se iOS la usa)
+writeFileSync(join(out, 'apple-touch-icon-dark.png'), png(180));
 console.log('Icone placeholder generate (RGB pieno) in', out);
